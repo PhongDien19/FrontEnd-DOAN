@@ -115,3 +115,35 @@ class RadarDataPoint {
 
   RadarDataPoint(this.dimension, this.value, this.fullMark);
 }
+
+Widget buildDarkFeatureItem(
+  IconData icon,
+  String text,
+  Color iconColor,
+  Color bgColor,
+) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: iconColor, size: 18),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFFE5E7EB),
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+      ),
+    ],
+  );
+}

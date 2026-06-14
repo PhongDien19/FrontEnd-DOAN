@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // Import các màn hình của bạn
-import 'features/screen/modeselection_screen.dart';
+import 'features/screen/assessment_mode_screen.dart';
 import 'features/screen/personalinfo_screen.dart';
 import 'features/screen/assessment_screen.dart';
 import 'features/screen/careerrecommendation_screen.dart';
@@ -9,7 +9,7 @@ import 'features/screen/authgate_screen.dart';
 import 'features/screen/result_screen.dart';
 import 'features/screen/dashboard_screen.dart';
 
-// ĐÃ THÊM: Import file models.dart để fix lỗi Undefined class
+// Import file models.dart để dùng các enum định nghĩa sẵn
 import 'features/screen/models.dart';
 
 void main() {
@@ -84,14 +84,23 @@ class _MainAppFlowState extends State<MainAppFlow> {
         return _buildMockHomeScreen();
 
       case AppStep.modeSelection:
-        return ModeSelectionScreen(
-          onSelect: (mode) {
+        // ĐÃ CẬP NHẬT: Kết nối sang màn hình AssessmentModeScreen theo mẫu video cấu trúc mới
+        return AssessmentModeScreen(
+          onBack: () => setState(() => _currentStep = AppStep.home),
+          onSelectTargeted: () {
             setState(() {
-              _mode = mode;
-              _currentStep = AppStep.personalInfo;
+              _mode = AssessmentMode.targeted; // Gán chế độ Targeted
+              _currentStep =
+                  AppStep.personalInfo; // Chuyển sang nhập thông tin cá nhân
             });
           },
-          onBack: () => setState(() => _currentStep = AppStep.home),
+          onSelectDiscovery: () {
+            setState(() {
+              _mode = AssessmentMode.discovery; // Gán chế độ Discovery
+              _currentStep =
+                  AppStep.personalInfo; // Chuyển sang nhập thông tin cá nhân
+            });
+          },
         );
 
       case AppStep.personalInfo:
@@ -115,11 +124,13 @@ class _MainAppFlowState extends State<MainAppFlow> {
 
       case AppStep.personalityTest:
         return AssessmentScreen(
-          type: AssessmentType.personality,
+          // Đã đổi thành title và questions theo cấu trúc mới
+          title: "Bài test tính cách",
+          // TẠM THỜI ĐỂ TRỐNG: Bạn hãy truyền biến chứa danh sách List<Question> từ API/Database của bạn vào đây nhé
+          questions: const [],
           onComplete: (answers) {
             setState(() {
               _personalityAnswers = answers;
-              // Giả lập AI đề xuất ngành dựa trên tính cách
               _targetCareer = "Kỹ sư phần mềm";
               _currentStep = AppStep.recommendation;
             });
@@ -136,8 +147,10 @@ class _MainAppFlowState extends State<MainAppFlow> {
 
       case AppStep.careerTest:
         return AssessmentScreen(
-          type: AssessmentType.career,
-          career: _targetCareer,
+          // Đã đổi thành title và questions theo cấu trúc mới
+          title: "Đánh giá chuyên môn: $_targetCareer",
+          // TẠM THỜI ĐỂ TRỐNG: Bạn hãy truyền biến chứa danh sách List<Question> từ API/Database của bạn vào đây nhé
+          questions: const [],
           onComplete: (answers) {
             setState(() {
               _careerAnswers = answers;
@@ -168,7 +181,6 @@ class _MainAppFlowState extends State<MainAppFlow> {
         return ResultsScreen(
           mode: _mode!,
           userData: _userData!,
-          // ĐÃ FIX LỖI Answers TYPE: Chuyển key từ int sang String bằng .map()
           personalityAnswers:
               _personalityAnswers?.map(
                 (key, value) => MapEntry(key.toString(), value),
@@ -200,17 +212,16 @@ class _MainAppFlowState extends State<MainAppFlow> {
     }
   }
 
-  // --- MÀN HÌNH TRANG CHỦ MÔ PHỎNG THEO FIGMA ---
-  // --- THAY THẾ MÀN HÌNH TRANG CHỦ CŨ BẰNG MÀN HÌNH LANDING PAGE FIGMA ---
+  // --- MÀN HÌNH TRANG CHỦ LANDING PAGE FIGMA ---
   Widget _buildMockHomeScreen() {
     return CareerPathwayLandingPage(
       onStartAssessment: () {
         setState(() {
-          _currentStep = AppStep.modeSelection;
+          _currentStep = AppStep
+              .modeSelection; // Khi click nút, chuyển sang bước Chọn chế độ
         });
       },
       onLearnProcess: () {
-        // Xử lý khi bấm nút "Tìm hiểu quy trình" (Ví dụ: cuộn trang hoặc hiện Dialog)
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
