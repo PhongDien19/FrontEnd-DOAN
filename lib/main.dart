@@ -201,52 +201,32 @@ class _MainAppFlowState extends State<MainAppFlow> {
   }
 
   // --- MÀN HÌNH TRANG CHỦ MÔ PHỎNG THEO FIGMA ---
+  // --- THAY THẾ MÀN HÌNH TRANG CHỦ CŨ BẰNG MÀN HÌNH LANDING PAGE FIGMA ---
   Widget _buildMockHomeScreen() {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        // Thêm hình nền vào đây
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/background.jpg'),
-            fit: BoxFit.cover, // Căn chỉnh ảnh phủ kín màn hình
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Tư Vấn Hướng Nghiệp Khoa Học",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  // Thêm màu nền cho chữ để dễ đọc nếu hình nền tối
-                  backgroundColor: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () =>
-                    setState(() => _currentStep = AppStep.modeSelection),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber[600],
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 20,
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                child: const Text("Bắt đầu đánh giá miễn phí"),
+    return CareerPathwayLandingPage(
+      onStartAssessment: () {
+        setState(() {
+          _currentStep = AppStep.modeSelection;
+        });
+      },
+      onLearnProcess: () {
+        // Xử lý khi bấm nút "Tìm hiểu quy trình" (Ví dụ: cuộn trang hoặc hiện Dialog)
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Quy trình đánh giá"),
+            content: const Text(
+              "Hệ thống sẽ kiểm tra qua 3 bước: Chọn chế độ, Nhập thông tin và Làm bài test tình huống.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Đóng"),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
