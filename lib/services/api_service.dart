@@ -5,14 +5,16 @@ import 'package:http/http.dart' as http;
 class ApiService {
   // Base URL cấu hình tự động.
   // Android emulator cần dùng 10.0.2.2 thay vì localhost.
+  // Bật/tắt kết nối Local (true) hoặc Production Render (false)
+  // static const bool useLocal = true;
+
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:5000/api';
-    } else if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000/api';
-    } else {
-      return 'http://localhost:5000/api';
-    }
+    // if (!useLocal) {
+    return 'https://server-ai-doan-1.onrender.com/api';
+    // }
+    // return defaultTargetPlatform == TargetPlatform.android
+    //     ? 'http://10.0.2.2:5000/api'
+    //     : 'http://localhost:5000/api';
   }
 
   // Lưu trữ userId của người dùng hiện tại để tự động đính kèm vào header
@@ -26,9 +28,7 @@ class ApiService {
 
   // Header cơ bản có kèm userId nếu đã đăng nhập
   static Map<String, String> get _headers {
-    final headers = {
-      'Content-Type': 'application/json',
-    };
+    final headers = {'Content-Type': 'application/json'};
     if (currentUserId != null) {
       headers['x-user-id'] = currentUserId!;
     }
@@ -38,15 +38,15 @@ class ApiService {
   // --- 1. AUTHENTICATION ENDPOINTS ---
 
   // Đăng nhập thường
-  static Future<Map<String, dynamic>> login(String email, String password) async {
+  static Future<Map<String, dynamic>> login(
+    String email,
+    String password,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': email,
-          'password': password,
-        }),
+        body: jsonEncode({'username': email, 'password': password}),
       );
 
       final data = jsonDecode(response.body);
@@ -60,7 +60,11 @@ class ApiService {
   }
 
   // Đăng ký tài khoản mới
-  static Future<Map<String, dynamic>> register(String email, String password, String fullName) async {
+  static Future<Map<String, dynamic>> register(
+    String email,
+    String password,
+    String fullName,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register'),
@@ -93,7 +97,10 @@ class ApiService {
   }
 
   // Cập nhật Profile
-  static Future<Map<String, dynamic>> updateProfile(String userId, Map<String, dynamic> profileData) async {
+  static Future<Map<String, dynamic>> updateProfile(
+    String userId,
+    Map<String, dynamic> profileData,
+  ) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/profile/$userId'),
@@ -102,7 +109,10 @@ class ApiService {
       );
       return jsonDecode(response.body);
     } catch (e) {
-      return {'success': false, 'message': 'Lỗi cập nhật thông tin cá nhân: $e'};
+      return {
+        'success': false,
+        'message': 'Lỗi cập nhật thông tin cá nhân: $e',
+      };
     }
   }
 
@@ -136,7 +146,9 @@ class ApiService {
   }
 
   // Tư vấn nghề nghiệp tổng quát
-  static Future<Map<String, dynamic>> consultCareer(Map<String, dynamic> info) async {
+  static Future<Map<String, dynamic>> consultCareer(
+    Map<String, dynamic> info,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/consult'),
@@ -152,7 +164,10 @@ class ApiService {
   // --- 4. TRẮC NGHIỆM CHI TIẾT (4 TRỤ CỘT) ---
 
   // A. HOLLAND TEST (Sở thích nghề nghiệp)
-  static Future<Map<String, dynamic>> generateTest(String testType, Map<String, dynamic> context) async {
+  static Future<Map<String, dynamic>> generateTest(
+    String testType,
+    Map<String, dynamic> context,
+  ) async {
     try {
       final body = Map<String, dynamic>.from(context);
       body['testType'] = testType;
@@ -222,15 +237,15 @@ class ApiService {
   }
 
   // Yêu cầu liên kết kết quả bài test (sau khi người dùng đăng nhập)
-  static Future<Map<String, dynamic>> claimAssessment(String sessionId, String userId) async {
+  static Future<Map<String, dynamic>> claimAssessment(
+    String sessionId,
+    String userId,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/assessment/claim'),
         headers: _headers,
-        body: jsonEncode({
-          'sessionId': sessionId,
-          'userId': userId,
-        }),
+        body: jsonEncode({'sessionId': sessionId, 'userId': userId}),
       );
       return jsonDecode(response.body);
     } catch (e) {
@@ -260,14 +275,18 @@ class ApiService {
   // --- 7. KHẢO SÁT HƯỚNG NGHIỆP ĐỘNG (DYNAMIC SURVEY) ---
 
   // Khởi tạo khảo sát động
-  static Future<Map<String, dynamic>> initSurvey(String mode, String? targetCareer) async {
+  static Future<Map<String, dynamic>> initSurvey(
+    String mode,
+    String? targetCareer,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/survey/init'),
         headers: _headers,
         body: jsonEncode({
           'mode': mode,
-          if (targetCareer != null && targetCareer.isNotEmpty) 'target_career': targetCareer,
+          if (targetCareer != null && targetCareer.isNotEmpty)
+            'target_career': targetCareer,
         }),
       );
       return jsonDecode(response.body);
@@ -277,15 +296,15 @@ class ApiService {
   }
 
   // Nộp bài khảo sát động
-  static Future<Map<String, dynamic>> submitSurvey(String sessionId, List<int> answers) async {
+  static Future<Map<String, dynamic>> submitSurvey(
+    String sessionId,
+    List<int> answers,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/survey/submit'),
         headers: _headers,
-        body: jsonEncode({
-          'sessionId': sessionId,
-          'answers': answers,
-        }),
+        body: jsonEncode({'sessionId': sessionId, 'answers': answers}),
       );
       return jsonDecode(response.body);
     } catch (e) {
@@ -294,7 +313,11 @@ class ApiService {
   }
 
   // Gửi feedback đánh giá hài lòng cho khảo sát động
-  static Future<Map<String, dynamic>> feedbackSurvey(String surveyId, int ratingScore, String comment) async {
+  static Future<Map<String, dynamic>> feedbackSurvey(
+    String surveyId,
+    int ratingScore,
+    String comment,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/survey/feedback'),
