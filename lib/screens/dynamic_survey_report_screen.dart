@@ -101,6 +101,25 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     final deepScan = _report['deepScanAnalysis'] ?? '';
     final pivotSuggestions = _report['pivotSuggestions'] as List<dynamic>? ?? [];
 
+    // New variables for Discovery and Targeted modes
+    final String mode = _report['mode'] ?? '';
+    final String targetCareer = _report['targetCareer'] ?? '';
+    final compatibleCareers = _report['compatibleCareers'] as List<dynamic>? ?? [];
+    final String basicSalary = _report['basicSalary'] ?? '';
+    final String laborMarket = _report['laborMarket'] ?? '';
+
+    // Determine display mode with intelligent fallback
+    String displayMode = mode;
+    if (displayMode.isEmpty) {
+      if (compatibleCareers.isNotEmpty) {
+        displayMode = 'Discovery';
+      } else if (roadmap.isNotEmpty || basicSalary.isNotEmpty || laborMarket.isNotEmpty) {
+        displayMode = 'Targeted';
+      } else {
+        displayMode = 'Discovery';
+      }
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F13),
       appBar: AppBar(
@@ -166,21 +185,21 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 ),
                               ),
                             ),
-                            Center(
+                             Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    '$percentageScore%',
+                                    '${rawScore.toStringAsFixed(1)}',
                                     style: GoogleFonts.outfit(
-                                      fontSize: 28,
+                                      fontSize: 32,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${rawScore.toStringAsFixed(1)}/5.0',
+                                    'Thang điểm 5',
                                     style: GoogleFonts.inter(
                                       fontSize: 10,
                                       color: const Color(0xFF888B9B),
@@ -257,126 +276,21 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Conditional Views: IF Passed
-                if (isPassed) ...[
-                  // Roadmap timeline
-                  _buildCard(
-                    title: 'Lộ Trình Phát Triển',
-                    icon: Icons.trending_up_rounded,
-                    iconColor: const Color(0xFF00F2FE),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: List.generate(roadmap.length, (idx) {
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              children: [
-                                CircleAvatar(
-                                  radius: 10,
-                                  backgroundColor: const Color(0xFF00F2FE).withValues(alpha: 0.2),
-                                  child: Text(
-                                    '${idx + 1}',
-                                    style: const TextStyle(color: Color(0xFF00F2FE), fontSize: 10, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                if (idx < roadmap.length - 1)
-                                  Container(
-                                    width: 1.5,
-                                    height: 35,
-                                    color: const Color(0xFF2C2C3E),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: Text(
-                                  roadmap[idx],
-                                  style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.3),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Certificates & ONET
-                  _buildCard(
-                    title: 'Chứng Chỉ Cần Thiết',
-                    icon: Icons.school_outlined,
-                    iconColor: const Color(0xFFE040FB),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: certificates.map((cert) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6.0),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.workspace_premium_rounded, size: 14, color: Color(0xFFE040FB)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(cert, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
-                            ),
-                          ],
-                        ),
-                      )).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  _buildCard(
-                    title: 'Vị Trí Công Việc Tương Đồng (O*NET)',
-                    icon: Icons.work_history_outlined,
-                    iconColor: const Color(0xFFFF7A00),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: onetMatches.map((job) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6.0),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.star_border_rounded, size: 14, color: Color(0xFFFF7A00)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(job, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
-                            ),
-                          ],
-                        ),
-                      )).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ] else ...[
-                  // IF Failed: Deep Scan and Pivot Logic
-                  if (deepScan.isNotEmpty) ...[
+                // Mode-based Views: Discovery vs Targeted
+                if (displayMode.toLowerCase() == 'discovery') ...[
+                  if (compatibleCareers.isNotEmpty) ...[
                     _buildCard(
-                      title: 'Phân Tích Phản Biện Chuyên Sâu (Deep Scan)',
-                      icon: Icons.troubleshoot_rounded,
-                      iconColor: const Color(0xFFFF5252),
-                      child: Text(
-                        deepScan,
-                        style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  if (pivotSuggestions.isNotEmpty) ...[
-                    _buildCard(
-                      title: 'Gợi Ý Đổi Hướng Nghề Nghiệp (Pivot Logic)',
-                      icon: Icons.swap_horiz_rounded,
-                      iconColor: const Color(0xFF00F2FE),
+                      title: '5 Ngành Nghề Tối Tương Thích',
+                      icon: Icons.work_history_rounded,
+                      iconColor: const Color(0xFF00F5A0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: pivotSuggestions.map((item) {
+                        children: compatibleCareers.map((item) {
                           final career = item['career'] ?? '';
                           final reason = item['reason'] ?? '';
 
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
+                            margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: const Color(0xFF0F0F13),
@@ -388,7 +302,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.check_circle_outline_rounded, size: 16, color: Color(0xFF00F2FE)),
+                                    const Icon(Icons.star_rounded, size: 16, color: Color(0xFF00F5A0)),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
@@ -407,6 +321,129 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                             ),
                           );
                         }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ] else ...[
+                  // Targeted Mode
+                  if (roadmap.isNotEmpty) ...[
+                    // Roadmap timeline
+                    _buildCard(
+                      title: 'Lộ Trình Phát Triển',
+                      icon: Icons.trending_up_rounded,
+                      iconColor: const Color(0xFF00F2FE),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(roadmap.length, (idx) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 10,
+                                    backgroundColor: const Color(0xFF00F2FE).withValues(alpha: 0.2),
+                                    child: Text(
+                                      '${idx + 1}',
+                                      style: const TextStyle(color: Color(0xFF00F2FE), fontSize: 10, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  if (idx < roadmap.length - 1)
+                                    Container(
+                                      width: 1.5,
+                                      height: 35,
+                                      color: const Color(0xFF2C2C3E),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12.0),
+                                  child: Text(
+                                    roadmap[idx],
+                                    style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.3),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (certificates.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Chứng Chỉ Cần Thiết',
+                      icon: Icons.school_outlined,
+                      iconColor: const Color(0xFFE040FB),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: certificates.map((cert) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.workspace_premium_rounded, size: 14, color: Color(0xFFE040FB)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(cert, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
+                              ),
+                            ],
+                          ),
+                        )).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (onetMatches.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Vị Trí Công Việc Tương Đồng (O*NET)',
+                      icon: Icons.work_history_outlined,
+                      iconColor: const Color(0xFFFF7A00),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: onetMatches.map((job) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.star_border_rounded, size: 14, color: Color(0xFFFF7A00)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(job, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
+                              ),
+                            ],
+                          ),
+                        )).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (basicSalary.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Mức Lương Cơ Bản tại Việt Nam',
+                      icon: Icons.monetization_on_outlined,
+                      iconColor: const Color(0xFF00F5A0),
+                      child: Text(
+                        basicSalary,
+                        style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (laborMarket.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Thị Trường Lao Động tại Việt Nam',
+                      icon: Icons.bar_chart_rounded,
+                      iconColor: const Color(0xFFFF7A00),
+                      child: Text(
+                        laborMarket,
+                        style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
                       ),
                     ),
                     const SizedBox(height: 20),
