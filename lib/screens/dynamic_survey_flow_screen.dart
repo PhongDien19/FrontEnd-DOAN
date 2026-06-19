@@ -1,288 +1,541 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../services/api_service.dart';
-import '../services/auth_provider.dart';
-import 'dynamic_survey_report_screen.dart';
 
-class DynamicSurveyFlowScreen extends StatefulWidget {
-  const DynamicSurveyFlowScreen({super.key});
+class DynamicSurveyReportScreen extends StatefulWidget {
+  final String sessionId;
+  final Map<String, dynamic>? initialReport;
+
+  const DynamicSurveyReportScreen({
+    super.key,
+    required this.sessionId,
+    this.initialReport,
+  });
 
   @override
-  State<DynamicSurveyFlowScreen> createState() => _DynamicSurveyFlowScreenState();
+  State<DynamicSurveyReportScreen> createState() => _DynamicSurveyReportScreenState();
 }
 
-class _DynamicSurveyFlowScreenState extends State<DynamicSurveyFlowScreen> {
-  // 0: Chọn Chế độ, 1: Loading khởi tạo, 2: Làm bài, 3: Đang chấm điểm, 4: Yêu cầu Login/Register
-  int _step = 0;
+class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
+  late Map<String, dynamic> _report;
+  bool _feedbackSent = false;
+  int _rating = 5;
+  final _commentController = TextEditingController();
+  bool _isSendingFeedback = false;
 
-  // Cấu hình chế độ
-  String _mode = 'Discovery'; // 'Targeted' hoặc 'Discovery'
-  final _targetCareerController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  // Dữ liệu khảo sát từ server
-  String _sessionId = '';
-  String _testName = 'Khảo sát Hướng nghiệp Động AI';
-  List<dynamic> _questions = [];
-
-  // Trạng thái câu trả lời
-  int _currentQuestionIndex = 0;
-  final Map<int, int> _answers = {}; // index -> weight (1-5)
-
-  // Trạng thái đăng nhập tại bước 4
-  bool _isLoginTab = true;
-  final _authFormKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _fullNameController = TextEditingController();
-  bool _isAuthenticating = false;
-  String? _authError;
+  @override
+  void initState() {
+    super.initState();
+    _report = widget.initialReport ?? {};
+  }
 
   @override
   void dispose() {
-    _targetCareerController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _fullNameController.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
-  // Khởi tạo khảo sát động từ AI
-  void _initDynamicSurvey() async {
-    if (_mode == 'Targeted' && !_formKey.currentState!.validate()) return;
-
+  // Gửi feedback hài lòng
+  void _submitFeedback() async {
     setState(() {
-      _step = 1;
+      _isSendingFeedback = true;
     });
 
-    final targetCareer = _mode == 'Targeted' ? _targetCareerController.text.trim() : null;
-    final result = await ApiService.initSurvey(_mode, targetCareer);
-
-    if (result['success'] == true && result['survey'] != null) {
-      setState(() {
-        _sessionId = result['sessionId'];
-        _testName = result['survey']['testName'] ?? 'Khảo sát Hướng nghiệp Động AI';
-        _questions = result['survey']['questions'] ?? [];
-        _currentQuestionIndex = 0;
-        _answers.clear();
-        _step = 2;
-      });
-    } else {
-      setState(() {
-        _step = 0;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Lỗi khởi tạo khảo sát. Vui lòng thử lại!'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    }
-  }
-
-  // Chọn câu trả lời
-  void _selectOption(int weight) {
-    setState(() {
-      _answers[_currentQuestionIndex] = weight;
-    });
-
-    Future.delayed(const Duration(milliseconds: 250), () {
-      if (!mounted) return;
-      if (_currentQuestionIndex < _questions.length - 1) {
-        setState(() {
-          _currentQuestionIndex++;
-        });
-      } else {
-        _submitSurvey();
-      }
-    });
-  }
-
-  // Nộp bài khảo sát
-  void _submitSurvey() async {
-    setState(() {
-      _step = 3;
-    });
-
-    final answerWeights = List<int>.generate(
-      _questions.length,
-      (idx) => _answers[idx] ?? 3,
+    final res = await ApiService.feedbackSurvey(
+      widget.sessionId,
+      _rating,
+      _commentController.text.trim(),
     );
 
-    final result = await ApiService.submitSurvey(_sessionId, answerWeights);
-
-    if (result['success'] == true) {
-      if (!mounted) return;
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      if (auth.isAuthenticated) {
-        // Tự động claim kết quả (nếu server chưa claim tự động)
-        final claimRes = await auth.claimTestResult(_sessionId);
-        if (mounted) {
-          if (claimRes['success'] == true) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => DynamicSurveyReportScreen(
-                  sessionId: _sessionId,
-                  initialReport: claimRes['evaluation'] ?? result['evaluation'],
-                ),
-              ),
-            );
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => DynamicSurveyReportScreen(
-                  sessionId: _sessionId,
-                  initialReport: result['evaluation'],
-                ),
-              ),
-            );
-          }
-        }
-      } else {
-        // Yêu cầu đăng nhập để claim kết quả
-        setState(() {
-          _step = 4;
-        });
-      }
-    } else {
-      setState(() {
-        _step = 2;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Lỗi gửi kết quả chấm điểm.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    }
-  }
-
-  // Đăng nhập / Đăng ký inline và đồng bộ kết quả
-  void _handleAuth() async {
-    if (!_authFormKey.currentState!.validate()) return;
-
     setState(() {
-      _isAuthenticating = true;
-      _authError = null;
+      _isSendingFeedback = false;
+      if (res['success'] == true) {
+        _feedbackSent = true;
+      }
     });
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    Map<String, dynamic> res;
-
-    if (_isLoginTab) {
-      res = await auth.login(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['success'] == true ? 'Cảm ơn phản hồi của bạn!' : (res['message'] ?? 'Lỗi gửi phản hồi.')),
+          backgroundColor: res['success'] == true ? Colors.green : Colors.redAccent,
+        ),
       );
-    } else {
-      res = await auth.register(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-        _fullNameController.text.trim(),
-      );
-      if (res['success'] == true) {
-        // Đăng ký xong tự động đăng nhập luôn
-        res = await auth.login(
-          _emailController.text.trim(),
-          _passwordController.text.trim(),
-        );
-      }
-    }
-
-    if (res['success'] == true) {
-      // Đồng bộ kết quả test
-      final claimRes = await auth.claimTestResult(_sessionId);
-      if (mounted) {
-        setState(() {
-          _isAuthenticating = false;
-        });
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DynamicSurveyReportScreen(
-              sessionId: _sessionId,
-              initialReport: claimRes['evaluation'] ?? res['profile']?['careerFitResult'],
-            ),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        setState(() {
-          _isAuthenticating = false;
-          _authError = res['message'] ?? 'Có lỗi xảy ra. Vui lòng kiểm tra lại.';
-        });
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_report.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0F0F13),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF191922),
+          title: Text('Báo Cáo AI', style: GoogleFonts.outfit()),
+        ),
+        body: const Center(
+          child: Text('Không tìm thấy dữ liệu báo cáo.', style: TextStyle(color: Colors.white)),
+        ),
+      );
+    }
+
+    final double rawScore = double.tryParse(_report['score']?.toString() ?? '0') ?? 0.0;
+    final int percentageScore = (rawScore * 20).toInt().clamp(0, 100);
+    final String status = _report['status'] ?? 'Failed';
+    final bool isPassed = status.toLowerCase() == 'passed' || rawScore > 3.0;
+
+    final Color statusColor = isPassed ? const Color(0xFF00F5A0) : const Color(0xFFFF5252);
+    final String statusText = isPassed ? 'PHÙ HỢP NGHỀ NGHIỆP' : 'CÓ ĐIỂM CHƯA TƯƠNG THÍCH';
+
+    final summary = _report['summary'] ?? '';
+    final strengths = List<String>.from(_report['strengths'] ?? []);
+    final weaknesses = List<String>.from(_report['weaknesses'] ?? []);
+    final advice = _report['advice'] ?? '';
+
+    // Passed variables
+    final roadmap = List<String>.from(_report['roadmap'] ?? []);
+    final certificates = List<String>.from(_report['certificates'] ?? []);
+    final onetMatches = List<String>.from(_report['onetMatches'] ?? []);
+
+    // Failed variables
+    final deepScan = _report['deepScanAnalysis'] ?? '';
+    final pivotSuggestions = _report['pivotSuggestions'] as List<dynamic>? ?? [];
+
+    // New variables for Discovery and Targeted modes
+    final String mode = _report['mode'] ?? '';
+    final String targetCareer = _report['targetCareer'] ?? '';
+    final compatibleCareers = _report['compatibleCareers'] as List<dynamic>? ?? [];
+    final String basicSalary = _report['basicSalary'] ?? '';
+    final String laborMarket = _report['laborMarket'] ?? '';
+
+    // Determine display mode with intelligent fallback
+    String displayMode = mode;
+    if (displayMode.isEmpty) {
+      if (compatibleCareers.isNotEmpty) {
+        displayMode = 'Discovery';
+      } else if (roadmap.isNotEmpty || basicSalary.isNotEmpty || laborMarket.isNotEmpty) {
+        displayMode = 'Targeted';
+      } else {
+        displayMode = 'Discovery';
+      }
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F13),
       appBar: AppBar(
         backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
-          _step == 4 ? 'Đăng Nhập Nhận Kết Quả' : _testName,
+          'Báo Cáo Khảo Sát Động AI',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () {
-            if (_step == 2) {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  backgroundColor: const Color(0xFF191922),
-                  title: Text('Hủy bỏ khảo sát?', style: GoogleFonts.outfit(color: Colors.white)),
-                  content: Text('Mọi câu trả lời của bạn sẽ bị hủy và không lưu lại.', style: GoogleFonts.inter(color: const Color(0xFF888B9B))),
-                  actions: [
-                    TextButton(
-                      child: const Text('Tiếp tục làm', style: TextStyle(color: Color(0xFF6C63FF))),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    TextButton(
-                      child: const Text('Hủy bỏ', style: TextStyle(color: Colors.redAccent)),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              Navigator.pop(context);
-            }
-          },
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Stack(
         children: [
           Positioned(
-            top: 100,
-            left: -100,
+            bottom: -50,
+            right: -50,
             child: Container(
-              width: 300,
-              height: 300,
+              width: 250,
+              height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.05),
+                color: statusColor.withValues(alpha: 0.04),
               ),
             ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: _buildBody(),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Score compatibility ring
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF191922),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFF2C2C3E)),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Độ Tương Thích Với Ngành',
+                        style: GoogleFonts.outfit(fontSize: 15, color: const Color(0xFF888B9B), fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: 130,
+                        height: 130,
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                width: 110,
+                                height: 110,
+                                child: CircularProgressIndicator(
+                                  value: percentageScore / 100.0,
+                                  strokeWidth: 10,
+                                  backgroundColor: Colors.white.withValues(alpha: 0.05),
+                                  valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                                ),
+                              ),
+                            ),
+                             Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${rawScore.toStringAsFixed(1)}',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Thang điểm 5',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      color: const Color(0xFF888B9B),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: statusColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        summary,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFFC3C5E0), height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Strengths and Weaknesses
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildListItemBox(
+                        title: 'Điểm Mạnh',
+                        items: strengths,
+                        icon: Icons.check_circle_outline_rounded,
+                        iconColor: const Color(0xFF00F5A0),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildListItemBox(
+                        title: 'Tố Chất Cần Rèn',
+                        items: weaknesses,
+                        icon: Icons.error_outline_rounded,
+                        iconColor: const Color(0xFFFF5252),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Main Advice
+                _buildCard(
+                  title: 'Lời Khuyên Hướng Nghiệp',
+                  icon: Icons.lightbulb_outline_rounded,
+                  iconColor: const Color(0xFFFFD600),
+                  child: Text(
+                    advice,
+                    style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Mode-based Views: Discovery vs Targeted
+                if (displayMode.toLowerCase() == 'discovery') ...[
+                  if (compatibleCareers.isNotEmpty) ...[
+                    _buildCard(
+                      title: '5 Ngành Nghề Tối Tương Thích',
+                      icon: Icons.work_history_rounded,
+                      iconColor: const Color(0xFF00F5A0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: compatibleCareers.map((item) {
+                          final career = item['career'] ?? '';
+                          final reason = item['reason'] ?? '';
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F0F13),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF2C2C3E)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star_rounded, size: 16, color: Color(0xFF00F5A0)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        career,
+                                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  reason,
+                                  style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF888B9B), height: 1.3),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ] else ...[
+                  // Targeted Mode
+                  if (roadmap.isNotEmpty) ...[
+                    // Roadmap timeline
+                    _buildCard(
+                      title: 'Lộ Trình Phát Triển',
+                      icon: Icons.trending_up_rounded,
+                      iconColor: const Color(0xFF00F2FE),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(roadmap.length, (idx) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 10,
+                                    backgroundColor: const Color(0xFF00F2FE).withValues(alpha: 0.2),
+                                    child: Text(
+                                      '${idx + 1}',
+                                      style: const TextStyle(color: Color(0xFF00F2FE), fontSize: 10, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  if (idx < roadmap.length - 1)
+                                    Container(
+                                      width: 1.5,
+                                      height: 35,
+                                      color: const Color(0xFF2C2C3E),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12.0),
+                                  child: Text(
+                                    roadmap[idx],
+                                    style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.3),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (certificates.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Chứng Chỉ Cần Thiết',
+                      icon: Icons.school_outlined,
+                      iconColor: const Color(0xFFE040FB),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: certificates.map((cert) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.workspace_premium_rounded, size: 14, color: Color(0xFFE040FB)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(cert, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
+                              ),
+                            ],
+                          ),
+                        )).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (onetMatches.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Vị Trí Công Việc Tương Đồng (O*NET)',
+                      icon: Icons.work_history_outlined,
+                      iconColor: const Color(0xFFFF7A00),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: onetMatches.map((job) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.star_border_rounded, size: 14, color: Color(0xFFFF7A00)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(job, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
+                              ),
+                            ],
+                          ),
+                        )).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (basicSalary.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Mức Lương Cơ Bản tại Việt Nam',
+                      icon: Icons.monetization_on_outlined,
+                      iconColor: const Color(0xFF00F5A0),
+                      child: Text(
+                        basicSalary,
+                        style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (laborMarket.isNotEmpty) ...[
+                    _buildCard(
+                      title: 'Thị Trường Lao Động tại Việt Nam',
+                      icon: Icons.bar_chart_rounded,
+                      iconColor: const Color(0xFFFF7A00),
+                      child: Text(
+                        laborMarket,
+                        style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ],
+
+                // Feedback Loop Card
+                _buildCard(
+                  title: 'Đánh Giá Độ Chính Xác Của AI',
+                  icon: Icons.rate_review_outlined,
+                  iconColor: const Color(0xFF00F2FE),
+                  child: _feedbackSent
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Cảm ơn bạn đã gửi đánh giá hài lòng!',
+                                  style: GoogleFonts.outfit(color: Colors.green, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Đánh giá mức độ hài lòng về điểm số và phản biện của AI:',
+                              style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF888B9B)),
+                            ),
+                            const SizedBox(height: 12),
+                            // Stars selector
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(5, (index) {
+                                final starVal = index + 1;
+                                return IconButton(
+                                  icon: Icon(
+                                    starVal <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                                    color: const Color(0xFFFFD600),
+                                    size: 32,
+                                  ),
+                                  onPressed: () => setState(() => _rating = starVal),
+                                );
+                              }),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _commentController,
+                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              maxLines: 2,
+                              decoration: InputDecoration(
+                                hintText: 'Nhập ý kiến đóng góp của bạn để tinh chỉnh thuật toán AI...',
+                                hintStyle: const TextStyle(color: Color(0xFF5E6072)),
+                                filled: true,
+                                fillColor: const Color(0xFF0F0F13),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF6C63FF)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _isSendingFeedback ? null : _submitFeedback,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6C63FF),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              child: _isSendingFeedback
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                                    )
+                                  : Text('Gửi Đánh Giá', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
+                            ),
+                          ],
+                        ),
+                ),
+                const SizedBox(height: 36),
+              ],
             ),
           ),
         ],
@@ -290,533 +543,91 @@ class _DynamicSurveyFlowScreenState extends State<DynamicSurveyFlowScreen> {
     );
   }
 
-  Widget _buildBody() {
-    switch (_step) {
-      case 0:
-        return _buildModeSelector();
-      case 1:
-        return _buildLoadingState('AI đang khởi tạo bộ khảo sát kịch bản 15 câu tình huống cá nhân hóa...');
-      case 2:
-        return _buildQuestionCard();
-      case 3:
-        return _buildLoadingState('AI đang phân tích câu trả lời của bạn, tính toán điểm số và lập lộ trình hướng nghiệp...');
-      case 4:
-        return _buildAuthForm();
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
-  // Bước 0: Chọn Chế độ
-  Widget _buildModeSelector() {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFF191922),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFF2C2C3E)),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.psychology_alt_rounded, size: 48, color: Color(0xFF00F2FE)),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Khảo Sát Động Trí Tuệ Nhân Tạo',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Bộ câu hỏi tình huống thay đổi động dựa trên nhu cầu của bạn. Tự động chấm điểm tích hợp Holland (50%), Big Five (30%) và SCCT (20%).',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF888B9B), height: 1.4),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Chọn chế độ khảo sát:',
-              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-
-            // Mode Selection Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _mode = 'Discovery'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF191922),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _mode == 'Discovery' ? const Color(0xFF6C63FF) : const Color(0xFF2C2C3E),
-                          width: _mode == 'Discovery' ? 2 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.explore_outlined, color: _mode == 'Discovery' ? const Color(0xFF6C63FF) : const Color(0xFF888B9B)),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Khám Phá',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              color: _mode == 'Discovery' ? Colors.white : const Color(0xFF888B9B),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Chưa định hướng',
-                            style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF5E6072)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _mode = 'Targeted'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF191922),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _mode == 'Targeted' ? const Color(0xFF00F2FE) : const Color(0xFF2C2C3E),
-                          width: _mode == 'Targeted' ? 2 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.track_changes_rounded, color: _mode == 'Targeted' ? const Color(0xFF00F2FE) : const Color(0xFF888B9B)),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Mục Tiêu',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              color: _mode == 'Targeted' ? Colors.white : const Color(0xFF888B9B),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Đã chọn sẵn ngành',
-                            style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF5E6072)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Target Career Input Form (Targeted mode only)
-            if (_mode == 'Targeted') ...[
-              TextFormField(
-                controller: _targetCareerController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Nhập ngành/nghề nghiệp mục tiêu của bạn',
-                  labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
-                  hintText: 'Ví dụ: Trí tuệ nhân tạo, Thiết kế nội thất',
-                  hintStyle: const TextStyle(color: Color(0xFF5E6072), fontSize: 13),
-                  filled: true,
-                  fillColor: const Color(0xFF191922),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF00F2FE)),
-                  ),
-                ),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Vui lòng nhập ngành nghề mục tiêu' : null,
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: _initDynamicSurvey,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                backgroundColor: _mode == 'Discovery' ? const Color(0xFF6C63FF) : const Color(0xFF00F2FE),
-                foregroundColor: Colors.white,
-              ),
-              child: Text(
-                'Khởi tạo bài Khảo sát',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: _mode == 'Discovery' ? Colors.white : Colors.black),
-              ),
-            ),
-          ],
-        ),
+  Widget _buildListItemBox({
+    required String title,
+    required List<String> items,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF191922),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF2C2C3E)),
       ),
-    );
-  }
-
-  // Khung loading
-  Widget _buildLoadingState(String loadingText) {
-    return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF6C63FF).withValues(alpha: 0.1),
-            ),
-            child: const CircularProgressIndicator(
-              strokeWidth: 4,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
-            ),
-          ),
-          const SizedBox(height: 30),
-          Text(
-            'Đang kết nối AI...',
-            style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          Row(
+            children: [
+              Icon(icon, size: 16, color: iconColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              loadingText,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF888B9B), height: 1.4),
-            ),
-          ),
+          if (items.isEmpty)
+            Text(
+              'Không có dữ liệu',
+              style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF5E6072)),
+            )
+          else
+            ...items.map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6.0),
+                  child: Text(
+                    '• $item',
+                    style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF888B9B), height: 1.3),
+                  ),
+                )),
         ],
       ),
     );
   }
 
-  // Khung câu hỏi
-  Widget _buildQuestionCard() {
-    if (_questions.isEmpty) return const SizedBox.shrink();
-
-    final currentQuestion = _questions[_currentQuestionIndex];
-    final qText = currentQuestion['questionText'] ?? '';
-    final options = currentQuestion['options'] as List<dynamic>? ?? [];
-    final progress = (_currentQuestionIndex + 1) / _questions.length;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Câu hỏi ${_currentQuestionIndex + 1}/${_questions.length}',
-              style: GoogleFonts.outfit(color: const Color(0xFF888B9B), fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${(progress * 100).toInt()}%',
-              style: GoogleFonts.outfit(color: const Color(0xFF00F2FE), fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: const Color(0xFF191922),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
-            minHeight: 6,
-          ),
-        ),
-        const SizedBox(height: 40),
-
-        // Question Container
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: const Color(0xFF191922),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFF2C2C3E)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                )
-              ],
-            ),
-            child: Center(
-              child: SingleChildScrollView(
-                child: Text(
-                  qText,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-
-        // Answers options (Dynamic from AI)
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: options.map((opt) {
-            final optText = opt['text']?.toString() ?? '';
-            final weight = int.tryParse(opt['weight']?.toString() ?? '3') ?? 3;
-            final isSelected = _answers[_currentQuestionIndex] == weight;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: OutlinedButton(
-                onPressed: () => _selectOption(weight),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  backgroundColor: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF191922),
-                  side: BorderSide(
-                    color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF2C2C3E),
-                    width: 1.5,
-                  ),
-                ),
-                child: Text(
-                  optText,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: isSelected ? Colors.white : const Color(0xFFC3C5E0),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  // Bước 4: Yêu cầu Đăng nhập/Đăng ký inline
-  Widget _buildAuthForm() {
-    return Center(
-      child: SingleChildScrollView(
-        child: Form(
-          key: _authFormKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _buildCard({
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF191922),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF2C2C3E)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF191922),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFF2C2C3E)),
+                  color: iconColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Column(
-                  children: [
-                    const Icon(Icons.lock_person_rounded, size: 52, color: Color(0xFF6C63FF)),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Xem Báo Cáo Định Hướng',
-                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'AI đã chấm điểm khảo sát của bạn xong! Vui lòng đăng nhập hoặc tạo tài khoản để đồng bộ kết quả và xem báo cáo lộ trình chi tiết.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF888B9B), height: 1.4),
-                    ),
-                  ],
-                ),
+                child: Icon(icon, color: iconColor, size: 18),
               ),
-              const SizedBox(height: 24),
-
-              // Tab Selector
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF191922),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _isLoginTab = true),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: _isLoginTab ? const Color(0xFF6C63FF) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Đăng Nhập',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              color: _isLoginTab ? Colors.white : const Color(0xFF888B9B),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _isLoginTab = false),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: !_isLoginTab ? const Color(0xFF6C63FF) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Đăng Ký',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              color: !_isLoginTab ? Colors.white : const Color(0xFF888B9B),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              if (_authError != null) ...[
-                Text(
-                  _authError!,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // Full Name (Only for Registration)
-              if (!_isLoginTab) ...[
-                TextFormField(
-                  controller: _fullNameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'Họ và tên',
-                    labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
-                    filled: true,
-                    fillColor: const Color(0xFF191922),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFF6C63FF)),
-                    ),
-                  ),
-                  validator: (val) => val == null || val.trim().isEmpty ? 'Vui lòng nhập họ tên' : null,
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Email
-              TextFormField(
-                controller: _emailController,
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Địa chỉ Email / Tên đăng nhập',
-                  labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
-                  filled: true,
-                  fillColor: const Color(0xFF191922),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF6C63FF)),
-                  ),
-                ),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Vui lòng nhập email' : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Password
-              TextFormField(
-                controller: _passwordController,
-                style: const TextStyle(color: Colors.white),
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Mật khẩu',
-                  labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
-                  filled: true,
-                  fillColor: const Color(0xFF191922),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF6C63FF)),
-                  ),
-                ),
-                validator: (val) => val == null || val.length < 6 ? 'Mật khẩu phải từ 6 ký tự' : null,
-              ),
-              const SizedBox(height: 28),
-
-              // Submit Button
-              ElevatedButton(
-                onPressed: _isAuthenticating ? null : _handleAuth,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  backgroundColor: const Color(0xFF6C63FF),
-                ),
-                child: _isAuthenticating
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Text(
-                        _isLoginTab ? 'Đăng Nhập & Đồng Bộ' : 'Tạo Tài Khoản & Đồng Bộ',
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
-                      ),
-              ),
-              const SizedBox(height: 16),
-
-              TextButton(
-                onPressed: () => Navigator.pop(context),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Text(
-                  'Hủy bỏ và Quay lại Trang chủ',
-                  style: GoogleFonts.outfit(color: const Color(0xFF888B9B), fontSize: 13),
+                  title,
+                  style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 16),
+          child,
+        ],
       ),
     );
   }
