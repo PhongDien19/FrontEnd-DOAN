@@ -13,7 +13,8 @@ class DynamicSurveyReportScreen extends StatefulWidget {
   });
 
   @override
-  State<DynamicSurveyReportScreen> createState() => _DynamicSurveyReportScreenState();
+  State<DynamicSurveyReportScreen> createState() =>
+      _DynamicSurveyReportScreenState();
 }
 
 class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
@@ -57,8 +58,14 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(res['success'] == true ? 'Cảm ơn phản hồi của bạn!' : (res['message'] ?? 'Lỗi gửi phản hồi.')),
-          backgroundColor: res['success'] == true ? Colors.green : Colors.redAccent,
+          content: Text(
+            res['success'] == true
+                ? 'Cảm ơn phản hồi của bạn!'
+                : (res['message'] ?? 'Lỗi gửi phản hồi.'),
+          ),
+          backgroundColor: res['success'] == true
+              ? Colors.green
+              : Colors.redAccent,
         ),
       );
     }
@@ -74,18 +81,26 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
           title: Text('Báo Cáo AI', style: GoogleFonts.outfit()),
         ),
         body: const Center(
-          child: Text('Không tìm thấy dữ liệu báo cáo.', style: TextStyle(color: Colors.white)),
+          child: Text(
+            'Không tìm thấy dữ liệu báo cáo.',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       );
     }
 
-    final double rawScore = double.tryParse(_report['score']?.toString() ?? '0') ?? 0.0;
+    final double rawScore =
+        double.tryParse(_report['score']?.toString() ?? '0') ?? 0.0;
     final int percentageScore = (rawScore * 20).toInt().clamp(0, 100);
     final String status = _report['status'] ?? 'Failed';
     final bool isPassed = status.toLowerCase() == 'passed' || rawScore > 3.0;
 
-    final Color statusColor = isPassed ? const Color(0xFF00F5A0) : const Color(0xFFFF5252);
-    final String statusText = isPassed ? 'PHÙ HỢP NGHỀ NGHIỆP' : 'CÓ ĐIỂM CHƯA TƯƠNG THÍCH';
+    final Color statusColor = isPassed
+        ? const Color(0xFF00F5A0)
+        : const Color(0xFFFF5252);
+    final String statusText = isPassed
+        ? 'PHÙ HỢP NGHỀ NGHIỆP'
+        : 'CÓ ĐIỂM CHƯA TƯƠNG THÍCH';
 
     final summary = _report['summary'] ?? '';
     final strengths = List<String>.from(_report['strengths'] ?? []);
@@ -99,12 +114,14 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
 
     // Failed variables
     final deepScan = _report['deepScanAnalysis'] ?? '';
-    final pivotSuggestions = _report['pivotSuggestions'] as List<dynamic>? ?? [];
+    final pivotSuggestions =
+        _report['pivotSuggestions'] as List<dynamic>? ?? [];
 
     // New variables for Discovery and Targeted modes
     final String mode = _report['mode'] ?? '';
     final String targetCareer = _report['targetCareer'] ?? '';
-    final compatibleCareers = _report['compatibleCareers'] as List<dynamic>? ?? [];
+    final compatibleCareers =
+        _report['compatibleCareers'] as List<dynamic>? ?? [];
     final String basicSalary = _report['basicSalary'] ?? '';
     final String laborMarket = _report['laborMarket'] ?? '';
 
@@ -113,7 +130,9 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     if (displayMode.isEmpty) {
       if (compatibleCareers.isNotEmpty) {
         displayMode = 'Discovery';
-      } else if (roadmap.isNotEmpty || basicSalary.isNotEmpty || laborMarket.isNotEmpty) {
+      } else if (roadmap.isNotEmpty ||
+          basicSalary.isNotEmpty ||
+          laborMarket.isNotEmpty) {
         displayMode = 'Targeted';
       } else {
         displayMode = 'Discovery';
@@ -165,7 +184,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                     children: [
                       Text(
                         'Độ Tương Thích Với Ngành',
-                        style: GoogleFonts.outfit(fontSize: 15, color: const Color(0xFF888B9B), fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                          fontSize: 15,
+                          color: const Color(0xFF888B9B),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       SizedBox(
@@ -180,12 +203,16 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 child: CircularProgressIndicator(
                                   value: percentageScore / 100.0,
                                   strokeWidth: 10,
-                                  backgroundColor: Colors.white.withValues(alpha: 0.05),
-                                  valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: 0.05,
+                                  ),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    statusColor,
+                                  ),
                                 ),
                               ),
                             ),
-                             Center(
+                            Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -214,7 +241,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       ),
                       const SizedBox(height: 20),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
@@ -232,7 +262,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       Text(
                         summary,
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFFC3C5E0), height: 1.4),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: const Color(0xFFC3C5E0),
+                          height: 1.4,
+                        ),
                       ),
                     ],
                   ),
@@ -271,7 +305,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                   iconColor: const Color(0xFFFFD600),
                   child: Text(
                     advice,
-                    style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFC3C5E0),
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -295,19 +333,29 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF0F0F13),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF2C2C3E)),
+                              border: Border.all(
+                                color: const Color(0xFF2C2C3E),
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.star_rounded, size: 16, color: Color(0xFF00F5A0)),
+                                    const Icon(
+                                      Icons.star_rounded,
+                                      size: 16,
+                                      color: Color(0xFF00F5A0),
+                                    ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         career,
-                                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                                        style: GoogleFonts.outfit(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -315,7 +363,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   reason,
-                                  style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF888B9B), height: 1.3),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: const Color(0xFF888B9B),
+                                    height: 1.3,
+                                  ),
                                 ),
                               ],
                             ),
@@ -343,10 +395,16 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: 10,
-                                    backgroundColor: const Color(0xFF00F2FE).withValues(alpha: 0.2),
+                                    backgroundColor: const Color(
+                                      0xFF00F2FE,
+                                    ).withValues(alpha: 0.2),
                                     child: Text(
                                       '${idx + 1}',
-                                      style: const TextStyle(color: Color(0xFF00F2FE), fontSize: 10, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                        color: Color(0xFF00F2FE),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                   if (idx < roadmap.length - 1)
@@ -363,7 +421,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                   padding: const EdgeInsets.only(bottom: 12.0),
                                   child: Text(
                                     roadmap[idx],
-                                    style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.3),
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFFC3C5E0),
+                                      fontSize: 13,
+                                      height: 1.3,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -382,18 +444,32 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       iconColor: const Color(0xFFE040FB),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: certificates.map((cert) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6.0),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.workspace_premium_rounded, size: 14, color: Color(0xFFE040FB)),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(cert, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
+                        children: certificates
+                            .map(
+                              (cert) => Padding(
+                                padding: const EdgeInsets.only(bottom: 6.0),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.workspace_premium_rounded,
+                                      size: 14,
+                                      color: Color(0xFFE040FB),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        cert,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
-                        )).toList(),
+                            )
+                            .toList(),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -406,18 +482,32 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       iconColor: const Color(0xFFFF7A00),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: onetMatches.map((job) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6.0),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.star_border_rounded, size: 14, color: Color(0xFFFF7A00)),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(job, style: GoogleFonts.inter(color: Colors.white, fontSize: 13)),
+                        children: onetMatches
+                            .map(
+                              (job) => Padding(
+                                padding: const EdgeInsets.only(bottom: 6.0),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.star_border_rounded,
+                                      size: 14,
+                                      color: Color(0xFFFF7A00),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        job,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
-                        )).toList(),
+                            )
+                            .toList(),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -430,7 +520,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       iconColor: const Color(0xFF00F5A0),
                       child: Text(
                         basicSalary,
-                        style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFC3C5E0),
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -443,7 +537,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       iconColor: const Color(0xFFFF7A00),
                       child: Text(
                         laborMarket,
-                        style: GoogleFonts.inter(color: const Color(0xFFC3C5E0), fontSize: 13, height: 1.4),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFC3C5E0),
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -462,11 +560,18 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Colors.green,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Cảm ơn bạn đã gửi đánh giá hài lòng!',
-                                  style: GoogleFonts.outfit(color: Colors.green, fontWeight: FontWeight.bold),
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -477,7 +582,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                           children: [
                             Text(
                               'Đánh giá mức độ hài lòng về điểm số và phản biện của AI:',
-                              style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF888B9B)),
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF888B9B),
+                              ),
                             ),
                             const SizedBox(height: 12),
                             // Stars selector
@@ -487,49 +595,81 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 final starVal = index + 1;
                                 return IconButton(
                                   icon: Icon(
-                                    starVal <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                                    starVal <= _rating
+                                        ? Icons.star_rounded
+                                        : Icons.star_border_rounded,
                                     color: const Color(0xFFFFD600),
                                     size: 32,
                                   ),
-                                  onPressed: () => setState(() => _rating = starVal),
+                                  onPressed: () =>
+                                      setState(() => _rating = starVal),
                                 );
                               }),
                             ),
                             const SizedBox(height: 12),
                             TextField(
                               controller: _commentController,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
                               maxLines: 2,
                               decoration: InputDecoration(
-                                hintText: 'Nhập ý kiến đóng góp của bạn để tinh chỉnh thuật toán AI...',
-                                hintStyle: const TextStyle(color: Color(0xFF5E6072)),
+                                hintText:
+                                    'Nhập ý kiến đóng góp của bạn để tinh chỉnh thuật toán AI...',
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFF5E6072),
+                                ),
                                 filled: true,
                                 fillColor: const Color(0xFF0F0F13),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2C2C3E),
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF6C63FF)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF6C63FF),
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
-                              onPressed: _isSendingFeedback ? null : _submitFeedback,
+                              onPressed: _isSendingFeedback
+                                  ? null
+                                  : _submitFeedback,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF6C63FF),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                               child: _isSendingFeedback
                                   ? const SizedBox(
                                       width: 16,
                                       height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
                                     )
-                                  : Text('Gửi Đánh Giá', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
+                                  : Text(
+                                      'Gửi Đánh Giá',
+                                      style: GoogleFonts.outfit(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                             ),
                           ],
                         ),
@@ -566,7 +706,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: GoogleFonts.outfit(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -575,16 +719,25 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
           if (items.isEmpty)
             Text(
               'Không có dữ liệu',
-              style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF5E6072)),
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: const Color(0xFF5E6072),
+              ),
             )
           else
-            ...items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6.0),
-                  child: Text(
-                    '• $item',
-                    style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF888B9B), height: 1.3),
+            ...items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 6.0),
+                child: Text(
+                  '• $item',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: const Color(0xFF888B9B),
+                    height: 1.3,
                   ),
-                )),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -620,7 +773,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: GoogleFonts.outfit(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

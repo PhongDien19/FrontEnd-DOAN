@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/auth_provider.dart';
-import 'screens/home_screen.dart';
+import 'screens/home_screen.dart'; // <-- Trả về HomeScreen
 
 void main() {
   runApp(
@@ -31,43 +31,9 @@ class MainApp extends StatelessWidget {
           surface: Color(0xFF191922),
           error: Colors.redAccent,
         ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Color(0xFFC3C5E0)),
-        ),
       ),
-      home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          if (auth.isLoading) {
-            return const Scaffold(
-              backgroundColor: Color(0xFF0F0F13),
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Color(0xFF6C63FF),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      'Khởi động Career Pathway...',
-                      style: TextStyle(
-                        color: Color(0xFF888B9B),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          return const HomeScreen();
-        },
-      ),
+      // Trở về nhà: Mở HomeScreen
+      home: const HomeScreen(),
     );
   }
 }

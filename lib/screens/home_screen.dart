@@ -4,11 +4,12 @@ import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../services/api_service.dart';
 import 'chat_screen.dart';
+import 'dynamic_survey_report_screen.dart' show DynamicSurveyReportScreen;
 import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'assessment_flow_screen.dart';
 import 'comprehensive_report_screen.dart';
-import 'dynamic_survey_flow_screen.dart';
+import 'test_history_screen.dart'; // Import màn hình Lịch sử
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -55,7 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (result['success'] == true || result['advice'] != null) {
         _consultResponse = result['advice'];
       } else {
-        _consultResponse = 'Không thể kết nối dịch vụ tư vấn AI. Vui lòng thử lại!';
+        _consultResponse =
+            'Không thể kết nối dịch vụ tư vấn AI. Vui lòng thử lại!';
       }
     });
   }
@@ -65,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final auth = Provider.of<AuthProvider>(context);
     final profile = auth.userProfile;
 
-    // Routing: loading / unauthenticated / home
     if (auth.isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFF0F0F13),
@@ -91,13 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // Check completed pillars
     final hasHolland = profile != null && profile['hollandScores'] != null;
-    final hasPersonality = profile != null && profile['personalityScores'] != null;
+    final hasPersonality =
+        profile != null && profile['personalityScores'] != null;
     final hasCognitive = profile != null && profile['cognitiveScores'] != null;
     final hasValues = profile != null && profile['valuesScores'] != null;
 
-    final completedCount = (hasHolland ? 1 : 0) +
+    final completedCount =
+        (hasHolland ? 1 : 0) +
         (hasPersonality ? 1 : 0) +
         (hasCognitive ? 1 : 0) +
         (hasValues ? 1 : 0);
@@ -105,13 +107,31 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F13),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922).withValues(alpha: 0.8),
+        backgroundColor: const Color(0xFF191922).withOpacity(0.8),
         elevation: 0,
         title: Text(
           'Career Pathway',
           style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 22),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'Lịch sử AI',
+            onPressed: () {
+              // Đã thêm .toString() để ép kiểu dữ liệu an toàn
+              final currentUserId =
+                  (auth.userProfile?['id'] ??
+                          auth.userProfile?['_id'] ??
+                          'mock_user_id')
+                      .toString();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TestHistoryScreen(userId: currentUserId),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline_rounded),
             onPressed: () => Navigator.push(
@@ -128,14 +148,20 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           auth.isAuthenticated
               ? IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                  icon: const Icon(
+                    Icons.logout_rounded,
+                    color: Colors.redAccent,
+                  ),
                   tooltip: 'Đăng xuất',
                   onPressed: () {
                     auth.logout();
                   },
                 )
               : IconButton(
-                  icon: const Icon(Icons.login_rounded, color: Color(0xFF6C63FF)),
+                  icon: const Icon(
+                    Icons.login_rounded,
+                    color: Color(0xFF6C63FF),
+                  ),
                   tooltip: 'Đăng nhập',
                   onPressed: () => Navigator.push(
                     context,
@@ -146,7 +172,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
-          // Background Glows
           Positioned(
             top: 20,
             left: -100,
@@ -155,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.08),
+                color: const Color(0xFF6C63FF).withOpacity(0.08),
               ),
             ),
           ),
@@ -167,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00F2FE).withValues(alpha: 0.08),
+                color: const Color(0xFF00F2FE).withOpacity(0.08),
               ),
             ),
           ),
@@ -182,14 +207,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Greeting and Header
                   Row(
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+                        backgroundColor: const Color(
+                          0xFF6C63FF,
+                        ).withOpacity(0.2),
                         child: Text(
-                          auth.fullName.isNotEmpty ? auth.fullName[0].toUpperCase() : 'U',
+                          auth.fullName.isNotEmpty
+                              ? auth.fullName[0].toUpperCase()
+                              : 'U',
                           style: GoogleFonts.outfit(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -210,7 +238,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             Text(
-                              auth.fullName.isNotEmpty ? auth.fullName : 'Thành viên',
+                              auth.fullName.isNotEmpty
+                                  ? auth.fullName
+                                  : 'Thành viên',
                               style: GoogleFonts.outfit(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -224,7 +254,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Comprehensive Report Banner
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -236,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
+                          color: const Color(0xFF6C63FF).withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -259,9 +288,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: Colors.white.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -280,15 +312,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Hoàn thành 4 trụ cột trắc nghiệm: Sở thích (Holland), Tính cách (MBTI), Năng lực và Hệ giá trị để nhận báo cáo hướng nghiệp AI chi tiết.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity(0.9),
                             height: 1.4,
                           ),
                         ),
                         const SizedBox(height: 20),
                         LinearProgressIndicator(
                           value: completedCount / 4.0,
-                          backgroundColor: Colors.white.withValues(alpha: 0.15),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                          backgroundColor: Colors.white.withOpacity(0.15),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         const SizedBox(height: 20),
@@ -297,7 +331,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const ComprehensiveReportScreen(),
+                                builder: (_) =>
+                                    const ComprehensiveReportScreen(),
                               ),
                             );
                           },
@@ -331,7 +366,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Khảo sát động AI Banner
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -343,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF00F2FE).withValues(alpha: 0.25),
+                          color: const Color(0xFF00F2FE).withOpacity(0.25),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -366,9 +400,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.1),
+                                color: Colors.black.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -387,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Khảo sát kịch bản tình huống được AI tạo lập thời gian thực. Đánh giá đa chiều (Holland, Big Five, SCCT) và hỗ trợ chế độ khảo sát ẩn danh.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: Colors.black.withValues(alpha: 0.75),
+                            color: Colors.black.withOpacity(0.75),
                             height: 1.4,
                             fontWeight: FontWeight.w500,
                           ),
@@ -398,11 +435,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const DynamicSurveyFlowScreen(),
+                                builder: (_) => const DynamicSurveyReportScreen(
+                                  sessionId: '',
+                                ),
                               ),
                             ).then((_) {
                               if (!context.mounted) return;
-                              Provider.of<AuthProvider>(context, listen: false).refreshProfile();
+                              Provider.of<AuthProvider>(
+                                context,
+                                listen: false,
+                              ).refreshProfile();
                             });
                           },
                           style: ElevatedButton.styleFrom(
@@ -424,7 +466,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Icon(Icons.bolt, size: 16, color: Color(0xFFFFD600)),
+                              const Icon(
+                                Icons.bolt,
+                                size: 16,
+                                color: Color(0xFFFFD600),
+                              ),
                             ],
                           ),
                         ),
@@ -433,7 +479,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Quick AI Consultation Bar
                   Text(
                     'Tư Vấn Hướng Nghiệp Nhanh',
                     style: GoogleFonts.outfit(
@@ -458,13 +503,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _quickQuestionController,
-                                style: const TextStyle(color: Colors.white, fontSize: 14),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
                                 decoration: InputDecoration(
-                                  hintText: 'Ví dụ: Học ngành IT ra trường làm gì?',
-                                  hintStyle: const TextStyle(color: Color(0xFF5E6072)),
+                                  hintText:
+                                      'Ví dụ: Học ngành IT ra trường làm gì?',
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF5E6072),
+                                  ),
                                   border: InputBorder.none,
                                   isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                  ),
                                 ),
                                 onSubmitted: (_) => _sendQuickConsult(),
                               ),
@@ -476,11 +529,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                       height: 18,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Color(0xFF6C63FF),
+                                            ),
                                       ),
                                     )
-                                  : const Icon(Icons.send_rounded, color: Color(0xFF6C63FF)),
-                              onPressed: _isConsulting ? null : _sendQuickConsult,
+                                  : const Icon(
+                                      Icons.send_rounded,
+                                      color: Color(0xFF6C63FF),
+                                    ),
+                              onPressed: _isConsulting
+                                  ? null
+                                  : _sendQuickConsult,
                             ),
                           ],
                         ),
@@ -516,7 +577,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // 4 Pillars Grid
                   Text(
                     '4 Trụ Cột Hướng Nghiệp',
                     style: GoogleFonts.outfit(
@@ -536,9 +596,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       _buildPillarCard(
                         title: 'Holland (Sở thích)',
-                        description: 'Khám phá nhóm sở thích nghề nghiệp (RIASEC)',
+                        description:
+                            'Khám phá nhóm sở thích nghề nghiệp (RIASEC)',
                         icon: Icons.palette_outlined,
-                        gradientColors: [const Color(0xFFFF5252), const Color(0xFFFF7A00)],
+                        gradientColors: [
+                          const Color(0xFFFF5252),
+                          const Color(0xFFFF7A00),
+                        ],
                         isCompleted: hasHolland,
                         onPressed: () => _startAssessment('holland'),
                       ),
@@ -546,7 +610,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Tính Cách (MBTI)',
                         description: 'Xác định MBTI & Big 5 đặc trưng bản thân',
                         icon: Icons.psychology_outlined,
-                        gradientColors: [const Color(0xFF7C4DFF), const Color(0xFFB388FF)],
+                        gradientColors: [
+                          const Color(0xFF7C4DFF),
+                          const Color(0xFFB388FF),
+                        ],
                         isCompleted: hasPersonality,
                         onPressed: () => _startAssessment('personality'),
                       ),
@@ -554,15 +621,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Năng Lực Nhận Thức',
                         description: 'Đánh giá tư duy Logic, Số học & Ngôn ngữ',
                         icon: Icons.lightbulb_outline_rounded,
-                        gradientColors: [const Color(0xFF00E676), const Color(0xFF00B0FF)],
+                        gradientColors: [
+                          const Color(0xFF00E676),
+                          const Color(0xFF00B0FF),
+                        ],
                         isCompleted: hasCognitive,
                         onPressed: () => _startAssessment('cognitive'),
                       ),
                       _buildPillarCard(
                         title: 'Giá Trị Cá Nhân',
-                        description: 'Xác định các giá trị cốt lõi khi làm việc',
+                        description:
+                            'Xác định các giá trị cốt lõi khi làm việc',
                         icon: Icons.star_border_rounded,
-                        gradientColors: [const Color(0xFFFFD600), const Color(0xFFFF8F00)],
+                        gradientColors: [
+                          const Color(0xFFFFD600),
+                          const Color(0xFFFF8F00),
+                        ],
                         isCompleted: hasValues,
                         onPressed: () => _startAssessment('values'),
                       ),
@@ -607,13 +681,13 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isCompleted
-                ? gradientColors[0].withValues(alpha: 0.5)
+                ? gradientColors[0].withOpacity(0.5)
                 : const Color(0xFF2C2C3E),
             width: isCompleted ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -629,14 +703,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: gradientColors[0].withValues(alpha: 0.15),
+                    color: gradientColors[0].withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: gradientColors[0],
-                    size: 24,
-                  ),
+                  child: Icon(icon, color: gradientColors[0], size: 24),
                 ),
                 if (isCompleted)
                   const Icon(
