@@ -13,17 +13,19 @@ class TestHistoryScreen extends StatefulWidget {
 class _TestHistoryScreenState extends State<TestHistoryScreen> {
   final bool _isLoading = false;
 
-  // DỮ LIỆU MẪU ĐÃ ĐƯỢC LÀM SẠCH (KHÔNG LẶP) & THÊM LỘ TRÌNH THĂNG TIẾN
+  // DANH SÁCH DỮ LIỆU ĐÃ ĐƯỢC CHUẨN HÓA (KHÔNG BỊ LẶP, TÍCH HỢP ROADMAP 2 NGÀNH)
   final List<dynamic> _history = [
     {
       'sessionId': 'AI_DISCOVERY_8892',
       'mode': 'discovery',
+      'title': 'Khám Phá (Discovery)',
+      'subtitle': 'Gợi ý: Chuyên gia Trí tuệ Nhân tạo (AI)',
       'isCompleted': true,
       'createdAt': '2026-06-21T21:30:00.000Z',
       'recommendedCareer': 'Chuyên gia Trí tuệ Nhân tạo (AI)',
       'relevanceScore': 4.8,
       'details':
-          'Định hướng: Tập trung vào Machine Learning, Deep Learning và tối ưu thuật toán hệ thống lớn.',
+          'Định hướng: Tập trung vào Machine Learning, Deep Learning và tối ưu thuật toán hệ thống thông minh.',
       'conclusionReason':
           'Dựa trên phân tích: Bạn có tư duy logic thuật toán vượt trội, thích giải quyết bài toán lớn bằng tự động hóa và có khả năng ngồi làm việc sâu (Deep work) với dữ liệu phức tạp.',
       'questions': [
@@ -52,22 +54,22 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
               'Rất hào hứng. Tôi sẽ viết ngay một đoạn script Python để làm sạch và bóc tách insight.',
         },
       ],
-      // PHẦN LỘ TRÌNH THĂNG TIẾN CHO NGÀNH AI
+      // LỘ TRÌNH THĂNG TIẾN: CHUYÊN GIA AI
       'roadmap': [
         {
           'stage': 'Giai đoạn 1: AI Intern / Fresher',
           'desc':
-              'Làm chủ ngôn ngữ Python, nắm vững Toán cao cấp (Đại số tuyến tính, Xác suất thống kê) và các thư viện cơ bản dữ liệu như NumPy, Pandas, Sklearn.',
+              'Làm chủ ngôn ngữ Python, nắm vững Toán cao cấp (Đại số tuyến tính, Xác suất thống kê) và sử dụng thành thạo NumPy, Pandas, Sklearn.',
         },
         {
           'stage': 'Giai đoạn 2: Junior AI Engineer',
           'desc':
-              'Xây dựng và tinh chỉnh các mô hình Học máy (Machine Learning) truyền thống, làm quen với Học sâu (Deep Learning) và xử lý dữ liệu lớn Big Data.',
+              'Xây dựng và tinh chỉnh các mô hình Học máy (Machine Learning) truyền thống, tiếp cận Học sâu (Deep Learning) và xử lý dữ liệu lớn Big Data.',
         },
         {
           'stage': 'Giai đoạn 3: Senior AI Engineer / Data Scientist',
           'desc':
-              'Thiết kế các kiến trúc mạng phức tạp (Transformer, LLMs, Computer Vision), tối ưu hóa hiệu năng phần cứng và triển khai mô hình lên môi trường Production (MLOps).',
+              'Thiết kế các kiến trúc mạng phức tạp (Transformer, LLMs, Computer Vision), tối ưu hóa hiệu năng phần cứng và triển khai mô hình lên Production (MLOps).',
         },
         {
           'stage': 'Giai đoạn 4: AI Tech Lead / Architect',
@@ -84,26 +86,62 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
     {
       'sessionId': 'AI_TARGET_1024',
       'mode': 'target',
-      'targetJob': 'Kỹ sư Phần mềm (Fullstack)',
+      'title': 'Mục Tiêu (Target)',
+      'subtitle': 'Mục tiêu: Kỹ sư Phần mềm (Fullstack)',
       'isCompleted': true,
       'createdAt': '2026-06-18T09:15:00.000Z',
-      'recommendedCareer': 'Kỹ sư Backend / Phát triển Hệ thống',
+      'recommendedCareer': 'Kỹ sư Phần mềm (Fullstack)',
       'relevanceScore': 4.4,
       'details':
-          'Lộ trình: Học thêm về cấu trúc dữ liệu Backend, tối ưu hóa Database và thiết kế các kiến trúc hệ thống phân tán.',
+          'Lộ trình: Học chuyên sâu kiến trúc hệ thống từ Frontend đến Backend, tối ưu hóa Database và triển khai hạ tầng Cloud/DevOps.',
       'conclusionReason':
-          'Kỹ năng nền tảng của bạn rất sát với mục tiêu. Tuy nhiên AI đề xuất bạn nên thiên về nhánh Backend vì bạn mạnh về cấu trúc dữ liệu hơn là trau chuốt UI/UX.',
+          'Kỹ năng nền tảng của bạn rất sát với mục tiêu. Định hướng Fullstack giúp bạn làm chủ toàn bộ vòng đời sản phẩm từ giao diện tương tác đến hệ thống lõi chịu tải cao.',
       'questions': [
         {
           'q':
               'Bạn thích thiết kế giao diện hiển thị cho người dùng xem, hay thích thiết kế cơ sở dữ liệu chạy ngầm bên dưới?',
           'a':
-              'Tôi thích thiết kế cơ sở dữ liệu, tối ưu hóa API để xử lý hàng triệu request không bị sập.',
+              'Tôi thích thiết kế cơ sở dữ liệu, tối ưu hóa các đầu API để hệ thống xử lý mượt mà và chịu tải tốt.',
         },
         {
-          'q': 'Tầm nhìn nghề nghiệp 3 năm tới của bạn là gì?',
+          'q': 'Tầm nhìn nghề nghiệp trong 3 năm tới của bạn là gì?',
           'a':
-              'Trở thành một Tech Lead có khả năng thiết kế hệ thống có tính mở rộng cao và chịu tải tốt.',
+              'Trở thành một Fullstack Senior cứng có khả năng độc lập thiết kế, triển khai giải pháp phần mềm hoàn chỉnh.',
+        },
+        {
+          'q':
+              'Khi lựa chọn một framework/công nghệ mới cho dự án, tiêu chí nào là quan trọng nhất với bạn?',
+          'a':
+              'Sự phù hợp với bài toán, hiệu năng vận hành, độ chín của cộng đồng hỗ trợ và khả năng bảo trì lâu dài.',
+        },
+      ],
+      // LỘ TRÌNH THĂNG TIẾN MỚI: KỸ SƯ PHẦN MỀM FULLSTACK
+      'roadmap': [
+        {
+          'stage': 'Giai đoạn 1: Fullstack Intern / Fresher',
+          'desc':
+              'Làm chủ HTML5, CSS3, JavaScript vững vàng. Học một framework Frontend (React/Next.js) song song với Node.js (Express) và cơ sở dữ liệu SQL cơ bản.',
+        },
+        {
+          'stage': 'Giai đoạn 2: Junior Fullstack Developer',
+          'desc':
+              'Phát triển độc lập các tính năng từ giao diện đến API. Làm việc thuần thục với cơ sở dữ liệu NoSQL (MongoDB), thiết kế chuẩn RESTful API và quản lý mã nguồn qua Git.',
+        },
+        {
+          'stage': 'Giai đoạn 3: Senior Fullstack Developer',
+          'desc':
+              'Tối ưu hóa hiệu năng ứng dụng (Caching với Redis, Tải bất đồng bộ). Làm chủ quy trình đóng gói container với Docker, cấu hình CI/CD và quản lý hạ tầng đám mây (AWS/GCP).',
+        },
+        {
+          'stage': 'Giai đoạn 4: Fullstack Tech Lead / Solution Architect',
+          'desc':
+              'Chịu trách nhiệm thiết kế toàn bộ kiến trúc hệ thống (Microservices, distributed system), lựa chọn stack công nghệ, giải quyết bài toán bảo mật và chịu tải lớn (High Availability).',
+        },
+        {
+          'stage':
+              'Giai đoạn 5: Chief Technology Officer (CTO) / Technical Director',
+          'desc':
+              'Quản lý và định hướng chiến lược công nghệ dài hạn cho doanh nghiệp, tối ưu hóa quy trình kỹ thuật phần mềm và đồng bộ năng lực công nghệ với mục tiêu kinh doanh.',
         },
       ],
     },
@@ -121,7 +159,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
     return '$hour:$minute - $day/$month/$year';
   }
 
-  // BẢNG CHI TIẾT KHI BẤM VÀO THẺ (HIỆN CÂU TRẢ LỜI + ĐÁP ÁN CHỐT + LỘ TRÌNH)
+  // BẢNG CHI TIẾT KHI BẤM VÀO THẺ (HIỆN CÂU TRẢ LỜI + ĐÁP ÁN CHỐT + LỘ TRÌNH THĂNG TIẾN)
   void _viewSessionDetails(dynamic session) {
     final isDiscovery = session['mode'] == 'discovery';
     final questions = session['questions'] as List<dynamic>? ?? [];
@@ -194,7 +232,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Danh sách câu hỏi và câu trả lời
+                      // Rải danh sách câu hỏi và câu trả lời
                       ...questions.asMap().entries.map((entry) {
                         final index = entry.key + 1;
                         final item = entry.value;
@@ -222,17 +260,15 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF00F5A0,
-                                  ).withOpacity(0.08),
+                                  color: color.withOpacity(0.08),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.subdirectory_arrow_right_rounded,
-                                      color: Color(0xFF00F5A0),
+                                      color: color,
                                       size: 16,
                                     ),
                                     const SizedBox(width: 8),
@@ -241,7 +277,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                         item['a'],
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
-                                          color: const Color(0xFF00F5A0),
+                                          color: color,
                                           fontWeight: FontWeight.w500,
                                           height: 1.3,
                                         ),
@@ -261,10 +297,10 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00F5A0).withOpacity(0.1),
+                          color: color.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFF00F5A0).withOpacity(0.4),
+                            color: color.withOpacity(0.4),
                             width: 1.5,
                           ),
                         ),
@@ -273,9 +309,9 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.auto_awesome_rounded,
-                                  color: Color(0xFF00F5A0),
+                                  color: color,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
@@ -284,7 +320,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                   style: GoogleFonts.outfit(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF00F5A0),
+                                    color: color,
                                   ),
                                 ),
                               ],
@@ -311,7 +347,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         ),
                       ),
 
-                      // PHẦN MỚI: HIỂN THỊ LỘ TRÌNH THĂNG TIẾN NẾU CÓ DỮ LIỆU
+                      // KHỐI LỘ TRÌNH THĂNG TIẾN (ROADMAP) DÙNG CHUNG CHO CẢ 2 PHÂN HỆ
                       if (roadmap != null) ...[
                         const SizedBox(height: 28),
                         Text(
@@ -440,7 +476,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                 borderRadius: BorderRadius.circular(20),
                 onTap: () => _viewSessionDetails(
                   session,
-                ), // Mở modal chi tiết dù có questions hay không
+                ), // Mở modal chi tiết mượt mà cho mọi thẻ
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
