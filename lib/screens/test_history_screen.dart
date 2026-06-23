@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/api_service.dart';
 
 class TestHistoryScreen extends StatefulWidget {
   final String userId;
@@ -12,103 +11,129 @@ class TestHistoryScreen extends StatefulWidget {
 }
 
 class _TestHistoryScreenState extends State<TestHistoryScreen> {
-  bool _isLoading = true;
-  String? _errorMessage;
-  List<dynamic> _history = [];
+  final bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchHistory();
-  }
+  // DỮ LIỆU MẪU ĐÃ ĐƯỢC LÀM SẠCH (KHÔNG LẶP) & THÊM LỘ TRÌNH THĂNG TIẾN
+  final List<dynamic> _history = [
+    {
+      'sessionId': 'AI_DISCOVERY_8892',
+      'mode': 'discovery',
+      'isCompleted': true,
+      'createdAt': '2026-06-21T21:30:00.000Z',
+      'recommendedCareer': 'Chuyên gia Trí tuệ Nhân tạo (AI)',
+      'relevanceScore': 4.8,
+      'details':
+          'Định hướng: Tập trung vào Machine Learning, Deep Learning và tối ưu thuật toán hệ thống lớn.',
+      'conclusionReason':
+          'Dựa trên phân tích: Bạn có tư duy logic thuật toán vượt trội, thích giải quyết bài toán lớn bằng tự động hóa và có khả năng ngồi làm việc sâu (Deep work) với dữ liệu phức tạp.',
+      'questions': [
+        {
+          'q':
+              'Khi đối mặt với một vấn đề phức tạp trong công việc, cách tiếp cận đầu tiên của bạn là gì?',
+          'a':
+              'Tìm kiếm các quy luật, bóc tách thành các biến số và xây dựng một quy trình giải quyết tự động.',
+        },
+        {
+          'q':
+              'Bạn cảm thấy kiệt sức và mất năng lượng nhất khi phải làm những đầu việc có tính chất nào?',
+          'a':
+              'Các công việc lặp đi lặp lại thủ công theo lối mòn mà không được phép tối ưu hay cải tiến.',
+        },
+        {
+          'q':
+              'Môi trường làm việc khiến bạn phát huy 200% công suất trông như thế nào?',
+          'a':
+              'Ít họp hành vô bổ, tôn trọng sự yên tĩnh, được trang bị công cụ phần cứng/phần mềm mạnh nhất.',
+        },
+        {
+          'q':
+              'Nếu được giao một tệp dữ liệu gồm 100.000 dòng lộn xộn, phản ứng của bạn là:',
+          'a':
+              'Rất hào hứng. Tôi sẽ viết ngay một đoạn script Python để làm sạch và bóc tách insight.',
+        },
+      ],
+      // PHẦN LỘ TRÌNH THĂNG TIẾN CHO NGÀNH AI
+      'roadmap': [
+        {
+          'stage': 'Giai đoạn 1: AI Intern / Fresher',
+          'desc':
+              'Làm chủ ngôn ngữ Python, nắm vững Toán cao cấp (Đại số tuyến tính, Xác suất thống kê) và các thư viện cơ bản dữ liệu như NumPy, Pandas, Sklearn.',
+        },
+        {
+          'stage': 'Giai đoạn 2: Junior AI Engineer',
+          'desc':
+              'Xây dựng và tinh chỉnh các mô hình Học máy (Machine Learning) truyền thống, làm quen với Học sâu (Deep Learning) và xử lý dữ liệu lớn Big Data.',
+        },
+        {
+          'stage': 'Giai đoạn 3: Senior AI Engineer / Data Scientist',
+          'desc':
+              'Thiết kế các kiến trúc mạng phức tạp (Transformer, LLMs, Computer Vision), tối ưu hóa hiệu năng phần cứng và triển khai mô hình lên môi trường Production (MLOps).',
+        },
+        {
+          'stage': 'Giai đoạn 4: AI Tech Lead / Architect',
+          'desc':
+              'Dẫn dắt đội ngũ kỹ thuật, định hình kiến trúc hệ thống AI tổng thể cho doanh nghiệp và kết nối bài toán kinh doanh thực tế với giải pháp AI.',
+        },
+        {
+          'stage': 'Giai đoạn 5: Head of AI / Chief Data Officer (CDO)',
+          'desc':
+              'Hoạch định chiến lược công nghệ AI toàn diện cho tổ chức, nghiên cứu và phát triển các giải pháp đón đầu xu hướng toàn cầu.',
+        },
+      ],
+    },
+    {
+      'sessionId': 'AI_TARGET_1024',
+      'mode': 'target',
+      'targetJob': 'Kỹ sư Phần mềm (Fullstack)',
+      'isCompleted': true,
+      'createdAt': '2026-06-18T09:15:00.000Z',
+      'recommendedCareer': 'Kỹ sư Backend / Phát triển Hệ thống',
+      'relevanceScore': 4.4,
+      'details':
+          'Lộ trình: Học thêm về cấu trúc dữ liệu Backend, tối ưu hóa Database và thiết kế các kiến trúc hệ thống phân tán.',
+      'conclusionReason':
+          'Kỹ năng nền tảng của bạn rất sát với mục tiêu. Tuy nhiên AI đề xuất bạn nên thiên về nhánh Backend vì bạn mạnh về cấu trúc dữ liệu hơn là trau chuốt UI/UX.',
+      'questions': [
+        {
+          'q':
+              'Bạn thích thiết kế giao diện hiển thị cho người dùng xem, hay thích thiết kế cơ sở dữ liệu chạy ngầm bên dưới?',
+          'a':
+              'Tôi thích thiết kế cơ sở dữ liệu, tối ưu hóa API để xử lý hàng triệu request không bị sập.',
+        },
+        {
+          'q': 'Tầm nhìn nghề nghiệp 3 năm tới của bạn là gì?',
+          'a':
+              'Trở thành một Tech Lead có khả năng thiết kế hệ thống có tính mở rộng cao và chịu tải tốt.',
+        },
+      ],
+    },
+  ];
 
-  void _fetchHistory() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final res = await ApiService.getHistory(widget.userId);
-
-    setState(() {
-      _isLoading = false;
-      if (res['success'] == true) {
-        _history = res['history'] ?? [];
-        // Sắp xếp theo ngày gần nhất (createdAt) giảm dần
-        _history.sort((a, b) {
-          final aDate = DateTime.tryParse(a['createdAt'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final bDate = DateTime.tryParse(b['createdAt'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-          return bDate.compareTo(aDate);
-        });
-      } else {
-        _errorMessage = res['message'] ?? 'Không thể tải lịch sử làm bài. Vui lòng thử lại sau.';
-      }
-    });
-  }
-
-  String _formatDate(String? dateStr) {
+  String _formatDateTime(String? dateStr) {
     if (dateStr == null) return 'Gần đây';
-    final dt = DateTime.tryParse(dateStr);
+    final dt = DateTime.tryParse(dateStr)?.toLocal();
     if (dt == null) return 'Gần đây';
+    final hour = dt.hour.toString().padLeft(2, '0');
+    final minute = dt.minute.toString().padLeft(2, '0');
     final day = dt.day.toString().padLeft(2, '0');
     final month = dt.month.toString().padLeft(2, '0');
     final year = dt.year;
-    return '$day/$month/$year';
+    return '$hour:$minute - $day/$month/$year';
   }
 
-  String _getTestType(dynamic session) {
-    if (session['testType'] != null) {
-      return session['testType'].toString().toLowerCase();
-    }
+  // BẢNG CHI TIẾT KHI BẤM VÀO THẺ (HIỆN CÂU TRẢ LỜI + ĐÁP ÁN CHỐT + LỘ TRÌNH)
+  void _viewSessionDetails(dynamic session) {
+    final isDiscovery = session['mode'] == 'discovery';
     final questions = session['questions'] as List<dynamic>? ?? [];
-    if (questions.isNotEmpty && questions[0]['testType'] != null) {
-      return questions[0]['testType'].toString().toLowerCase();
-    }
-    // Thử đoán từ testName
-    final testName = (session['testName'] ?? '').toString().toLowerCase();
-    if (testName.contains('holland')) return 'holland';
-    if (testName.contains('personality') || testName.contains('tính cách') || testName.contains('mbti')) return 'personality';
-    if (testName.contains('cognitive') || testName.contains('năng lực')) return 'cognitive';
-    if (testName.contains('values') || testName.contains('giá trị')) return 'values';
-    if (testName.contains('khảo sát động') || testName.contains('dynamic')) return 'dynamic_survey';
-    return 'career';
-  }
+    final recommendedCareer = session['recommendedCareer'] ?? 'Chưa xác định';
+    final reason =
+        session['conclusionReason'] ??
+        'Hệ thống AI đã tổng hợp các tham số từ câu trả lời của bạn.';
+    final roadmap = session['roadmap'] as List<dynamic>?;
+    final color = isDiscovery
+        ? const Color(0xFF00F5A0)
+        : const Color(0xFF7C4DFF);
 
-  IconData _getIconForType(String type) {
-    switch (type) {
-      case 'holland':
-        return Icons.palette_outlined;
-      case 'personality':
-        return Icons.psychology_outlined;
-      case 'cognitive':
-        return Icons.lightbulb_outline_rounded;
-      case 'values':
-        return Icons.star_border_rounded;
-      case 'dynamic_survey':
-        return Icons.psychology_alt_rounded;
-      default:
-        return Icons.assessment_rounded;
-    }
-  }
-
-  Color _getColorForType(String type) {
-    switch (type) {
-      case 'holland':
-        return const Color(0xFFFF5252);
-      case 'personality':
-        return const Color(0xFF7C4DFF);
-      case 'cognitive':
-        return const Color(0xFF00E676);
-      case 'values':
-        return const Color(0xFFFFD600);
-      case 'dynamic_survey':
-        return const Color(0xFF00F2FE);
-      default:
-        return const Color(0xFF6C63FF);
-    }
-  }
-
-  void _viewTestDetails(dynamic session) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -117,11 +142,10 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        final questions = session['questions'] as List<dynamic>? ?? [];
         return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          maxChildSize: 0.9,
-          minChildSize: 0.4,
+          initialChildSize: 0.75,
+          maxChildSize: 0.92,
+          minChildSize: 0.5,
           expand: false,
           builder: (context, scrollController) {
             return Column(
@@ -136,21 +160,19 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(
-                    session['testName'] ?? 'Chi tiết bài trắc nghiệm',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                Text(
+                  isDiscovery
+                      ? 'Chi Tiết Phiên Khám Phá AI'
+                      : 'Chi Tiết Kiểm Tra Mục Tiêu',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
-                  'Mã phiên: ${session['sessionId']}',
+                  'Session ID: ${session['sessionId']}',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: const Color(0xFF888B9B),
@@ -158,62 +180,209 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                 ),
                 const Divider(color: Color(0xFF2C2C3E), height: 24),
                 Expanded(
-                  child: ListView.builder(
+                  child: ListView(
                     controller: scrollController,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: questions.length,
-                    itemBuilder: (context, index) {
-                      final q = questions[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
+                    children: [
+                      Text(
+                        'CÂU TRẢ LỜI CỦA BẠN (${questions.length})',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF5E6072),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Danh sách câu hỏi và câu trả lời
+                      ...questions.asMap().entries.map((entry) {
+                        final index = entry.key + 1;
+                        final item = entry.value;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 14),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F0F13),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF2C2C3E)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Câu $index: ${item['q']}',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF00F5A0,
+                                  ).withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(
+                                      Icons.subdirectory_arrow_right_rounded,
+                                      color: Color(0xFF00F5A0),
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        item['a'],
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          color: const Color(0xFF00F5A0),
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.3,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: 8),
+
+                      // KHỐI ĐÁP ÁN DƯỚI CÙNG (FINAL ANSWER BOX)
+                      Container(
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F0F13),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF2C2C3E)),
+                          color: const Color(0xFF00F5A0).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF00F5A0).withOpacity(0.4),
+                            width: 1.5,
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Câu ${index + 1}: ${q['questionText']}',
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
                             Row(
                               children: [
-                                Text(
-                                  'Đã trả lời: ',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: const Color(0xFF888B9B),
-                                  ),
+                                const Icon(
+                                  Icons.auto_awesome_rounded,
+                                  color: Color(0xFF00F5A0),
+                                  size: 20,
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF6C63FF).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    q['userAnswer'] ?? 'Chưa trả lời',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF6C63FF),
-                                    ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'ĐÁP ÁN HƯỚNG NGHIỆP PHÙ HỢP NHẤT',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF00F5A0),
                                   ),
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 12),
+                            Text(
+                              recommendedCareer,
+                              style: GoogleFonts.outfit(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              reason,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: const Color(0xFFC3C5E0),
+                                height: 1.4,
+                              ),
+                            ),
                           ],
                         ),
-                      );
-                    },
+                      ),
+
+                      // PHẦN MỚI: HIỂN THỊ LỘ TRÌNH THĂNG TIẾN NẾU CÓ DỮ LIỆU
+                      if (roadmap != null) ...[
+                        const SizedBox(height: 28),
+                        Text(
+                          'LỘ TRÌNH THĂNG TIẾN KHUYẾN NGHỊ',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF5E6072),
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ...roadmap.map((step) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F0F13),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF2C2C3E),
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: color.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.trending_up_rounded,
+                                    color: color,
+                                    size: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        step['stage'],
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        step['desc'],
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: const Color(0xFFC3C5E0),
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                      const SizedBox(height: 30),
+                    ],
                   ),
                 ),
               ],
@@ -232,245 +401,121 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
-          'Lịch Sử Làm Bài',
+          'Lịch Sử Phiên Hướng Nghiệp',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-            onPressed: _fetchHistory,
-          ),
-        ],
       ),
-      body: Stack(
-        children: [
-          // Background Glows
-          Positioned(
-            top: 20,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
+      body: SafeArea(
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          itemCount: _history.length,
+          itemBuilder: (context, index) {
+            final session = _history[index];
+            final isDiscovery = session['mode'] == 'discovery';
+            final title =
+                session['title'] ??
+                (isDiscovery ? 'Khám Phá (Discovery)' : 'Mục Tiêu (Target)');
+            final subtitle =
+                session['subtitle'] ??
+                (isDiscovery
+                    ? 'Gợi ý: ${session['recommendedCareer']}'
+                    : 'Mục tiêu: ${session['targetJob']}');
+            final details = session['details'];
+            final color = isDiscovery
+                ? const Color(0xFF00F5A0)
+                : const Color(0xFF7C4DFF);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.08),
+                color: const Color(0xFF191922),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF2C2C3E)),
               ),
-            ),
-          ),
-
-          SafeArea(
-            child: _buildBody(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
-        ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline_rounded, size: 48, color: Colors.redAccent),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(color: const Color(0xFF888B9B), fontSize: 14),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _fetchHistory,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6C63FF),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(
-                  'Thử lại',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_history.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.history_toggle_off_rounded, size: 48, color: Color(0xFF5E6072)),
-            const SizedBox(height: 16),
-            Text(
-              'Chưa có lịch sử làm bài',
-              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF888B9B)),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-          child: Text(
-            '${_history.length} bài đã làm',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: const Color(0xFF888B9B),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            itemCount: _history.length,
-            itemBuilder: (context, index) {
-              final session = _history[index];
-              final testName = session['testName'] ?? 'Bài test hướng nghiệp';
-              final isCompleted = session['isCompleted'] ?? true;
-              final questions = session['questions'] as List<dynamic>? ?? [];
-              final questionsCount = questions.length;
-              final dateStr = _formatDate(session['createdAt']);
-              
-              final type = _getTestType(session);
-              final pillarIcon = _getIconForType(type);
-              final pillarColor = _getColorForType(type);
-              
-              final score = session['score'] != null ? double.tryParse(session['score'].toString()) : null;
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF191922),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF2C2C3E)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: pillarColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        pillarIcon,
-                        color: pillarColor,
-                        size: 24,
-                      ),
-                    ),
-                    title: Text(
-                      testName,
-                      style: GoogleFonts.outfit(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Row(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => _viewSessionDetails(
+                  session,
+                ), // Mở modal chi tiết dù có questions hay không
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            '$questionsCount câu hỏi',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: const Color(0xFF888B9B),
+                          Icon(
+                            isDiscovery
+                                ? Icons.explore_rounded
+                                : Icons.track_changes_rounded,
+                            color: color,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  subtitle,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: color,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 8),
                           Text(
-                            '•',
-                            style: TextStyle(color: const Color(0xFF5E6072), fontSize: 11),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            isCompleted ? 'Hoàn thành' : 'Chưa xong',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: isCompleted ? Colors.green : Colors.amber,
+                            '${session['relevanceScore']}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '•',
-                            style: TextStyle(color: const Color(0xFF5E6072), fontSize: 11),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            dateStr,
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: const Color(0xFF5E6072),
+                              color: color,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (score != null) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: (score > 3 ? const Color(0xFF00F5A0) : const Color(0xFFFFB74D)).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              score.toStringAsFixed(1),
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: score > 3 ? const Color(0xFF00F5A0) : const Color(0xFFFFB74D),
-                              ),
-                            ),
+                      if (details != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          details,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.white70,
+                            fontStyle: FontStyle.italic,
                           ),
-                          const SizedBox(width: 8),
-                        ],
-                        const Icon(Icons.chevron_right_rounded, color: Color(0xFF888B9B)),
+                        ),
                       ],
-                    ),
-                    onTap: () => _viewTestDetails(session),
+                      const SizedBox(height: 14),
+                      const Divider(color: Color(0xFF2C2C3E)),
+                      Text(
+                        _formatDateTime(session['createdAt']),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF5E6072),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
-      ],
+      ),
     );
   }
 }

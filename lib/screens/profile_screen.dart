@@ -174,9 +174,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF6C63FF).withValues(alpha: 0.15),
+                                    color: const Color(
+                                      0xFF6C63FF,
+                                    ).withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -237,16 +242,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: Colors.white,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
                         'Hồ Sơ & Lịch Sử',
-                        style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       auth.isAuthenticated
                           ? IconButton(
-                              icon: Icon(_isEditing ? Icons.close_rounded : Icons.edit_rounded, color: Colors.white),
+                              icon: Icon(
+                                _isEditing
+                                    ? Icons.close_rounded
+                                    : Icons.edit_rounded,
+                                color: Colors.white,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   if (_isEditing) {
@@ -267,17 +284,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         CircleAvatar(
                           radius: 40,
-                          backgroundColor: const Color(0xFF6C63FF).withValues(alpha: 0.1),
-                          child: const Icon(Icons.person_rounded, size: 40, color: Color(0xFF6C63FF)),
+                          backgroundColor: const Color(
+                            0xFF6C63FF,
+                          ).withValues(alpha: 0.1),
+                          child: const Icon(
+                            Icons.person_rounded,
+                            size: 40,
+                            color: Color(0xFF6C63FF),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          auth.fullName.isNotEmpty ? auth.fullName : 'Thành viên',
-                          style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                          auth.fullName.isNotEmpty
+                              ? auth.fullName
+                              : 'Thành viên',
+                          style: GoogleFonts.outfit(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                         Text(
                           auth.currentUser?['email'] ?? '',
-                          style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF888B9B)),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: const Color(0xFF888B9B),
+                          ),
                         ),
                       ],
                     ),
@@ -311,30 +343,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             dropdownColor: const Color(0xFF191922),
                             decoration: InputDecoration(
                               labelText: 'Trình độ học vấn',
-                              labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
-                              prefixIcon: const Icon(Icons.school_outlined, color: Color(0xFF7A7C93)),
+                              labelStyle: const TextStyle(
+                                color: Color(0xFF7A7C93),
+                                fontSize: 13,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.school_outlined,
+                                color: Color(0xFF7A7C93),
+                              ),
                               filled: true,
                               fillColor: const Color(0xFF191922),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF2C2C3E),
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(color: Color(0xFF6C63FF)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF6C63FF),
+                                ),
                               ),
                             ),
                             items: ['Cấp 2', 'Cấp 3', 'Đại học', 'Sau Đại học']
-                                .map((lvl) => DropdownMenuItem(value: lvl, child: Text(lvl)))
+                                .map(
+                                  (lvl) => DropdownMenuItem(
+                                    value: lvl,
+                                    child: Text(lvl),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null) setState(() => _educationLevel = val);
+                              if (val != null)
+                                setState(() => _educationLevel = val);
                             },
                           )
                         else
                           _buildInputField(
                             label: 'Trình độ học vấn',
-                            controller: TextEditingController(text: _educationLevel),
+                            controller: TextEditingController(
+                              text: _educationLevel,
+                            ),
                             enabled: false,
                             icon: Icons.school_outlined,
                           ),
@@ -352,11 +402,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF6C63FF),
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
                             child: Text(
                               'Lưu thay đổi',
-                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],
@@ -371,12 +426,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         'Lịch Sử Làm Bài',
-                        style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       if (!_isLoadingHistory)
                         Text(
                           '${_history.length} bài đã làm',
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF888B9B)),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: const Color(0xFF888B9B),
+                          ),
                         ),
                     ],
                   ),
@@ -421,7 +483,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderSide: const BorderSide(color: Color(0xFF6C63FF)),
         ),
       ),
-      validator: (val) => val == null || val.trim().isEmpty ? 'Không được để trống' : null,
+      validator: (val) =>
+          val == null || val.trim().isEmpty ? 'Không được để trống' : null,
     );
   }
 
@@ -457,11 +520,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Column(
           children: [
-            const Icon(Icons.history_toggle_off_rounded, size: 40, color: Color(0xFF5E6072)),
+            const Icon(
+              Icons.history_toggle_off_rounded,
+              size: 40,
+              color: Color(0xFF5E6072),
+            ),
             const SizedBox(height: 12),
             Text(
               'Chưa có lịch sử làm bài',
-              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF888B9B)),
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF888B9B),
+              ),
             ),
           ],
         ),
@@ -471,8 +542,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Sắp xếp theo ngày gần nhất và lấy tối đa 3 mục preview
     final sortedHistory = List.from(_history);
     sortedHistory.sort((a, b) {
-      final aDate = DateTime.tryParse(a['createdAt'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bDate = DateTime.tryParse(b['createdAt'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final aDate =
+          DateTime.tryParse(a['createdAt'] ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      final bDate =
+          DateTime.tryParse(b['createdAt'] ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
       return bDate.compareTo(aDate);
     });
     final previewHistory = sortedHistory.take(3).toList();
@@ -491,9 +566,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final questions = session['questions'] as List<dynamic>? ?? [];
             final questionsCount = questions.length;
             final dateStr = _formatDate(session['createdAt']);
-            
+
             // Lấy score và xác định màu của badge score
-            final score = session['score'] != null ? double.tryParse(session['score'].toString()) : null;
+            final score = session['score'] != null
+                ? double.tryParse(session['score'].toString())
+                : null;
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -503,10 +580,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: Border.all(color: const Color(0xFF2C2C3E)),
               ),
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 leading: CircleAvatar(
-                  backgroundColor: const Color(0xFF6C63FF).withValues(alpha: 0.1),
-                  child: const Icon(Icons.assessment_rounded, color: Color(0xFF6C63FF)),
+                  backgroundColor: const Color(
+                    0xFF6C63FF,
+                  ).withValues(alpha: 0.1),
+                  child: const Icon(
+                    Icons.assessment_rounded,
+                    color: Color(0xFF6C63FF),
+                  ),
                 ),
                 title: Text(
                   testName,
@@ -544,9 +629,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     if (score != null) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: (score > 3 ? const Color(0xFF00F5A0) : const Color(0xFFFFB74D)).withValues(alpha: 0.15),
+                          color:
+                              (score > 3
+                                      ? const Color(0xFF00F5A0)
+                                      : const Color(0xFFFFB74D))
+                                  .withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -554,13 +646,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: score > 3 ? const Color(0xFF00F5A0) : const Color(0xFFFFB74D),
+                            color: score > 3
+                                ? const Color(0xFF00F5A0)
+                                : const Color(0xFFFFB74D),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                     ],
-                    const Icon(Icons.chevron_right_rounded, color: Color(0xFF888B9B)),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF888B9B),
+                    ),
                   ],
                 ),
                 onTap: () => _viewTestDetails(session),

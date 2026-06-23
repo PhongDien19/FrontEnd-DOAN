@@ -95,17 +95,21 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
 
     if (result['success'] == true) {
       setState(() {
-        _sessionId = result['sessionId'] ?? ApiService.generateSessionId(widget.testType);
+        _sessionId =
+            result['sessionId'] ??
+            ApiService.generateSessionId(widget.testType);
         final testData = result['test'] ?? result;
         _testName = testData['testName'] ?? _testTitle;
         _questions = testData['questions'] ?? [];
-        _options = testData['options'] ?? [
-          "Hoàn toàn không đúng",
-          "Không đúng",
-          "Khó nói",
-          "Đúng",
-          "Hoàn toàn đúng"
-        ];
+        _options =
+            testData['options'] ??
+            [
+              "Hoàn toàn không đúng",
+              "Không đúng",
+              "Khó nói",
+              "Đúng",
+              "Hoàn toàn đúng",
+            ];
         _currentQuestionIndex = 0;
         _answers.clear();
         _step = 2;
@@ -117,7 +121,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? 'Lỗi sinh câu hỏi. Vui lòng thử lại!'),
+          content: Text(
+            result['message'] ?? 'Lỗi sinh câu hỏi. Vui lòng thử lại!',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -162,7 +168,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         final q = _questions[idx];
         final qText = q['question'] ?? q['questionText'] ?? '';
         final ans = _answers[idx] ?? '';
-        
+
         final Map<String, dynamic> qMap = {
           'questionText': qText,
           'userAnswer': ans.toString(),
@@ -230,7 +236,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(evalResult['message'] ?? 'Lỗi chấm bài. Vui lòng gửi lại!'),
+          content: Text(
+            evalResult['message'] ?? 'Lỗi chấm bài. Vui lòng gửi lại!',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -257,15 +265,27 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 context: context,
                 builder: (context) => AlertDialog(
                   backgroundColor: const Color(0xFF191922),
-                  title: Text('Hủy bỏ bài test?', style: GoogleFonts.outfit(color: Colors.white)),
-                  content: Text('Mọi câu trả lời của bạn sẽ không được lưu.', style: GoogleFonts.inter(color: const Color(0xFF888B9B))),
+                  title: Text(
+                    'Hủy bỏ bài test?',
+                    style: GoogleFonts.outfit(color: Colors.white),
+                  ),
+                  content: Text(
+                    'Mọi câu trả lời của bạn sẽ không được lưu.',
+                    style: GoogleFonts.inter(color: const Color(0xFF888B9B)),
+                  ),
                   actions: [
                     TextButton(
-                      child: const Text('Tiếp tục làm', style: TextStyle(color: Color(0xFF6C63FF))),
+                      child: const Text(
+                        'Tiếp tục làm',
+                        style: TextStyle(color: Color(0xFF6C63FF)),
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                     TextButton(
-                      child: const Text('Thoát', style: TextStyle(color: Colors.redAccent)),
+                      child: const Text(
+                        'Thoát',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
                       onPressed: () {
                         Navigator.pop(context);
                         Navigator.pop(context);
@@ -312,11 +332,15 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       case 0:
         return _buildContextSetupForm();
       case 1:
-        return _buildLoadingState('AI đang thiết kế các câu hỏi cá nhân hóa dành riêng cho bạn...');
+        return _buildLoadingState(
+          'AI đang thiết kế các câu hỏi cá nhân hóa dành riêng cho bạn...',
+        );
       case 2:
         return _buildQuestionCard();
       case 3:
-        return _buildLoadingState('AI đang chấm điểm và phân tích kết quả trắc nghiệm...');
+        return _buildLoadingState(
+          'AI đang chấm điểm và phân tích kết quả trắc nghiệm...',
+        );
       case 4:
         return _buildClaimPrompt();
       default:
@@ -341,17 +365,29 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.tune_rounded, size: 40, color: Color(0xFF00F2FE)),
+                  const Icon(
+                    Icons.tune_rounded,
+                    size: 40,
+                    color: Color(0xFF00F2FE),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Cá Nhân Hóa Đánh Giá',
-                    style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'AI sẽ tự động điều chỉnh bộ câu hỏi dựa theo công việc mong muốn, độ tuổi và sở thích học tập để cho kết quả chính xác nhất.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF888B9B), height: 1.4),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF888B9B),
+                      height: 1.4,
+                    ),
                   ),
                 ],
               ),
@@ -364,9 +400,15 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Công việc mục tiêu / Ngành mong muốn',
-                labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
+                labelStyle: const TextStyle(
+                  color: Color(0xFF7A7C93),
+                  fontSize: 13,
+                ),
                 hintText: 'Ví dụ: Lập trình viên, Giáo viên, Thiết kế đồ họa',
-                hintStyle: const TextStyle(color: Color(0xFF5E6072), fontSize: 13),
+                hintStyle: const TextStyle(
+                  color: Color(0xFF5E6072),
+                  fontSize: 13,
+                ),
                 filled: true,
                 fillColor: const Color(0xFF191922),
                 enabledBorder: OutlineInputBorder(
@@ -378,7 +420,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   borderSide: const BorderSide(color: Color(0xFF6C63FF)),
                 ),
               ),
-              validator: (val) => val == null || val.trim().isEmpty ? 'Vui lòng nhập công việc mục tiêu' : null,
+              validator: (val) => val == null || val.trim().isEmpty
+                  ? 'Vui lòng nhập công việc mục tiêu'
+                  : null,
             ),
             const SizedBox(height: 20),
 
@@ -389,7 +433,10 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Tuổi của bạn',
-                labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
+                labelStyle: const TextStyle(
+                  color: Color(0xFF7A7C93),
+                  fontSize: 13,
+                ),
                 filled: true,
                 fillColor: const Color(0xFF191922),
                 enabledBorder: OutlineInputBorder(
@@ -404,7 +451,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               validator: (val) {
                 if (val == null || val.isEmpty) return 'Vui lòng nhập độ tuổi';
                 final parsed = int.tryParse(val);
-                if (parsed == null || parsed <= 0 || parsed > 100) return 'Tuổi không hợp lệ';
+                if (parsed == null || parsed <= 0 || parsed > 100)
+                  return 'Tuổi không hợp lệ';
                 return null;
               },
             ),
@@ -417,7 +465,10 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               dropdownColor: const Color(0xFF191922),
               decoration: InputDecoration(
                 labelText: 'Trình độ học vấn',
-                labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
+                labelStyle: const TextStyle(
+                  color: Color(0xFF7A7C93),
+                  fontSize: 13,
+                ),
                 filled: true,
                 fillColor: const Color(0xFF191922),
                 enabledBorder: OutlineInputBorder(
@@ -444,9 +495,15 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Sở thích & Điểm mạnh cá nhân',
-                labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
+                labelStyle: const TextStyle(
+                  color: Color(0xFF7A7C93),
+                  fontSize: 13,
+                ),
                 hintText: 'Ví dụ: Đọc sách, Chơi game, Lắp ráp mô hình',
-                hintStyle: const TextStyle(color: Color(0xFF5E6072), fontSize: 13),
+                hintStyle: const TextStyle(
+                  color: Color(0xFF5E6072),
+                  fontSize: 13,
+                ),
                 filled: true,
                 fillColor: const Color(0xFF191922),
                 enabledBorder: OutlineInputBorder(
@@ -466,12 +523,18 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               onPressed: _generateQuestions,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 backgroundColor: const Color(0xFF6C63FF),
               ),
               child: Text(
                 'Bắt đầu làm bài',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
@@ -502,13 +565,21 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           const SizedBox(height: 30),
           Text(
             'Đang kết nối AI...',
-            style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            style: GoogleFonts.outfit(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             loadingText,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF888B9B), height: 1.4),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: const Color(0xFF888B9B),
+              height: 1.4,
+            ),
           ),
         ],
       ),
@@ -520,7 +591,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     if (_questions.isEmpty) return const SizedBox.shrink();
 
     final currentQuestion = _questions[_currentQuestionIndex];
-    final qText = currentQuestion['question'] ?? currentQuestion['questionText'] ?? '';
+    final qText =
+        currentQuestion['question'] ?? currentQuestion['questionText'] ?? '';
     final progress = (_currentQuestionIndex + 1) / _questions.length;
 
     return Column(
@@ -532,11 +604,17 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           children: [
             Text(
               'Câu hỏi ${_currentQuestionIndex + 1}/${_questions.length}',
-              style: GoogleFonts.outfit(color: const Color(0xFF888B9B), fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF888B9B),
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text(
               '${(progress * 100).toInt()}%',
-              style: GoogleFonts.outfit(color: const Color(0xFF00F2FE), fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF00F2FE),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -565,7 +643,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
-                )
+                ),
               ],
             ),
             child: Center(
@@ -604,10 +682,16 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             onPressed: () => _selectAnswer(opt),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              backgroundColor: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF191922),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              backgroundColor: isSelected
+                  ? const Color(0xFF6C63FF)
+                  : const Color(0xFF191922),
               side: BorderSide(
-                color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF2C2C3E),
+                color: isSelected
+                    ? const Color(0xFF6C63FF)
+                    : const Color(0xFF2C2C3E),
                 width: 1.5,
               ),
             ),
@@ -640,10 +724,16 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             onPressed: () => _selectAnswer(code),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              backgroundColor: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF191922),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              backgroundColor: isSelected
+                  ? const Color(0xFF6C63FF)
+                  : const Color(0xFF191922),
               side: BorderSide(
-                color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF2C2C3E),
+                color: isSelected
+                    ? const Color(0xFF6C63FF)
+                    : const Color(0xFF2C2C3E),
                 width: 1.5,
               ),
               alignment: Alignment.centerLeft,
@@ -678,17 +768,29 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             ),
             child: Column(
               children: [
-                const Icon(Icons.cloud_done_rounded, size: 64, color: Color(0xFF00F5A0)),
+                const Icon(
+                  Icons.cloud_done_rounded,
+                  size: 64,
+                  color: Color(0xFF00F5A0),
+                ),
                 const SizedBox(height: 20),
                 Text(
                   'Đã Chấm Điểm Xong!',
-                  style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Kết quả bài trắc nghiệm của bạn hiện đã sẵn sàng. Vui lòng đăng nhập hoặc đăng ký tài khoản để xem chi tiết điểm số và lưu vĩnh viễn vào hồ sơ hướng nghiệp.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF888B9B), height: 1.5),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: const Color(0xFF888B9B),
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
@@ -701,12 +803,18 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             },
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               backgroundColor: const Color(0xFF6C63FF),
             ),
             child: Text(
               'Đăng nhập để xem kết quả',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -714,7 +822,10 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Quay lại trang chủ',
-              style: GoogleFonts.outfit(color: const Color(0xFF888B9B), fontSize: 14),
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF888B9B),
+                fontSize: 14,
+              ),
             ),
           ),
         ],
