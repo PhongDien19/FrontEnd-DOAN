@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F13),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922).withOpacity(0.8),
+        backgroundColor: const Color(0xFF191922).withValues(alpha: 0.8),
         elevation: 0,
         title: Text(
           'Career Pathway',
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withOpacity(0.08),
+                color: const Color(0xFF6C63FF).withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00F2FE).withOpacity(0.08),
+                color: const Color(0xFF00F2FE).withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -213,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         radius: 28,
                         backgroundColor: const Color(
                           0xFF6C63FF,
-                        ).withOpacity(0.2),
+                        ).withValues(alpha: 0.2),
                         child: Text(
                           auth.fullName.isNotEmpty
                               ? auth.fullName[0].toUpperCase()
@@ -265,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6C63FF).withOpacity(0.3),
+                          color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -293,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -312,14 +312,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Hoàn thành 4 trụ cột trắc nghiệm: Sở thích (Holland), Tính cách (MBTI), Năng lực và Hệ giá trị để nhận báo cáo hướng nghiệp AI chi tiết.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             height: 1.4,
                           ),
                         ),
                         const SizedBox(height: 20),
                         LinearProgressIndicator(
                           value: completedCount / 4.0,
-                          backgroundColor: Colors.white.withOpacity(0.15),
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             Colors.white,
                           ),
@@ -377,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF00F2FE).withOpacity(0.25),
+                          color: const Color(0xFF00F2FE).withValues(alpha: 0.25),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -405,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -424,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Khảo sát kịch bản tình huống được AI tạo lập thời gian thực. Đánh giá đa chiều (Holland, Big Five, SCCT) và hỗ trợ chế độ khảo sát ẩn danh.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: Colors.black.withOpacity(0.75),
+                            color: Colors.black.withValues(alpha: 0.75),
                             height: 1.4,
                             fontWeight: FontWeight.w500,
                           ),
@@ -681,13 +681,13 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isCompleted
-                ? gradientColors[0].withOpacity(0.5)
+                ? gradientColors[0].withValues(alpha: 0.5)
                 : const Color(0xFF2C2C3E),
             width: isCompleted ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -703,7 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: gradientColors[0].withOpacity(0.15),
+                    color: gradientColors[0].withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: gradientColors[0], size: 24),

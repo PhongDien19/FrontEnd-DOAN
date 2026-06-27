@@ -11,8 +11,6 @@ class TestHistoryScreen extends StatefulWidget {
 }
 
 class _TestHistoryScreenState extends State<TestHistoryScreen> {
-  final bool _isLoading = false;
-
   // DANH SÁCH DỮ LIỆU ĐÃ ĐƯỢC CHUẨN HÓA (KHÔNG BỊ LẶP, TÍCH HỢP ROADMAP 2 NGÀNH)
   final List<dynamic> _history = [
     {
@@ -148,9 +146,13 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
   ];
 
   String _formatDateTime(String? dateStr) {
-    if (dateStr == null) return 'Gần đây';
+    if (dateStr == null) {
+      return 'Gần đây';
+    }
     final dt = DateTime.tryParse(dateStr)?.toLocal();
-    if (dt == null) return 'Gần đây';
+    if (dt == null) {
+      return 'Gần đây';
+    }
     final hour = dt.hour.toString().padLeft(2, '0');
     final minute = dt.minute.toString().padLeft(2, '0');
     final day = dt.day.toString().padLeft(2, '0');
@@ -260,7 +262,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: color.withOpacity(0.08),
+                                  color: color.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
@@ -297,10 +299,10 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
+                          color: color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: color.withOpacity(0.4),
+                            color: color.withValues(alpha: 0.4),
                             width: 1.5,
                           ),
                         ),
@@ -377,7 +379,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: color.withOpacity(0.1),
+                                    color: color.withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
