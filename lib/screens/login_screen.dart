@@ -28,7 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     Map<String, dynamic> result;

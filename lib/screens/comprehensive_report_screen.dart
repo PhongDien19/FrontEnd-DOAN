@@ -215,7 +215,9 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
       );
     }
 
-    if (_report == null) return const SizedBox.shrink();
+    if (_report == null) {
+      return const SizedBox.shrink();
+    }
 
     final overall = _report!['overallCompatibility'] ?? 0;
     final zone = _report!['compatibilityZone'] ?? 'Chưa xác định';

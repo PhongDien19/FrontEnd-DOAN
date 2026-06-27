@@ -78,7 +78,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
   }
 
   void _generateQuestions() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() {
       _step = 1;
@@ -115,7 +117,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         _step = 2;
       });
     } else {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _step = 0;
       });
@@ -137,7 +141,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
 
     // Tự động chuyển câu hỏi sau 250ms để tăng trải nghiệm mượt mà
     Future.delayed(const Duration(milliseconds: 250), () {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       if (_currentQuestionIndex < _questions.length - 1) {
         setState(() {
           _currentQuestionIndex++;
@@ -230,7 +236,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         _step = 4;
       });
     } else {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _step = 2; // Quay lại bước làm bài để làm lại hoặc thử lại
       });
@@ -449,10 +457,13 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 ),
               ),
               validator: (val) {
-                if (val == null || val.isEmpty) return 'Vui lòng nhập độ tuổi';
+                if (val == null || val.isEmpty) {
+                  return 'Vui lòng nhập độ tuổi';
+                }
                 final parsed = int.tryParse(val);
-                if (parsed == null || parsed <= 0 || parsed > 100)
+                if (parsed == null || parsed <= 0 || parsed > 100) {
                   return 'Tuổi không hợp lệ';
+                }
                 return null;
               },
             ),
@@ -484,7 +495,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   .map((lvl) => DropdownMenuItem(value: lvl, child: Text(lvl)))
                   .toList(),
               onChanged: (val) {
-                if (val != null) setState(() => _educationLevel = val);
+                if (val != null) {
+                  setState(() => _educationLevel = val);
+                }
               },
             ),
             const SizedBox(height: 20),
@@ -588,7 +601,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
 
   // Bước 2: Hiển thị Thẻ câu hỏi và lựa chọn trả lời
   Widget _buildQuestionCard() {
-    if (_questions.isEmpty) return const SizedBox.shrink();
+    if (_questions.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     final currentQuestion = _questions[_currentQuestionIndex];
     final qText =
