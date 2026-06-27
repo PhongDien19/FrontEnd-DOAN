@@ -97,13 +97,8 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     final certificates = List<String>.from(_report['certificates'] ?? []);
     final onetMatches = List<String>.from(_report['onetMatches'] ?? []);
 
-    // Failed variables
-    final deepScan = _report['deepScanAnalysis'] ?? '';
-    final pivotSuggestions = _report['pivotSuggestions'] as List<dynamic>? ?? [];
-
     // New variables for Discovery and Targeted modes
     final String mode = _report['mode'] ?? '';
-    final String targetCareer = _report['targetCareer'] ?? '';
     final compatibleCareers = _report['compatibleCareers'] as List<dynamic>? ?? [];
     final String basicSalary = _report['basicSalary'] ?? '';
     final String laborMarket = _report['laborMarket'] ?? '';
@@ -190,7 +185,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    '${rawScore.toStringAsFixed(1)}',
+                                    rawScore.toStringAsFixed(1),
                                     style: GoogleFonts.outfit(
                                       fontSize: 32,
                                       fontWeight: FontWeight.w900,
