@@ -43,7 +43,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _fetchHistory() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    if (!auth.isAuthenticated) return;
+    if (!auth.isAuthenticated) {
+      return;
+    }
 
     setState(() {
       _isLoadingHistory = true;
@@ -60,7 +62,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _saveProfile() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final res = await auth.updateProfile(
@@ -375,8 +379,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null)
+                              if (val != null) {
                                 setState(() => _educationLevel = val);
+                              }
                             },
                           )
                         else
@@ -489,9 +494,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   String _formatDate(String? dateStr) {
-    if (dateStr == null) return 'Gần đây';
+    if (dateStr == null) {
+      return 'Gần đây';
+    }
     final dt = DateTime.tryParse(dateStr);
-    if (dt == null) return 'Gần đây';
+    if (dt == null) {
+      return 'Gần đây';
+    }
     final day = dt.day.toString().padLeft(2, '0');
     final month = dt.month.toString().padLeft(2, '0');
     final year = dt.year;

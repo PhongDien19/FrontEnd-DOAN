@@ -63,7 +63,9 @@ class AuthProvider with ChangeNotifier {
 
   // Làm mới thông tin Profile từ server
   Future<void> refreshProfile() async {
-    if (userId == null) return;
+    if (userId == null) {
+      return;
+    }
     final res = await ApiService.getProfile(userId!);
     if (res['success'] == true && res['profile'] != null) {
       _userProfile = res['profile'];
@@ -125,7 +127,9 @@ class AuthProvider with ChangeNotifier {
     required String educationLevel,
     required String hobby,
   }) async {
-    if (userId == null) return {'success': false, 'message': 'Chưa đăng nhập'};
+    if (userId == null) {
+      return {'success': false, 'message': 'Chưa đăng nhập'};
+    }
 
     _isLoading = true;
     notifyListeners();
@@ -158,7 +162,9 @@ class AuthProvider with ChangeNotifier {
 
   // Nhận quyền kết quả bài trắc nghiệm làm trước khi login
   Future<Map<String, dynamic>> claimTestResult(String sessionId) async {
-    if (userId == null) return {'success': false, 'message': 'Chưa đăng nhập'};
+    if (userId == null) {
+      return {'success': false, 'message': 'Chưa đăng nhập'};
+    }
 
     final res = await ApiService.claimAssessment(sessionId, userId!);
     if (res['success'] == true) {

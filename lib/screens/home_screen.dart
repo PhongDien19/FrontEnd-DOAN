@@ -31,7 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _sendQuickConsult() async {
     final query = _quickQuestionController.text.trim();
-    if (query.isEmpty) return;
+    if (query.isEmpty) {
+      return;
+    }
 
     setState(() {
       _isConsulting = true;
@@ -440,7 +442,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ).then((_) {
-                              if (!context.mounted) return;
+                              if (!context.mounted) {
+                                return;
+                              }
                               Provider.of<AuthProvider>(
                                 context,
                                 listen: false,
@@ -659,7 +663,9 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (_) => AssessmentFlowScreen(testType: testType),
       ),
     ).then((_) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       Provider.of<AuthProvider>(context, listen: false).refreshProfile();
     });
   }
