@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../services/api_service.dart';
 import 'chat_screen.dart';
-import 'dynamic_survey_report_screen.dart' show DynamicSurveyReportScreen;
+import 'dynamic_survey_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'assessment_flow_screen.dart';
@@ -141,33 +141,27 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (_) => const ChatScreen()),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.account_circle_outlined),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            ),
-          ),
           auth.isAuthenticated
               ? IconButton(
-                  icon: const Icon(
-                    Icons.logout_rounded,
-                    color: Colors.redAccent,
+                  icon: const Icon(Icons.account_circle_outlined),
+                  tooltip: 'Trang cá nhân',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   ),
-                  tooltip: 'Đăng xuất',
-                  onPressed: () {
-                    auth.logout();
-                  },
                 )
-              : IconButton(
-                  icon: const Icon(
-                    Icons.login_rounded,
-                    color: Color(0xFF6C63FF),
-                  ),
-                  tooltip: 'Đăng nhập',
+              : TextButton(
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  ),
+                  child: Text(
+                    'Đăng nhập',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF6C63FF),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
         ],
@@ -437,9 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const DynamicSurveyReportScreen(
-                                  sessionId: '',
-                                ),
+                                builder: (_) => const DynamicSurveyScreen(),
                               ),
                             ).then((_) {
                               if (!context.mounted) {

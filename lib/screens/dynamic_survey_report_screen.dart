@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_provider.dart';
+import 'login_screen.dart';
 
 class DynamicSurveyReportScreen extends StatefulWidget {
   final String sessionId;
@@ -148,6 +151,74 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (!Provider.of<AuthProvider>(context).isAuthenticated) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFB74D).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFFB74D).withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline_rounded, color: Color(0xFFFFB74D), size: 24),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Khảo sát ẩn danh',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Đăng nhập để lưu kết quả này vào lịch sử hướng nghiệp cá nhân của bạn.',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: const Color(0xFF888B9B),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            ).then((_) async {
+                              if (!context.mounted) {
+                                return;
+                              }
+                              final updatedAuth = Provider.of<AuthProvider>(context, listen: false);
+                              if (updatedAuth.isAuthenticated) {
+                                await updatedAuth.claimTestResult(widget.sessionId);
+                                setState(() {});
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFB74D),
+                            foregroundColor: Colors.black87,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            textStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                            elevation: 0,
+                          ),
+                          child: const Text('Đăng Nhập'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
                 // Score compatibility ring
                 Container(
                   padding: const EdgeInsets.all(24),

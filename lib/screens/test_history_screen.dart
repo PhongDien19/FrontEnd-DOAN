@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/api_service.dart';
 
 class TestHistoryScreen extends StatefulWidget {
   final String userId;
@@ -11,139 +12,39 @@ class TestHistoryScreen extends StatefulWidget {
 }
 
 class _TestHistoryScreenState extends State<TestHistoryScreen> {
-  // DANH SÁCH DỮ LIỆU ĐÃ ĐƯỢC CHUẨN HÓA (KHÔNG BỊ LẶP, TÍCH HỢP ROADMAP 2 NGÀNH)
-  final List<dynamic> _history = [
-    {
-      'sessionId': 'AI_DISCOVERY_8892',
-      'mode': 'discovery',
-      'title': 'Khám Phá (Discovery)',
-      'subtitle': 'Gợi ý: Chuyên gia Trí tuệ Nhân tạo (AI)',
-      'isCompleted': true,
-      'createdAt': '2026-06-21T21:30:00.000Z',
-      'recommendedCareer': 'Chuyên gia Trí tuệ Nhân tạo (AI)',
-      'relevanceScore': 4.8,
-      'details':
-          'Định hướng: Tập trung vào Machine Learning, Deep Learning và tối ưu thuật toán hệ thống thông minh.',
-      'conclusionReason':
-          'Dựa trên phân tích: Bạn có tư duy logic thuật toán vượt trội, thích giải quyết bài toán lớn bằng tự động hóa và có khả năng ngồi làm việc sâu (Deep work) với dữ liệu phức tạp.',
-      'questions': [
-        {
-          'q':
-              'Khi đối mặt với một vấn đề phức tạp trong công việc, cách tiếp cận đầu tiên của bạn là gì?',
-          'a':
-              'Tìm kiếm các quy luật, bóc tách thành các biến số và xây dựng một quy trình giải quyết tự động.',
-        },
-        {
-          'q':
-              'Bạn cảm thấy kiệt sức và mất năng lượng nhất khi phải làm những đầu việc có tính chất nào?',
-          'a':
-              'Các công việc lặp đi lặp lại thủ công theo lối mòn mà không được phép tối ưu hay cải tiến.',
-        },
-        {
-          'q':
-              'Môi trường làm việc khiến bạn phát huy 200% công suất trông như thế nào?',
-          'a':
-              'Ít họp hành vô bổ, tôn trọng sự yên tĩnh, được trang bị công cụ phần cứng/phần mềm mạnh nhất.',
-        },
-        {
-          'q':
-              'Nếu được giao một tệp dữ liệu gồm 100.000 dòng lộn xộn, phản ứng của bạn là:',
-          'a':
-              'Rất hào hứng. Tôi sẽ viết ngay một đoạn script Python để làm sạch và bóc tách insight.',
-        },
-      ],
-      // LỘ TRÌNH THĂNG TIẾN: CHUYÊN GIA AI
-      'roadmap': [
-        {
-          'stage': 'Giai đoạn 1: AI Intern / Fresher',
-          'desc':
-              'Làm chủ ngôn ngữ Python, nắm vững Toán cao cấp (Đại số tuyến tính, Xác suất thống kê) và sử dụng thành thạo NumPy, Pandas, Sklearn.',
-        },
-        {
-          'stage': 'Giai đoạn 2: Junior AI Engineer',
-          'desc':
-              'Xây dựng và tinh chỉnh các mô hình Học máy (Machine Learning) truyền thống, tiếp cận Học sâu (Deep Learning) và xử lý dữ liệu lớn Big Data.',
-        },
-        {
-          'stage': 'Giai đoạn 3: Senior AI Engineer / Data Scientist',
-          'desc':
-              'Thiết kế các kiến trúc mạng phức tạp (Transformer, LLMs, Computer Vision), tối ưu hóa hiệu năng phần cứng và triển khai mô hình lên Production (MLOps).',
-        },
-        {
-          'stage': 'Giai đoạn 4: AI Tech Lead / Architect',
-          'desc':
-              'Dẫn dắt đội ngũ kỹ thuật, định hình kiến trúc hệ thống AI tổng thể cho doanh nghiệp và kết nối bài toán kinh doanh thực tế với giải pháp AI.',
-        },
-        {
-          'stage': 'Giai đoạn 5: Head of AI / Chief Data Officer (CDO)',
-          'desc':
-              'Hoạch định chiến lược công nghệ AI toàn diện cho tổ chức, nghiên cứu và phát triển các giải pháp đón đầu xu hướng toàn cầu.',
-        },
-      ],
-    },
-    {
-      'sessionId': 'AI_TARGET_1024',
-      'mode': 'target',
-      'title': 'Mục Tiêu (Target)',
-      'subtitle': 'Mục tiêu: Kỹ sư Phần mềm (Fullstack)',
-      'isCompleted': true,
-      'createdAt': '2026-06-18T09:15:00.000Z',
-      'recommendedCareer': 'Kỹ sư Phần mềm (Fullstack)',
-      'relevanceScore': 4.4,
-      'details':
-          'Lộ trình: Học chuyên sâu kiến trúc hệ thống từ Frontend đến Backend, tối ưu hóa Database và triển khai hạ tầng Cloud/DevOps.',
-      'conclusionReason':
-          'Kỹ năng nền tảng của bạn rất sát với mục tiêu. Định hướng Fullstack giúp bạn làm chủ toàn bộ vòng đời sản phẩm từ giao diện tương tác đến hệ thống lõi chịu tải cao.',
-      'questions': [
-        {
-          'q':
-              'Bạn thích thiết kế giao diện hiển thị cho người dùng xem, hay thích thiết kế cơ sở dữ liệu chạy ngầm bên dưới?',
-          'a':
-              'Tôi thích thiết kế cơ sở dữ liệu, tối ưu hóa các đầu API để hệ thống xử lý mượt mà và chịu tải tốt.',
-        },
-        {
-          'q': 'Tầm nhìn nghề nghiệp trong 3 năm tới của bạn là gì?',
-          'a':
-              'Trở thành một Fullstack Senior cứng có khả năng độc lập thiết kế, triển khai giải pháp phần mềm hoàn chỉnh.',
-        },
-        {
-          'q':
-              'Khi lựa chọn một framework/công nghệ mới cho dự án, tiêu chí nào là quan trọng nhất với bạn?',
-          'a':
-              'Sự phù hợp với bài toán, hiệu năng vận hành, độ chín của cộng đồng hỗ trợ và khả năng bảo trì lâu dài.',
-        },
-      ],
-      // LỘ TRÌNH THĂNG TIẾN MỚI: KỸ SƯ PHẦN MỀM FULLSTACK
-      'roadmap': [
-        {
-          'stage': 'Giai đoạn 1: Fullstack Intern / Fresher',
-          'desc':
-              'Làm chủ HTML5, CSS3, JavaScript vững vàng. Học một framework Frontend (React/Next.js) song song với Node.js (Express) và cơ sở dữ liệu SQL cơ bản.',
-        },
-        {
-          'stage': 'Giai đoạn 2: Junior Fullstack Developer',
-          'desc':
-              'Phát triển độc lập các tính năng từ giao diện đến API. Làm việc thuần thục với cơ sở dữ liệu NoSQL (MongoDB), thiết kế chuẩn RESTful API và quản lý mã nguồn qua Git.',
-        },
-        {
-          'stage': 'Giai đoạn 3: Senior Fullstack Developer',
-          'desc':
-              'Tối ưu hóa hiệu năng ứng dụng (Caching với Redis, Tải bất đồng bộ). Làm chủ quy trình đóng gói container với Docker, cấu hình CI/CD và quản lý hạ tầng đám mây (AWS/GCP).',
-        },
-        {
-          'stage': 'Giai đoạn 4: Fullstack Tech Lead / Solution Architect',
-          'desc':
-              'Chịu trách nhiệm thiết kế toàn bộ kiến trúc hệ thống (Microservices, distributed system), lựa chọn stack công nghệ, giải quyết bài toán bảo mật và chịu tải lớn (High Availability).',
-        },
-        {
-          'stage':
-              'Giai đoạn 5: Chief Technology Officer (CTO) / Technical Director',
-          'desc':
-              'Quản lý và định hướng chiến lược công nghệ dài hạn cho doanh nghiệp, tối ưu hóa quy trình kỹ thuật phần mềm và đồng bộ năng lực công nghệ với mục tiêu kinh doanh.',
-        },
-      ],
-    },
-  ];
+  List<dynamic> _history = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistory();
+  }
+
+  void _fetchHistory() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final res = await ApiService.getHistory(widget.userId);
+    if (res['success'] == true) {
+      setState(() {
+        _history = res['history'] ?? [];
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message'] ?? 'Lỗi tải lịch sử hướng nghiệp'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 
   String _formatDateTime(String? dateStr) {
     if (dateStr == null) {
@@ -448,111 +349,138 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         ),
       ),
       body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          itemCount: _history.length,
-          itemBuilder: (context, index) {
-            final session = _history[index];
-            final isDiscovery = session['mode'] == 'discovery';
-            final title =
-                session['title'] ??
-                (isDiscovery ? 'Khám Phá (Discovery)' : 'Mục Tiêu (Target)');
-            final subtitle =
-                session['subtitle'] ??
-                (isDiscovery
-                    ? 'Gợi ý: ${session['recommendedCareer']}'
-                    : 'Mục tiêu: ${session['targetJob']}');
-            final details = session['details'];
-            final color = isDiscovery
-                ? const Color(0xFF00F5A0)
-                : const Color(0xFF7C4DFF);
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF191922),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF2C2C3E)),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () => _viewSessionDetails(
-                  session,
-                ), // Mở modal chi tiết mượt mà cho mọi thẻ
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            isDiscovery
-                                ? Icons.explore_rounded
-                                : Icons.track_changes_rounded,
-                            color: color,
-                            size: 20,
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF6C63FF),
+                ),
+              )
+            : _history.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.history_toggle_off_rounded,
+                          size: 64,
+                          color: Color(0xFF5E6072),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Bạn chưa thực hiện bài đánh giá nào.',
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white70,
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    itemCount: _history.length,
+                    itemBuilder: (context, index) {
+                      final session = _history[index];
+                      final isDiscovery = session['mode'] == 'discovery';
+                      final title =
+                          session['title'] ??
+                          (isDiscovery ? 'Khám Phá (Discovery)' : 'Mục Tiêu (Target)');
+                      final subtitle =
+                          session['subtitle'] ??
+                          (isDiscovery
+                              ? 'Gợi ý: ${session['recommendedCareer']}'
+                              : 'Mục tiêu: ${session['targetJob']}');
+                      final details = session['details'];
+                      final color = isDiscovery
+                          ? const Color(0xFF00F5A0)
+                          : const Color(0xFF7C4DFF);
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF191922),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFF2C2C3E)),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => _viewSessionDetails(session),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  title,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      isDiscovery
+                                          ? Icons.explore_rounded
+                                          : Icons.track_changes_rounded,
+                                      color: color,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            title,
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          Text(
+                                            subtitle,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              color: color,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (session['relevanceScore'] != null)
+                                      Text(
+                                        '${session['relevanceScore']}',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: color,
+                                        ),
+                                      ),
+                                  ],
                                 ),
+                                if (details != null) ...[
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    details,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: Colors.white70,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 14),
+                                const Divider(color: Color(0xFF2C2C3E)),
                                 Text(
-                                  subtitle,
+                                  _formatDateTime(session['createdAt']),
                                   style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    color: color,
+                                    fontSize: 11,
+                                    color: const Color(0xFF5E6072),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Text(
-                            '${session['relevanceScore']}',
-                            style: GoogleFonts.outfit(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: color,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (details != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          details,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.white70,
-                            fontStyle: FontStyle.italic,
-                          ),
                         ),
-                      ],
-                      const SizedBox(height: 14),
-                      const Divider(color: Color(0xFF2C2C3E)),
-                      Text(
-                        _formatDateTime(session['createdAt']),
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: const Color(0xFF5E6072),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-              ),
-            );
-          },
-        ),
       ),
     );
   }

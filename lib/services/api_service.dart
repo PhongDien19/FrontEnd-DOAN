@@ -1,19 +1,19 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Base URL cấu hình tự động.
-  // Android emulator cần dùng 10.0.2.2 thay vì localhost.
   // Bật/tắt kết nối Local (true) hoặc Production Render (false)
-  // static const bool useLocal = true;
+  static const bool useLocal = true; 
 
   static String get baseUrl {
-    // if (!useLocal) {
-    return 'https://server-ai-doan-1.onrender.com/api';
-    // }
-    // return defaultTargetPlatform == TargetPlatform.android
-    //     ? 'http://10.0.2.2:5000/api'
-    //     : 'http://localhost:5000/api';
+    if (useLocal) {
+      return defaultTargetPlatform == TargetPlatform.android
+          ? 'http://10.0.2.2:5000/api'
+          : 'http://localhost:5000/api';
+    }
+     return '0';
+     //'https://server-ai-doan-1.onrender.com/api';
   }
 
   // Lưu trữ userId của người dùng hiện tại để tự động đính kèm vào header
@@ -276,8 +276,12 @@ class ApiService {
   // Khởi tạo khảo sát động
   static Future<Map<String, dynamic>> initSurvey(
     String mode,
-    String? targetCareer,
-  ) async {
+    String? targetCareer, {
+    int? age,
+    String? education,
+    String? location,
+    String? hobby,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/survey/init'),
@@ -286,6 +290,10 @@ class ApiService {
           'mode': mode,
           if (targetCareer != null && targetCareer.isNotEmpty)
             'target_career': targetCareer,
+          if (age != null) 'age': age,
+          if (education != null && education.isNotEmpty) 'education': education,
+          if (location != null && location.isNotEmpty) 'location': location,
+          if (hobby != null && hobby.isNotEmpty) 'hobby': hobby,
         }),
       );
       return jsonDecode(response.body);
