@@ -75,7 +75,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       _step = 1;
     });
 
-    final targetCareer = _mode == 'Targeted' ? _targetCareerController.text.trim() : null;
+    final targetCareer = _mode == 'Targeted'
+        ? _targetCareerController.text.trim()
+        : null;
     final ageVal = int.tryParse(_ageController.text);
     final locationVal = _locationController.text.trim();
     final hobbyVal = _hobbyController.text.trim();
@@ -108,7 +110,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? 'Lỗi khởi tạo khảo sát. Vui lòng thử lại!'),
+          content: Text(
+            result['message'] ?? 'Lỗi khởi tạo khảo sát. Vui lòng thử lại!',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -162,7 +166,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       if (!mounted) {
         return;
       }
-      
+
       // Chuyển hướng sang màn hình báo cáo chi tiết
       Navigator.pushReplacement(
         context,
@@ -209,10 +213,15 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 context: context,
                 builder: (context) => AlertDialog(
                   backgroundColor: const Color(0xFF191922),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   title: Text(
                     'Hủy bỏ khảo sát?',
-                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   content: Text(
                     'Mọi câu trả lời của bạn trong phiên này sẽ không được lưu lại.',
@@ -222,14 +231,20 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                     TextButton(
                       child: Text(
                         'Tiếp tục khảo sát',
-                        style: GoogleFonts.outfit(color: const Color(0xFF6C63FF), fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF6C63FF),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),
                     TextButton(
                       child: Text(
                         'Thoát',
-                        style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       onPressed: () {
                         Navigator.pop(context);
@@ -289,18 +304,24 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       case 0:
         return _buildSetupView();
       case 1:
-        return _buildLoadingView('AI đang thiết kế các câu hỏi kịch bản tình huống thời gian thực...');
+        return _buildLoadingView(
+          'AI đang thiết kế các câu hỏi kịch bản tình huống thời gian thực...',
+        );
       case 2:
         return _buildSurveyView();
       case 3:
-        return _buildLoadingView('AI đang chấm điểm và lập báo cáo năng lực hướng nghiệp...');
+        return _buildLoadingView(
+          'AI đang chấm điểm và lập báo cáo năng lực hướng nghiệp...',
+        );
       default:
         return const SizedBox.shrink();
     }
   }
 
   Widget _buildSetupView() {
-    final themeColor = _mode == 'Discovery' ? const Color(0xFF00F5A0) : const Color(0xFF6C63FF);
+    final themeColor = _mode == 'Discovery'
+        ? const Color(0xFF00F5A0)
+        : const Color(0xFF6C63FF);
 
     return SingleChildScrollView(
       child: Form(
@@ -421,17 +442,28 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         child: TextFormField(
                           controller: _ageController,
                           keyboardType: TextInputType.number,
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Độ tuổi',
-                            labelStyle: GoogleFonts.inter(color: const Color(0xFF7A7C93), fontSize: 12),
+                            labelStyle: GoogleFonts.inter(
+                              color: const Color(0xFF7A7C93),
+                              fontSize: 12,
+                            ),
                             hintText: 'Ví dụ: 18',
-                            hintStyle: GoogleFonts.inter(color: const Color(0xFF5E6072), fontSize: 12),
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF5E6072),
+                              fontSize: 12,
+                            ),
                             filled: true,
                             fillColor: const Color(0xFF0F0F13),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF2C2C3E),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -439,13 +471,20 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.redAccent),
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                              ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.redAccent),
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
                           ),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
@@ -465,17 +504,28 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         flex: 3,
                         child: TextFormField(
                           controller: _locationController,
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
                           decoration: InputDecoration(
-                            labelText: 'Khu vực sinh sống',
-                            labelStyle: GoogleFonts.inter(color: const Color(0xFF7A7C93), fontSize: 12),
+                            labelText: 'Khu vực học tập/làm việc',
+                            labelStyle: GoogleFonts.inter(
+                              color: const Color(0xFF7A7C93),
+                              fontSize: 12,
+                            ),
                             hintText: 'Ví dụ: Hà Nội, Tp.HCM',
-                            hintStyle: GoogleFonts.inter(color: const Color(0xFF5E6072), fontSize: 12),
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF5E6072),
+                              fontSize: 12,
+                            ),
                             filled: true,
                             fillColor: const Color(0xFF0F0F13),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF2C2C3E),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -483,13 +533,20 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.redAccent),
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                              ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.redAccent),
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
                           ),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
@@ -510,7 +567,10 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                     style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
                     decoration: InputDecoration(
                       labelText: 'Trình độ học vấn',
-                      labelStyle: GoogleFonts.inter(color: const Color(0xFF7A7C93), fontSize: 12),
+                      labelStyle: GoogleFonts.inter(
+                        color: const Color(0xFF7A7C93),
+                        fontSize: 12,
+                      ),
                       filled: true,
                       fillColor: const Color(0xFF0F0F13),
                       enabledBorder: OutlineInputBorder(
@@ -521,21 +581,25 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: themeColor),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                     ),
-                    items: <String>[
-                      'Học sinh THCS',
-                      'Học sinh THPT',
-                      'Sinh viên',
-                      'Đại học',
-                      'Sau đại học',
-                      'Đã đi làm'
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                    items:
+                        <String>[
+                          'Học sinh THCS',
+                          'Học sinh THPT',
+                          'Sinh viên',
+                          'Đại học',
+                          'Sau đại học',
+                          'Đã đi làm',
+                        ].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         setState(() {
@@ -553,9 +617,16 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                     style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
                     decoration: InputDecoration(
                       labelText: 'Sở thích cá nhân',
-                      labelStyle: GoogleFonts.inter(color: const Color(0xFF7A7C93), fontSize: 12),
-                      hintText: 'Ví dụ: Đọc sách, công nghệ thông tin, thiết kế đồ họa, ngoại ngữ...',
-                      hintStyle: GoogleFonts.inter(color: const Color(0xFF5E6072), fontSize: 12),
+                      labelStyle: GoogleFonts.inter(
+                        color: const Color(0xFF7A7C93),
+                        fontSize: 12,
+                      ),
+                      hintText:
+                          'Ví dụ: Đọc sách, công nghệ thông tin, thiết kế đồ họa, ngoại ngữ...',
+                      hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF5E6072),
+                        fontSize: 12,
+                      ),
                       filled: true,
                       fillColor: const Color(0xFF0F0F13),
                       enabledBorder: OutlineInputBorder(
@@ -574,7 +645,10 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Colors.redAccent),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
                     ),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
@@ -604,9 +678,16 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 controller: _targetCareerController,
                 style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Ví dụ: Lập trình viên AI, Marketing Manager, Thiết kế...',
-                  hintStyle: GoogleFonts.inter(color: const Color(0xFF5E6072), fontSize: 13),
-                  prefixIcon: Icon(Icons.business_center_rounded, color: themeColor),
+                  hintText:
+                      'Ví dụ: Lập trình viên AI, Marketing Manager, Thiết kế...',
+                  hintStyle: GoogleFonts.inter(
+                    color: const Color(0xFF5E6072),
+                    fontSize: 13,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.business_center_rounded,
+                    color: themeColor,
+                  ),
                   filled: true,
                   fillColor: const Color(0xFF191922),
                   enabledBorder: OutlineInputBorder(
@@ -641,7 +722,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
               onPressed: _initializeSurvey,
               style: ElevatedButton.styleFrom(
                 backgroundColor: themeColor,
-                foregroundColor: isColorDark(themeColor) ? Colors.white : Colors.black87,
+                foregroundColor: isColorDark(themeColor)
+                    ? Colors.white
+                    : Colors.black87,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -662,7 +745,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   Icon(
                     Icons.arrow_forward_rounded,
                     size: 18,
-                    color: isColorDark(themeColor) ? Colors.white : Colors.black87,
+                    color: isColorDark(themeColor)
+                        ? Colors.white
+                        : Colors.black87,
                   ),
                 ],
               ),
@@ -703,7 +788,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                     color: color.withValues(alpha: 0.1),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -750,7 +835,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             child: CircularProgressIndicator(
               strokeWidth: 4,
               valueColor: AlwaysStoppedAnimation<Color>(
-                _mode == 'Discovery' ? const Color(0xFF00F5A0) : const Color(0xFF6C63FF),
+                _mode == 'Discovery'
+                    ? const Color(0xFF00F5A0)
+                    : const Color(0xFF6C63FF),
               ),
               backgroundColor: Colors.white.withValues(alpha: 0.05),
             ),
@@ -785,7 +872,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     final options = List<dynamic>.from(question['options'] ?? []);
 
     final progress = (_currentQuestionIndex + 1) / _questions.length;
-    final themeColor = _mode == 'Discovery' ? const Color(0xFF00F5A0) : const Color(0xFF6C63FF);
+    final themeColor = _mode == 'Discovery'
+        ? const Color(0xFF00F5A0)
+        : const Color(0xFF6C63FF);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -870,12 +959,19 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       onTap: () => _selectAnswer(weight),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 20,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? themeColor.withValues(alpha: 0.08) : const Color(0xFF191922),
+                          color: isSelected
+                              ? themeColor.withValues(alpha: 0.08)
+                              : const Color(0xFF191922),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isSelected ? themeColor : const Color(0xFF2C2C3E),
+                            color: isSelected
+                                ? themeColor
+                                : const Color(0xFF2C2C3E),
                             width: isSelected ? 1.5 : 1,
                           ),
                         ),
@@ -886,8 +982,12 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                                 text,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: isSelected ? Colors.white : const Color(0xFFC3C5E0),
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFFC3C5E0),
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -898,7 +998,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: isSelected ? themeColor : const Color(0xFF5E6072),
+                                  color: isSelected
+                                      ? themeColor
+                                      : const Color(0xFF5E6072),
                                   width: 2,
                                 ),
                               ),
@@ -966,17 +1068,21 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: _answers.containsKey(_currentQuestionIndex)
-                    ? (_currentQuestionIndex == _questions.length - 1 ? _submitSurvey : () {
-                        setState(() {
-                          _currentQuestionIndex++;
-                        });
-                      })
+                    ? (_currentQuestionIndex == _questions.length - 1
+                          ? _submitSurvey
+                          : () {
+                              setState(() {
+                                _currentQuestionIndex++;
+                              });
+                            })
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _answers.containsKey(_currentQuestionIndex)
                       ? themeColor
                       : const Color(0xFF191922),
-                  foregroundColor: isColorDark(themeColor) ? Colors.white : Colors.black87,
+                  foregroundColor: isColorDark(themeColor)
+                      ? Colors.white
+                      : Colors.black87,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -984,12 +1090,16 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   elevation: 0,
                 ),
                 child: Text(
-                  _currentQuestionIndex == _questions.length - 1 ? 'Nộp & Phân Tích' : 'Tiếp Theo',
+                  _currentQuestionIndex == _questions.length - 1
+                      ? 'Nộp & Phân Tích'
+                      : 'Tiếp Theo',
                   style: GoogleFonts.outfit(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: _answers.containsKey(_currentQuestionIndex)
-                        ? (isColorDark(themeColor) ? Colors.white : Colors.black87)
+                        ? (isColorDark(themeColor)
+                              ? Colors.white
+                              : Colors.black87)
                         : const Color(0xFF5E6072),
                   ),
                 ),
