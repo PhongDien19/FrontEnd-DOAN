@@ -70,7 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? 'Đã xảy ra lỗi, vui lòng thử lại!'),
+            content: Text(
+              result['message'] ?? 'Đã xảy ra lỗi, vui lòng thử lại!',
+            ),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -84,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isLoading = Provider.of<AuthProvider>(context).isLoading;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: const Color(0xFFFAFAFA),
       body: Stack(
         children: [
           // Back Button if can pop
@@ -94,7 +96,10 @@ class _LoginScreenState extends State<LoginScreen> {
               left: 16,
               child: SafeArea(
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Color(0xFF1F2937),
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -108,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: size.width * 0.8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.15),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -120,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: size.width * 0.8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00F2FE).withValues(alpha: 0.12),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -140,23 +145,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6C63FF), Color(0xFF00F2FE)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
-                              blurRadius: 25,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                         ),
                         child: const Icon(
                           Icons.explore_rounded,
                           size: 48,
-                          color: Colors.white,
+                          color: Color(0xFFF59E0B),
                         ),
                       ),
                     ),
@@ -170,10 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 2,
-                        foreground: Paint()
-                          ..shader = const LinearGradient(
-                            colors: [Color(0xFFFFFFFF), Color(0xFFC3C5E0)],
-                          ).createShader(const Rect.fromLTWH(0.0, 0.0, 300.0, 70.0)),
+                        color: const Color(0xFF1F2937),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -182,27 +173,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 15,
-                        color: const Color(0xFF888B9B),
+                        color: const Color(0xFF6B7280),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
                     const SizedBox(height: 40),
 
-                    // Login/Register Card Container (Glassmorphic look)
+                    // Login/Register Card Container
                     Container(
                       padding: const EdgeInsets.all(28.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF191922).withValues(alpha: 0.8),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: const Color(0xFF2C2C3E).withValues(alpha: 0.5),
-                          width: 1.5,
+                          color: const Color(0xFFE5E7EB),
+                          width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            blurRadius: 30,
-                            offset: const Offset(0, 15),
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
                         ],
                       ),
@@ -216,7 +207,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 Expanded(
                                   child: GestureDetector(
-                                    onTap: () => setState(() => _isLoginMode = true),
+                                    onTap: () =>
+                                        setState(() => _isLoginMode = true),
                                     child: Column(
                                       children: [
                                         Text(
@@ -224,15 +216,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                           style: GoogleFonts.outfit(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: _isLoginMode ? Colors.white : const Color(0xFF5E6072),
+                                            color: _isLoginMode
+                                                ? const Color(0xFF1F2937)
+                                                : const Color(0xFF9CA3AF),
                                           ),
                                         ),
                                         const SizedBox(height: 8),
                                         Container(
                                           height: 3,
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(2),
-                                            color: _isLoginMode ? const Color(0xFF6C63FF) : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
+                                            color: _isLoginMode
+                                                ? const Color(0xFFF59E0B)
+                                                : Colors.transparent,
                                           ),
                                         ),
                                       ],
@@ -241,7 +239,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 Expanded(
                                   child: GestureDetector(
-                                    onTap: () => setState(() => _isLoginMode = false),
+                                    onTap: () =>
+                                        setState(() => _isLoginMode = false),
                                     child: Column(
                                       children: [
                                         Text(
@@ -249,15 +248,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                           style: GoogleFonts.outfit(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: !_isLoginMode ? Colors.white : const Color(0xFF5E6072),
+                                            color: !_isLoginMode
+                                                ? const Color(0xFF1F2937)
+                                                : const Color(0xFF9CA3AF),
                                           ),
                                         ),
                                         const SizedBox(height: 8),
                                         Container(
                                           height: 3,
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(2),
-                                            color: !_isLoginMode ? const Color(0xFF6C63FF) : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
+                                            color: !_isLoginMode
+                                                ? const Color(0xFFF59E0B)
+                                                : Colors.transparent,
                                           ),
                                         ),
                                       ],
@@ -272,24 +277,37 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (!_isLoginMode) ...[
                               TextFormField(
                                 controller: _fullNameController,
-                                style: GoogleFonts.inter(color: Colors.white),
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF1F2937),
+                                ),
                                 decoration: InputDecoration(
                                   labelText: 'Họ và tên',
-                                  labelStyle: const TextStyle(color: Color(0xFF7A7C93)),
-                                  prefixIcon: const Icon(Icons.person_outline_rounded, color: Color(0xFF7A7C93)),
+                                  labelStyle: const TextStyle(
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.person_outline_rounded,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
                                   filled: true,
-                                  fillColor: const Color(0xFF1F1F2C),
+                                  fillColor: const Color(0xFFF3F4F6),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide.none,
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(color: Color(0xFF2C2C3E), width: 1),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE5E7EB),
+                                      width: 1,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(color: Color(0xFF6C63FF), width: 1.5),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFF59E0B),
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
                                 validator: (val) {
@@ -306,31 +324,46 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              style: GoogleFonts.inter(color: Colors.white),
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF1F2937),
+                              ),
                               decoration: InputDecoration(
                                 labelText: 'Email',
-                                labelStyle: const TextStyle(color: Color(0xFF7A7C93)),
-                                prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF7A7C93)),
+                                labelStyle: const TextStyle(
+                                  color: Color(0xFF6B7280),
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.email_outlined,
+                                  color: Color(0xFF9CA3AF),
+                                ),
                                 filled: true,
-                                fillColor: const Color(0xFF1F1F2C),
+                                fillColor: const Color(0xFFF3F4F6),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(color: Color(0xFF2C2C3E), width: 1),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE5E7EB),
+                                    width: 1,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(color: Color(0xFF6C63FF), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFF59E0B),
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                               validator: (val) {
                                 if (val == null || val.trim().isEmpty) {
                                   return 'Vui lòng nhập Email';
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(val.trim())) {
                                   return 'Email không hợp lệ';
                                 }
                                 return null;
@@ -342,31 +375,48 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
-                              style: GoogleFonts.inter(color: Colors.white),
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF1F2937),
+                              ),
                               decoration: InputDecoration(
                                 labelText: 'Mật khẩu',
-                                labelStyle: const TextStyle(color: Color(0xFF7A7C93)),
-                                prefixIcon: const Icon(Icons.lock_outlined, color: Color(0xFF7A7C93)),
+                                labelStyle: const TextStyle(
+                                  color: Color(0xFF6B7280),
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.lock_outlined,
+                                  color: Color(0xFF9CA3AF),
+                                ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                    color: const Color(0xFF7A7C93),
+                                    _obscurePassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    color: const Color(0xFF9CA3AF),
                                   ),
-                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
                                 ),
                                 filled: true,
-                                fillColor: const Color(0xFF1F1F2C),
+                                fillColor: const Color(0xFFF3F4F6),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(color: Color(0xFF2C2C3E), width: 1),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE5E7EB),
+                                    width: 1,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(color: Color(0xFF6C63FF), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFF59E0B),
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                               validator: (val) {
@@ -385,53 +435,44 @@ class _LoginScreenState extends State<LoginScreen> {
                             ElevatedButton(
                               onPressed: isLoading ? null : _submitForm,
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                backgroundColor: Colors.transparent,
+                                backgroundColor: const Color(0xFFF59E0B),
                                 shadowColor: Colors.transparent,
-                              ).copyWith(
-                                elevation: ButtonStyleButton.allOrNull(0),
+                                elevation: 0,
                               ),
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF6C63FF), Color(0xFF00F2FE)],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ],
-                                ),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  constraints: const BoxConstraints(minHeight: 52),
-                                  child: isLoading
-                                      ? const SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2.5,
-                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                          ),
-                                        )
-                                      : Text(
-                                          _isLoginMode ? 'Đăng Nhập' : 'Tạo Tài Khoản',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            letterSpacing: 1,
-                                          ),
+                              child: Container(
+                                alignment: Alignment.center,
+                                constraints: const BoxConstraints(
+                                  minHeight: 20,
+                                ), // Adjusted constraints to fit standard button height without gradient wrap
+                                child: isLoading
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
                                         ),
-                                ),
+                                      )
+                                    : Text(
+                                        _isLoginMode
+                                            ? 'Đăng Nhập'
+                                            : 'Tạo Tài Khoản',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          letterSpacing: 1,
+                                        ),
+                                      ),
                               ),
                             ),
                           ],

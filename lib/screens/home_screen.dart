@@ -9,7 +9,7 @@ import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'assessment_flow_screen.dart';
 import 'comprehensive_report_screen.dart';
-import 'test_history_screen.dart'; // Import màn hình Lịch sử
+import 'test_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +22,12 @@ class _HomeScreenState extends State<HomeScreen> {
   final _quickQuestionController = TextEditingController();
   bool _isConsulting = false;
   String? _consultResponse;
+
+  // Định nghĩa bảng màu Light Mode
+  final Color primaryOrange = const Color(0xFFF59E0B);
+  final Color bgColor = const Color(0xFFFAFAFA);
+  final Color textDark = const Color(0xFF1F2937);
+  final Color textGray = const Color(0xFF4B5563);
 
   @override
   void dispose() {
@@ -70,20 +76,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final profile = auth.userProfile;
 
     if (auth.isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0F0F13),
+      return Scaffold(
+        backgroundColor: bgColor,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+                valueColor: AlwaysStoppedAnimation<Color>(primaryOrange),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 'Khởi động Career Pathway...',
                 style: TextStyle(
-                  color: Color(0xFF888B9B),
+                  color: textGray,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -107,20 +113,36 @@ class _HomeScreenState extends State<HomeScreen> {
         (hasValues ? 1 : 0);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922).withValues(alpha: 0.8),
-        elevation: 0,
-        title: Text(
-          'Career Pathway',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 22),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.05),
+        title: Row(
+          children: [
+            Text(
+              'Career ',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w800,
+                fontSize: 22,
+                color: textDark,
+              ),
+            ),
+            Text(
+              'Pathway',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w800,
+                fontSize: 22,
+                color: primaryOrange,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded),
+            icon: Icon(Icons.history_rounded, color: textGray),
             tooltip: 'Lịch sử AI',
             onPressed: () {
-              // Đã thêm .toString() để ép kiểu dữ liệu an toàn
               final currentUserId =
                   (auth.userProfile?['id'] ??
                           auth.userProfile?['_id'] ??
@@ -135,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline_rounded),
+            icon: Icon(Icons.chat_bubble_outline_rounded, color: textGray),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ChatScreen()),
@@ -143,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           auth.isAuthenticated
               ? IconButton(
-                  icon: const Icon(Icons.account_circle_outlined),
+                  icon: Icon(Icons.account_circle_outlined, color: textGray),
                   tooltip: 'Trang cá nhân',
                   onPressed: () => Navigator.push(
                     context,
@@ -158,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     'Đăng nhập',
                     style: GoogleFonts.outfit(
-                      color: const Color(0xFF6C63FF),
+                      color: primaryOrange,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -168,6 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
+          // Background decorations (Làm nhạt đi)
           Positioned(
             top: 20,
             left: -100,
@@ -176,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.08),
+                color: primaryOrange.withValues(alpha: 0.03),
               ),
             ),
           ),
@@ -188,15 +211,15 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00F2FE).withValues(alpha: 0.08),
+                color: primaryOrange.withValues(alpha: 0.03),
               ),
             ),
           ),
 
           RefreshIndicator(
             onRefresh: () => auth.refreshProfile(),
-            color: const Color(0xFF6C63FF),
-            backgroundColor: const Color(0xFF191922),
+            color: primaryOrange,
+            backgroundColor: Colors.white,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20.0),
@@ -207,9 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: const Color(
-                          0xFF6C63FF,
-                        ).withValues(alpha: 0.2),
+                        backgroundColor: primaryOrange.withValues(alpha: 0.15),
                         child: Text(
                           auth.fullName.isNotEmpty
                               ? auth.fullName[0].toUpperCase()
@@ -217,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: GoogleFonts.outfit(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF6C63FF),
+                            color: primaryOrange,
                           ),
                         ),
                       ),
@@ -230,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               'Xin chào,',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
-                                color: const Color(0xFF888B9B),
+                                color: textGray,
                               ),
                             ),
                             Text(
@@ -240,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: GoogleFonts.outfit(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: textDark,
                               ),
                             ),
                           ],
@@ -250,20 +271,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 28),
 
+                  // Thẻ 1: Đánh Giá Toàn Diện (Nền trắng, nút cam)
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6C63FF), Color(0xFF3F37C9)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
@@ -279,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: GoogleFonts.outfit(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: textDark,
                                 ),
                               ),
                             ),
@@ -289,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: const Color(0xFFFEF3C7), // Nền cam nhạt
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -297,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: const Color(0xFFD97706),
                                 ),
                               ),
                             ),
@@ -308,16 +326,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Hoàn thành 4 trụ cột trắc nghiệm: Sở thích (Holland), Tính cách (MBTI), Năng lực và Hệ giá trị để nhận báo cáo hướng nghiệp AI chi tiết.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: textGray,
                             height: 1.4,
                           ),
                         ),
                         const SizedBox(height: 20),
                         LinearProgressIndicator(
                           value: completedCount / 4.0,
-                          backgroundColor: Colors.white.withValues(alpha: 0.15),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Colors.white,
+                          backgroundColor: const Color(0xFFF3F4F6),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            primaryOrange,
                           ),
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -333,12 +351,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF6C63FF),
+                            backgroundColor: primaryOrange,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
+                            elevation: 0,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -346,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 completedCount == 4
                                     ? 'Xem Báo Cáo Chi Tiết'
-                                    : 'Xem Lộ Trình Đánh Giá',
+                                    : 'Bắt đầu đánh giá miễn phí',
                                 style: GoogleFonts.outfit(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -360,22 +379,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
 
+                  // Thẻ 2: Khảo Sát Hướng Nghiệp Động AI (Nền trắng, nút viền)
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF00F2FE), Color(0xFF4FACFE)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF00F2FE).withValues(alpha: 0.25),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
@@ -391,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: GoogleFonts.outfit(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: textDark,
                                 ),
                               ),
                             ),
@@ -401,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.1),
+                                color: const Color(0xFFF3F4F6),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -409,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: textGray,
                                 ),
                               ),
                             ),
@@ -420,9 +436,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Khảo sát kịch bản tình huống được AI tạo lập thời gian thực. Đánh giá đa chiều (Holland, Big Five, SCCT) và hỗ trợ chế độ khảo sát ẩn danh.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: Colors.black.withValues(alpha: 0.75),
+                            color: textGray,
                             height: 1.4,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -444,28 +459,24 @@ class _HomeScreenState extends State<HomeScreen> {
                             });
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black87,
-                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.white,
+                            foregroundColor: primaryOrange,
+                            side: BorderSide(color: primaryOrange),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
+                            elevation: 0,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Bắt Đầu Đánh Giá Ngay',
+                                'Tìm hiểu quy trình',
                                 style: GoogleFonts.outfit(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.bolt,
-                                size: 16,
-                                color: Color(0xFFFFD600),
                               ),
                             ],
                           ),
@@ -475,21 +486,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 28),
 
+                  // Khung chat tư vấn
                   Text(
                     'Tư Vấn Hướng Nghiệp Nhanh',
                     style: GoogleFonts.outfit(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textDark,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF191922),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF2C2C3E)),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -499,19 +511,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _quickQuestionController,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                ),
-                                decoration: InputDecoration(
+                                style: TextStyle(color: textDark, fontSize: 14),
+                                decoration: const InputDecoration(
                                   hintText:
                                       'Ví dụ: Học ngành IT ra trường làm gì?',
-                                  hintStyle: const TextStyle(
-                                    color: Color(0xFF5E6072),
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFF9CA3AF),
                                   ),
                                   border: InputBorder.none,
                                   isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
+                                  contentPadding: EdgeInsets.symmetric(
                                     vertical: 8,
                                   ),
                                 ),
@@ -520,20 +529,20 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             IconButton(
                               icon: _isConsulting
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                              Color(0xFF6C63FF),
+                                              primaryOrange,
                                             ),
                                       ),
                                     )
-                                  : const Icon(
+                                  : Icon(
                                       Icons.send_rounded,
-                                      color: Color(0xFF6C63FF),
+                                      color: primaryOrange,
                                     ),
                               onPressed: _isConsulting
                                   ? null
@@ -542,27 +551,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         if (_consultResponse != null) ...[
-                          const Divider(color: Color(0xFF2C2C3E), height: 24),
+                          const Divider(color: Color(0xFFE5E7EB), height: 24),
                           Text(
                             'AI Phản Hồi:',
                             style: GoogleFonts.outfit(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: const Color(0xFF00F2FE),
+                              color: primaryOrange,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0F0F13),
+                              color: const Color(0xFFF3F4F6),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               _consultResponse!,
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                color: const Color(0xFFC3C5E0),
+                                color: textGray,
                                 height: 1.4,
                               ),
                             ),
@@ -578,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: GoogleFonts.outfit(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textDark,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -595,10 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         description:
                             'Khám phá nhóm sở thích nghề nghiệp (RIASEC)',
                         icon: Icons.palette_outlined,
-                        gradientColors: [
-                          const Color(0xFFFF5252),
-                          const Color(0xFFFF7A00),
-                        ],
+                        accentColor: const Color(0xFFFF7A00),
                         isCompleted: hasHolland,
                         onPressed: () => _startAssessment('holland'),
                       ),
@@ -606,10 +612,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Tính Cách (MBTI)',
                         description: 'Xác định MBTI & Big 5 đặc trưng bản thân',
                         icon: Icons.psychology_outlined,
-                        gradientColors: [
-                          const Color(0xFF7C4DFF),
-                          const Color(0xFFB388FF),
-                        ],
+                        accentColor: const Color(0xFF7C4DFF),
                         isCompleted: hasPersonality,
                         onPressed: () => _startAssessment('personality'),
                       ),
@@ -617,10 +620,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Năng Lực Nhận Thức',
                         description: 'Đánh giá tư duy Logic, Số học & Ngôn ngữ',
                         icon: Icons.lightbulb_outline_rounded,
-                        gradientColors: [
-                          const Color(0xFF00E676),
-                          const Color(0xFF00B0FF),
-                        ],
+                        accentColor: const Color(0xFF00B0FF),
                         isCompleted: hasCognitive,
                         onPressed: () => _startAssessment('cognitive'),
                       ),
@@ -629,10 +629,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         description:
                             'Xác định các giá trị cốt lõi khi làm việc',
                         icon: Icons.star_border_rounded,
-                        gradientColors: [
-                          const Color(0xFFFFD600),
-                          const Color(0xFFFF8F00),
-                        ],
+                        accentColor: const Color(0xFFFFD600),
                         isCompleted: hasValues,
                         onPressed: () => _startAssessment('values'),
                       ),
@@ -666,7 +663,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String title,
     required String description,
     required IconData icon,
-    required List<Color> gradientColors,
+    required Color accentColor,
     required bool isCompleted,
     required VoidCallback onPressed,
   }) {
@@ -675,17 +672,17 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: const Color(0xFF191922),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isCompleted
-                ? gradientColors[0].withValues(alpha: 0.5)
-                : const Color(0xFF2C2C3E),
+                ? accentColor.withValues(alpha: 0.5)
+                : const Color(0xFFE5E7EB),
             width: isCompleted ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -701,10 +698,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: gradientColors[0].withValues(alpha: 0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: gradientColors[0], size: 24),
+                  child: Icon(icon, color: accentColor, size: 24),
                 ),
                 if (isCompleted)
                   const Icon(
@@ -725,7 +722,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color(0xFF1F2937),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -735,7 +732,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 11,
-                    color: const Color(0xFF888B9B),
+                    color: const Color(0xFF6B7280),
                     height: 1.3,
                   ),
                 ),
@@ -749,15 +746,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: gradientColors[0],
+                    color: accentColor,
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  color: gradientColors[0],
-                  size: 12,
-                ),
+                Icon(Icons.arrow_forward_rounded, color: accentColor, size: 12),
               ],
             ),
           ],

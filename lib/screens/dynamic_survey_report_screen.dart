@@ -39,7 +39,6 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     super.dispose();
   }
 
-  // Gửi feedback hài lòng
   void _submitFeedback() async {
     setState(() {
       _isSendingFeedback = true;
@@ -51,6 +50,8 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
       _commentController.text.trim(),
     );
 
+    if (!mounted) return;
+
     setState(() {
       _isSendingFeedback = false;
       if (res['success'] == true) {
@@ -58,35 +59,39 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
       }
     });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            res['success'] == true
-                ? 'Cảm ơn phản hồi của bạn!'
-                : (res['message'] ?? 'Lỗi gửi phản hồi.'),
-          ),
-          backgroundColor: res['success'] == true
-              ? Colors.green
-              : Colors.redAccent,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          res['success'] == true
+              ? 'Cảm ơn phản hồi của bạn!'
+              : (res['message'] ?? 'Lỗi gửi phản hồi.'),
         ),
-      );
-    }
+        backgroundColor: res['success'] == true
+            ? Colors.green
+            : Colors.redAccent,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
     if (_report.isEmpty) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0F0F13),
+        backgroundColor: const Color(0xFFF8F9FA),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF191922),
-          title: Text('Báo Cáo AI', style: GoogleFonts.outfit()),
+          backgroundColor: Colors.white,
+          title: Text(
+            'Báo Cáo AI',
+            style: GoogleFonts.outfit(color: Colors.black87),
+          ),
+          iconTheme: const IconThemeData(color: Colors.black87),
         ),
         body: const Center(
           child: Text(
             'Không tìm thấy dữ liệu báo cáo.',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.black87),
           ),
         ),
       );
@@ -97,28 +102,26 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     final String status = _report['status'] ?? 'Failed';
     final bool isPassed = status.toLowerCase() == 'passed' || rawScore > 3.0;
 
+    // Đổi màu pass/fail sang tone màu hiển thị rõ trên nền trắng
     final Color statusColor = isPassed
-        ? const Color(0xFF00F5A0)
-        : const Color(0xFFFF5252);
+        ? const Color(0xFF059669)
+        : const Color(0xFFDC2626);
 
     final summary = _report['summary'] ?? '';
     final strengths = List<String>.from(_report['strengths'] ?? []);
     final weaknesses = List<String>.from(_report['weaknesses'] ?? []);
     final advice = _report['advice'] ?? '';
 
-    // Passed variables
     final roadmap = List<String>.from(_report['roadmap'] ?? []);
     final certificates = List<String>.from(_report['certificates'] ?? []);
     final onetMatches = List<String>.from(_report['onetMatches'] ?? []);
 
-    // New variables for Discovery and Targeted modes
     final String mode = _report['mode'] ?? '';
     final compatibleCareers =
         _report['compatibleCareers'] as List<dynamic>? ?? [];
     final String basicSalary = _report['basicSalary'] ?? '';
     final String laborMarket = _report['laborMarket'] ?? '';
 
-    // Determine display mode with intelligent fallback
     String displayMode = mode;
     if (displayMode.isEmpty) {
       if (compatibleCareers.isNotEmpty) {
@@ -133,16 +136,21 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922),
+        backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text(
           'Báo Cáo Khảo Sát Động AI',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.black87,
+          ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: const Icon(Icons.close_rounded, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -156,7 +164,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: statusColor.withValues(alpha: 0.04),
+                color: statusColor.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -165,21 +173,19 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!Provider.of<AuthProvider>(context).isAuthenticated) ...[
+                if (!authProvider.isAuthenticated) ...[
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFB74D).withValues(alpha: 0.1),
+                      color: const Color(0xFFFFF7ED), // Cam nhạt
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: const Color(0xFFFFB74D).withValues(alpha: 0.3),
-                      ),
+                      border: Border.all(color: const Color(0xFFFFEDD5)),
                     ),
                     child: Row(
                       children: [
                         const Icon(
                           Icons.info_outline_rounded,
-                          color: Color(0xFFFFB74D),
+                          color: Color(0xFFF97316),
                           size: 24,
                         ),
                         const SizedBox(width: 14),
@@ -192,7 +198,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 style: GoogleFonts.outfit(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: const Color(0xFF9A3412),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -200,7 +206,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 'Đăng nhập để lưu kết quả này vào lịch sử hướng nghiệp cá nhân của bạn.',
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
-                                  color: const Color(0xFF888B9B),
+                                  color: const Color(0xFF6B7280),
                                   height: 1.3,
                                 ),
                               ),
@@ -216,9 +222,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 builder: (_) => const LoginScreen(),
                               ),
                             ).then((_) async {
-                              if (!context.mounted) {
-                                return;
-                              }
+                              if (!context.mounted) return;
                               final updatedAuth = Provider.of<AuthProvider>(
                                 context,
                                 listen: false,
@@ -227,13 +231,16 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 await updatedAuth.claimTestResult(
                                   widget.sessionId,
                                 );
+                                if (!context.mounted) return;
                                 setState(() {});
                               }
                             });
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFB74D),
-                            foregroundColor: Colors.black87,
+                            backgroundColor: const Color(
+                              0xFFF97316,
+                            ), // Nút màu cam nổi bật
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 8,
@@ -255,13 +262,12 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                   const SizedBox(height: 20),
                 ],
 
-                // ĐÃ CHUYỂN LÊN TRÊN: Mode-based Views (Discovery vs Targeted)
                 if (displayMode.toLowerCase() == 'discovery') ...[
                   if (compatibleCareers.isNotEmpty) ...[
                     _buildCard(
                       title: '5 Ngành Nghề Tối Tương Thích',
                       icon: Icons.work_history_rounded,
-                      iconColor: const Color(0xFF00F5A0),
+                      iconColor: const Color(0xFF059669),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: compatibleCareers.map((item) {
@@ -272,10 +278,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0F0F13),
+                              color: const Color(0xFFF9FAFB),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: const Color(0xFF2C2C3E),
+                                color: const Color(0xFFE5E7EB),
                               ),
                             ),
                             child: Column(
@@ -286,7 +292,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                     const Icon(
                                       Icons.star_rounded,
                                       size: 16,
-                                      color: Color(0xFF00F5A0),
+                                      color: Color(0xFF059669),
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
@@ -295,7 +301,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                         style: GoogleFonts.outfit(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
-                                          color: Colors.white,
+                                          color: Colors.black87,
                                         ),
                                       ),
                                     ),
@@ -306,7 +312,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                   reason,
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: const Color(0xFF888B9B),
+                                    color: const Color(0xFF4B5563),
                                     height: 1.3,
                                   ),
                                 ),
@@ -319,13 +325,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                     const SizedBox(height: 20),
                   ],
                 ] else ...[
-                  // Targeted Mode
                   if (roadmap.isNotEmpty) ...[
-                    // Roadmap timeline
                     _buildCard(
                       title: 'Lộ Trình Phát Triển',
                       icon: Icons.trending_up_rounded,
-                      iconColor: const Color(0xFF00F2FE),
+                      iconColor: const Color(0xFF0284C7),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: List.generate(roadmap.length, (idx) {
@@ -337,12 +341,12 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                   CircleAvatar(
                                     radius: 10,
                                     backgroundColor: const Color(
-                                      0xFF00F2FE,
-                                    ).withValues(alpha: 0.2),
+                                      0xFF0284C7,
+                                    ).withValues(alpha: 0.1),
                                     child: Text(
                                       '${idx + 1}',
                                       style: const TextStyle(
-                                        color: Color(0xFF00F2FE),
+                                        color: Color(0xFF0284C7),
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -352,7 +356,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                     Container(
                                       width: 1.5,
                                       height: 35,
-                                      color: const Color(0xFF2C2C3E),
+                                      color: const Color(0xFFE5E7EB),
                                     ),
                                 ],
                               ),
@@ -363,9 +367,9 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                   child: Text(
                                     roadmap[idx],
                                     style: GoogleFonts.inter(
-                                      color: const Color(0xFFC3C5E0),
+                                      color: const Color(0xFF4B5563),
                                       fontSize: 13,
-                                      height: 1.3,
+                                      height: 1.4,
                                     ),
                                   ),
                                 ),
@@ -382,26 +386,26 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                     _buildCard(
                       title: 'Chứng Chỉ Cần Thiết',
                       icon: Icons.school_outlined,
-                      iconColor: const Color(0xFFE040FB),
+                      iconColor: const Color(0xFF9333EA),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: certificates
                             .map(
                               (cert) => Padding(
-                                padding: const EdgeInsets.only(bottom: 6.0),
+                                padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Row(
                                   children: [
                                     const Icon(
                                       Icons.workspace_premium_rounded,
-                                      size: 14,
-                                      color: Color(0xFFE040FB),
+                                      size: 16,
+                                      color: Color(0xFF9333EA),
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         cert,
                                         style: GoogleFonts.inter(
-                                          color: Colors.white,
+                                          color: Colors.black87,
                                           fontSize: 13,
                                         ),
                                       ),
@@ -420,26 +424,26 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                     _buildCard(
                       title: 'Vị Trí Công Việc Tương Đồng (O*NET)',
                       icon: Icons.work_history_outlined,
-                      iconColor: const Color(0xFFFF7A00),
+                      iconColor: const Color(0xFFEA580C),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: onetMatches
                             .map(
                               (job) => Padding(
-                                padding: const EdgeInsets.only(bottom: 6.0),
+                                padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Row(
                                   children: [
                                     const Icon(
                                       Icons.star_border_rounded,
-                                      size: 14,
-                                      color: Color(0xFFFF7A00),
+                                      size: 16,
+                                      color: Color(0xFFEA580C),
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         job,
                                         style: GoogleFonts.inter(
-                                          color: Colors.white,
+                                          color: Colors.black87,
                                           fontSize: 13,
                                         ),
                                       ),
@@ -458,11 +462,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                     _buildCard(
                       title: 'Mức Lương Cơ Bản tại Việt Nam',
                       icon: Icons.monetization_on_outlined,
-                      iconColor: const Color(0xFF00F5A0),
+                      iconColor: const Color(0xFF059669),
                       child: Text(
                         basicSalary,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFFC3C5E0),
+                          color: const Color(0xFF4B5563),
                           fontSize: 13,
                           height: 1.4,
                         ),
@@ -475,11 +479,11 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                     _buildCard(
                       title: 'Thị Trường Lao Động tại Việt Nam',
                       icon: Icons.bar_chart_rounded,
-                      iconColor: const Color(0xFFFF7A00),
+                      iconColor: const Color(0xFFEA580C),
                       child: Text(
                         laborMarket,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFFC3C5E0),
+                          color: const Color(0xFF4B5563),
                           fontSize: 13,
                           height: 1.4,
                         ),
@@ -489,29 +493,27 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                   ],
                 ],
 
-                // Summary/Phân tích tổng quan
                 if (summary.isNotEmpty) ...[
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF191922),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF2C2C3E)),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
                     child: Text(
                       summary,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        color: const Color(0xFFC3C5E0),
-                        height: 1.4,
+                        color: const Color(0xFF4B5563),
+                        height: 1.5,
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
                 ],
 
-                // Strengths and Weaknesses
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -520,7 +522,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                         title: 'Điểm Mạnh',
                         items: strengths,
                         icon: Icons.check_circle_outline_rounded,
-                        iconColor: const Color(0xFF00F5A0),
+                        iconColor: const Color(0xFF059669),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -529,34 +531,32 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                         title: 'Tố Chất Cần Rèn',
                         items: weaknesses,
                         icon: Icons.error_outline_rounded,
-                        iconColor: const Color(0xFFFF5252),
+                        iconColor: const Color(0xFFDC2626),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
 
-                // Main Advice
                 _buildCard(
                   title: 'Lời Khuyên Hướng Nghiệp',
                   icon: Icons.lightbulb_outline_rounded,
-                  iconColor: const Color(0xFFFFD600),
+                  iconColor: const Color(0xFFD97706),
                   child: Text(
                     advice,
                     style: GoogleFonts.inter(
-                      color: const Color(0xFFC3C5E0),
+                      color: const Color(0xFF4B5563),
                       fontSize: 13,
-                      height: 1.4,
+                      height: 1.5,
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // Feedback Loop Card
                 _buildCard(
                   title: 'Đánh Giá Độ Chính Xác Của AI',
                   icon: Icons.rate_review_outlined,
-                  iconColor: const Color(0xFF00F2FE),
+                  iconColor: const Color(0xFF0284C7),
                   child: _feedbackSent
                       ? Center(
                           child: Padding(
@@ -566,14 +566,14 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                               children: [
                                 const Icon(
                                   Icons.check_circle_rounded,
-                                  color: Colors.green,
+                                  color: Color(0xFF059669),
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Cảm ơn bạn đã gửi đánh giá hài lòng!',
                                   style: GoogleFonts.outfit(
-                                    color: Colors.green,
+                                    color: const Color(0xFF059669),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -588,11 +588,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                               'Đánh giá mức độ hài lòng về điểm số và phản biện của AI:',
                               style: GoogleFonts.inter(
                                 fontSize: 12,
-                                color: const Color(0xFF888B9B),
+                                color: const Color(0xFF6B7280),
                               ),
                             ),
                             const SizedBox(height: 12),
-                            // Stars selector
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: List.generate(5, (index) {
@@ -602,7 +601,9 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                     starVal <= _rating
                                         ? Icons.star_rounded
                                         : Icons.star_border_rounded,
-                                    color: const Color(0xFFFFD600),
+                                    color: const Color(
+                                      0xFFF59E0B,
+                                    ), // Vàng/Cam sáng hơn trên nền trắng
                                     size: 32,
                                   ),
                                   onPressed: () =>
@@ -614,7 +615,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                             TextField(
                               controller: _commentController,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: Colors.black87,
                                 fontSize: 13,
                               ),
                               maxLines: 2,
@@ -622,14 +623,14 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 hintText:
                                     'Nhập ý kiến đóng góp của bạn để tinh chỉnh thuật toán AI...',
                                 hintStyle: const TextStyle(
-                                  color: Color(0xFF5E6072),
+                                  color: Color(0xFF9CA3AF),
                                 ),
                                 filled: true,
-                                fillColor: const Color(0xFF0F0F13),
+                                fillColor: const Color(0xFFF9FAFB),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(
-                                    color: Color(0xFF2C2C3E),
+                                    color: Color(0xFFE5E7EB),
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -653,6 +654,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),
+                                elevation: 0,
                               ),
                               child: _isSendingFeedback
                                   ? const SizedBox(
@@ -696,24 +698,31 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF191922),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF2C2C3E)),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: iconColor),
+              Icon(icon, size: 18, color: iconColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
                   style: GoogleFonts.outfit(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -725,20 +734,34 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
               'Không có dữ liệu',
               style: GoogleFonts.inter(
                 fontSize: 11,
-                color: const Color(0xFF5E6072),
+                color: const Color(0xFF9CA3AF),
               ),
             )
           else
             ...items.map(
               (item) => Padding(
                 padding: const EdgeInsets.only(bottom: 6.0),
-                child: Text(
-                  '• $item',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: const Color(0xFF888B9B),
-                    height: 1.3,
-                  ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0, right: 6.0),
+                      child: CircleAvatar(
+                        backgroundColor: iconColor.withValues(alpha: 0.5),
+                        radius: 3,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF4B5563),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -756,9 +779,16 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF191922),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF2C2C3E)),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -778,9 +808,9 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                 child: Text(
                   title,
                   style: GoogleFonts.outfit(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black87,
                   ),
                 ),
               ),

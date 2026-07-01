@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF191922),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -119,7 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5E6072),
+                    color: const Color(0xFFD1D5DB),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -129,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color(0xFF1F2937),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -137,10 +137,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Mã phiên: ${session['sessionId']}',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: const Color(0xFF888B9B),
+                    color: const Color(0xFF6B7280),
                   ),
                 ),
-                const Divider(color: Color(0xFF2C2C3E), height: 24),
+                const Divider(color: Color(0xFFE5E7EB), height: 24),
                 Expanded(
                   child: ListView.builder(
                     controller: scrollController,
@@ -152,9 +152,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F0F13),
+                          color: const Color(0xFFF9FAFB),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF2C2C3E)),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,7 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               style: GoogleFonts.outfit(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: const Color(0xFF1F2937),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -174,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   'Đã trả lời: ',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: const Color(0xFF888B9B),
+                                    color: const Color(0xFF6B7280),
                                   ),
                                 ),
                                 Container(
@@ -184,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: const Color(
-                                      0xFF6C63FF,
+                                      0xFFF59E0B,
                                     ).withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -193,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF6C63FF),
+                                      color: const Color(0xFFF59E0B),
                                     ),
                                   ),
                                 ),
@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: const Color(0xFFFAFAFA),
       body: Stack(
         children: [
           // Background Glows
@@ -230,7 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF7C4DFF).withValues(alpha: 0.06),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -248,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       IconButton(
                         icon: const Icon(
                           Icons.arrow_back_rounded,
-                          color: Colors.white,
+                          color: Color(0xFF1F2937),
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
@@ -257,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: const Color(0xFF1F2937),
                         ),
                       ),
                       auth.isAuthenticated
@@ -266,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 _isEditing
                                     ? Icons.close_rounded
                                     : Icons.edit_rounded,
-                                color: Colors.white,
+                                color: const Color(0xFF1F2937),
                               ),
                               onPressed: () {
                                 setState(() {
@@ -289,12 +289,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CircleAvatar(
                           radius: 40,
                           backgroundColor: const Color(
-                            0xFF6C63FF,
+                            0xFFF59E0B,
                           ).withValues(alpha: 0.1),
                           child: const Icon(
                             Icons.person_rounded,
                             size: 40,
-                            color: Color(0xFF6C63FF),
+                            color: Color(0xFFF59E0B),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -305,14 +305,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           style: GoogleFonts.outfit(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: const Color(0xFF1F2937),
                           ),
                         ),
                         Text(
                           auth.currentUser?['email'] ?? '',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: const Color(0xFF888B9B),
+                            color: const Color(0xFF6B7280),
                           ),
                         ),
                       ],
@@ -343,30 +343,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (_isEditing)
                           DropdownButtonFormField<String>(
                             initialValue: _educationLevel,
-                            style: const TextStyle(color: Colors.white),
-                            dropdownColor: const Color(0xFF191922),
+                            style: const TextStyle(color: Color(0xFF1F2937)),
+                            dropdownColor: Colors.white,
                             decoration: InputDecoration(
                               labelText: 'Trình độ học vấn',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF7A7C93),
+                                color: Color(0xFF6B7280),
                                 fontSize: 13,
                               ),
                               prefixIcon: const Icon(
                                 Icons.school_outlined,
-                                color: Color(0xFF7A7C93),
+                                color: Color(0xFF9CA3AF),
                               ),
                               filled: true,
-                              fillColor: const Color(0xFF191922),
+                              fillColor: Colors.white,
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: const BorderSide(
-                                  color: Color(0xFF2C2C3E),
+                                  color: Color(0xFFE5E7EB),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: const BorderSide(
-                                  color: Color(0xFF6C63FF),
+                                  color: Color(0xFFF59E0B),
                                 ),
                               ),
                             ),
@@ -405,11 +405,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ElevatedButton(
                             onPressed: _saveProfile,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6C63FF),
+                              backgroundColor: const Color(0xFFF59E0B),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
+                              elevation: 0,
                             ),
                             child: Text(
                               'Lưu thay đổi',
@@ -434,7 +435,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: const Color(0xFF1F2937),
                         ),
                       ),
                       if (!_isLoadingHistory)
@@ -442,7 +443,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           '${_history.length} bài đã làm',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: const Color(0xFF888B9B),
+                            color: const Color(0xFF6B7280),
                           ),
                         ),
                     ],
@@ -468,24 +469,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return TextFormField(
       controller: controller,
       enabled: enabled,
-      style: TextStyle(color: enabled ? Colors.white : const Color(0xFF888B9B)),
+      style: TextStyle(
+        color: enabled ? const Color(0xFF1F2937) : const Color(0xFF4B5563),
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF7A7C93), fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF7A7C93)),
+        labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+        prefixIcon: Icon(icon, color: const Color(0xFF9CA3AF)),
         filled: true,
-        fillColor: enabled ? const Color(0xFF191922) : const Color(0xFF121216),
+        fillColor: enabled ? Colors.white : const Color(0xFFF3F4F6),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF1E1E24)),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF2C2C3E)),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF6C63FF)),
+          borderSide: const BorderSide(color: Color(0xFFF59E0B)),
         ),
       ),
       validator: (val) =>
@@ -513,7 +516,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 24.0),
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
           ),
         ),
       );
@@ -523,16 +526,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 32),
         decoration: BoxDecoration(
-          color: const Color(0xFF191922),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF2C2C3E)),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Column(
           children: [
             const Icon(
               Icons.history_toggle_off_rounded,
               size: 40,
-              color: Color(0xFF5E6072),
+              color: Color(0xFF9CA3AF),
             ),
             const SizedBox(height: 12),
             Text(
@@ -540,7 +543,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: GoogleFonts.outfit(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF888B9B),
+                color: const Color(0xFF6B7280),
               ),
             ),
           ],
@@ -584,9 +587,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF191922),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF2C2C3E)),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(
@@ -595,11 +605,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 leading: CircleAvatar(
                   backgroundColor: const Color(
-                    0xFF6C63FF,
+                    0xFFF59E0B,
                   ).withValues(alpha: 0.1),
                   child: const Icon(
                     Icons.assessment_rounded,
-                    color: Color(0xFF6C63FF),
+                    color: Color(0xFFF59E0B),
                   ),
                 ),
                 title: Text(
@@ -607,7 +617,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color(0xFF1F2937),
                   ),
                 ),
                 subtitle: Padding(
@@ -619,7 +629,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         '$questionsCount câu hỏi • ${isCompleted ? 'Đã hoàn thành' : 'Chưa hoàn thành'}',
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: isCompleted ? Colors.green : Colors.amber,
+                          color: isCompleted
+                              ? Colors.green
+                              : Colors.amber.shade700,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -627,7 +639,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         'Ngày làm: $dateStr',
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: const Color(0xFF5E6072),
+                          color: const Color(0xFF6B7280),
                         ),
                       ),
                     ],
@@ -645,8 +657,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: BoxDecoration(
                           color:
                               (score > 3
-                                      ? const Color(0xFF00F5A0)
-                                      : const Color(0xFFFFB74D))
+                                      ? const Color(0xFF10B981) // Green
+                                      : const Color(0xFFF59E0B)) // Orange
                                   .withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -656,8 +668,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: score > 3
-                                ? const Color(0xFF00F5A0)
-                                : const Color(0xFFFFB74D),
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFF59E0B),
                           ),
                         ),
                       ),
@@ -665,7 +677,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     const Icon(
                       Icons.chevron_right_rounded,
-                      color: Color(0xFF888B9B),
+                      color: Color(0xFF9CA3AF),
                     ),
                   ],
                 ),
@@ -690,7 +702,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              side: const BorderSide(color: Color(0xFF6C63FF)),
+              side: const BorderSide(color: Color(0xFFF59E0B)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -700,7 +712,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: GoogleFonts.outfit(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF6C63FF),
+                color: const Color(0xFFF59E0B),
               ),
             ),
           ),
