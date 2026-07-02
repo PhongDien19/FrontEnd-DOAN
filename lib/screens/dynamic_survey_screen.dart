@@ -24,10 +24,28 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   String _mode = 'Discovery'; // 'Discovery' hoặc 'Targeted'
   final _targetCareerController = TextEditingController();
   final _ageController = TextEditingController();
-  final _locationController = TextEditingController();
   final _hobbyController = TextEditingController();
   String _educationLevel = 'Đại học';
   final _formKey = GlobalKey<FormState>();
+
+  // --- THÊM BIẾN DÀNH CHO FILTER KHU VỰC ---
+  final List<String> _locationOptions = [
+    'Hà Nội',
+    'TP. Hồ Chí Minh',
+    'Đà Nẵng',
+    'Hải Phòng',
+    'Cần Thơ',
+    'Bình Dương',
+    'Đồng Nai',
+    'Quảng Ninh',
+    'Thừa Thiên Huế',
+    'Du học Mỹ',
+    'Du học Úc',
+    'Du học Nhật Bản',
+    'Du học Hàn Quốc',
+  ];
+  List<String> _selectedLocations = [];
+  // ------------------------------------------
 
   // Dữ liệu khảo sát từ API
   String _sessionId = '';
@@ -51,8 +69,17 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       _targetCareerController.text = p['targetJob'] ?? '';
       _ageController.text = (p['age'] ?? '').toString();
       _educationLevel = p['educationLevel'] ?? 'Đại học';
-      _locationController.text = p['location'] ?? '';
       _hobbyController.text = p['interests'] ?? p['hobby'] ?? '';
+
+      // Xử lý nạp dữ liệu khu vực từ profile (nếu có dạng "Hà Nội, TP.HCM")
+      String locs = p['location'] ?? '';
+      if (locs.isNotEmpty) {
+        _selectedLocations = locs
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
     }
   }
 
@@ -60,14 +87,25 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   void dispose() {
     _targetCareerController.dispose();
     _ageController.dispose();
-    _locationController.dispose();
     _hobbyController.dispose();
     super.dispose();
   }
 
   // Khởi tạo câu hỏi khảo sát từ API
   void _initializeSurvey() async {
+    // Kiểm tra Form Validation
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Kiểm tra xem người dùng đã chọn ít nhất 1 khu vực chưa
+    if (_selectedLocations.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng chọn ít nhất 1 khu vực học tập/làm việc!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
       return;
     }
 
@@ -79,8 +117,10 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         ? _targetCareerController.text.trim()
         : null;
     final ageVal = int.tryParse(_ageController.text);
-    final locationVal = _locationController.text.trim();
     final hobbyVal = _hobbyController.text.trim();
+
+    // Gộp mảng khu vực thành chuỗi cách nhau bởi dấu phẩy
+    final locationVal = _selectedLocations.join(', ');
 
     final result = await ApiService.initSurvey(
       _mode,
@@ -128,7 +168,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
   // Nộp kết quả khảo sát
   void _submitSurvey() async {
-    // Đảm bảo tất cả câu hỏi đã được trả lời
     if (_answers.length < _questions.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -143,10 +182,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       _step = 3;
     });
 
-    // Tạo danh sách câu trả lời theo đúng thứ tự câu hỏi
     final List<int> orderedAnswers = [];
     for (int i = 0; i < _questions.length; i++) {
-      orderedAnswers.add(_answers[i] ?? 3); // Mặc định là 3 nếu thiếu sót
+      orderedAnswers.add(_answers[i] ?? 3);
     }
 
     final result = await ApiService.submitSurvey(_sessionId, orderedAnswers);
@@ -159,7 +197,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       final auth = Provider.of<AuthProvider>(context, listen: false);
 
       if (auth.isAuthenticated) {
-        // Tự động claim kết quả và cập nhật profile nếu đã đăng nhập
         await auth.claimTestResult(_sessionId);
       }
 
@@ -167,7 +204,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         return;
       }
 
-      // Chuyển hướng sang màn hình báo cáo chi tiết
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -182,7 +218,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         return;
       }
       setState(() {
-        _step = 2; // Quay lại làm tiếp/thử lại
+        _step = 2;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -196,33 +232,26 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF8FAFC,
-      ), // Light Mode: Nền xám nhạt mịn màng
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor:
-            Colors.white, // Light Mode: Thanh điều hướng trắng tinh tế
+        backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
           _testName,
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: const Color(0xFF0F172A), // Chữ tiêu đề tối sắc nét
+            color: const Color(0xFF0F172A),
           ),
         ),
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: Color(0xFF334155),
-          ), // Icon tối dễ nhìn
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF334155)),
           onPressed: () {
             if (_step == 2) {
-              // Yêu cầu xác nhận thoát khi đang làm bài
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  backgroundColor: Colors.white, // Dialog nền trắng nền nã
+                  backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -272,7 +301,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       ),
       body: Stack(
         children: [
-          // Background Glows nhẹ dịu cho Light mode
           Positioned(
             top: 80,
             left: -120,
@@ -297,7 +325,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
               ),
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -329,7 +356,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   }
 
   Widget _buildSetupView() {
-    // Để hài hòa trong Light Mode, đổi màu neon xanh lá chói thành Emerald dịu mắt hơn
     final themeColor = _mode == 'Discovery'
         ? const Color(0xFF10B981)
         : const Color(0xFF6C63FF);
@@ -340,15 +366,12 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Banner Header
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: const Color(0xFFE2E8F0),
-                ), // Viền xám sáng mịn
+                border: Border.all(color: const Color(0xFFE2E8F0)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
@@ -388,7 +411,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Lựa chọn chế độ (Discovery / Targeted)
             Text(
               'CHỌN CHẾ ĐỘ KHẢO SÁT',
               style: GoogleFonts.inter(
@@ -400,10 +422,8 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Mode Cards
             Row(
               children: [
-                // Discovery Mode
                 Expanded(
                   child: _buildModeCard(
                     title: 'Khám Phá',
@@ -415,7 +435,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   ),
                 ),
                 const SizedBox(width: 14),
-                // Targeted Mode
                 Expanded(
                   child: _buildModeCard(
                     title: 'Mục Tiêu',
@@ -430,7 +449,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Thẻ Thông tin cá nhân
             Text(
               'THÔNG TIN CÁ NHÂN (CÁ NHÂN HÓA ĐÁNH GIÁ)',
               style: GoogleFonts.inter(
@@ -442,6 +460,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             ),
             const SizedBox(height: 12),
 
+            // Thay thế đoạn Container chứa các Form Fields trong _buildSetupView():
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -459,135 +478,186 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Tuổi & Khu vực sinh sống side-by-side
-                  Row(
+                  // 1. Ô ĐỘ TUỔI (Bây giờ chiếm trọn 1 hàng độc lập để không bị lệch layout)
+                  TextFormField(
+                    controller: _ageController,
+                    keyboardType: TextInputType.number,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 13,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Độ tuổi',
+                      labelStyle: GoogleFonts.inter(
+                        color: const Color(0xFF475569),
+                        fontSize: 12,
+                      ),
+                      hintText: 'Ví dụ: 18',
+                      hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF94A3B8),
+                        fontSize: 12,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: themeColor),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.redAccent),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.redAccent),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Nhập tuổi';
+                      }
+                      final age = int.tryParse(val);
+                      if (age == null || age < 5 || age > 100) {
+                        return 'Từ 5-100';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 2. Ô KHU VỰC MONG MUỐN (Đã tách xuống hàng riêng, giao diện thoáng đãng)
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Tuổi
-                      Expanded(
-                        flex: 2,
-                        child: TextFormField(
-                          controller: _ageController,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF0F172A),
-                            fontSize: 13,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Độ tuổi',
-                            labelStyle: GoogleFonts.inter(
-                              color: const Color(0xFF475569),
-                              fontSize: 12,
-                            ),
-                            hintText: 'Ví dụ: 18',
-                            hintStyle: GoogleFonts.inter(
-                              color: const Color(0xFF94A3B8),
-                              fontSize: 12,
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: themeColor),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Colors.redAccent,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Colors.redAccent,
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val == null || val.trim().isEmpty) {
-                              return 'Nhập tuổi';
-                            }
-                            final age = int.tryParse(val);
-                            if (age == null || age < 5 || age > 100) {
-                              return 'Từ 5-100';
-                            }
-                            return null;
-                          },
-                        ),
+                      Autocomplete<String>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text.isEmpty) {
+                            return const Iterable<String>.empty();
+                          }
+                          return _locationOptions.where((String option) {
+                            final matchesSearch = option.toLowerCase().contains(
+                              textEditingValue.text.toLowerCase(),
+                            );
+                            final notSelectedYet = !_selectedLocations.contains(
+                              option,
+                            );
+                            return matchesSearch && notSelectedYet;
+                          });
+                        },
+                        onSelected: (String selection) {
+                          setState(() {
+                            _selectedLocations.add(selection);
+                          });
+                        },
+                        fieldViewBuilder:
+                            (
+                              context,
+                              textEditingController,
+                              focusNode,
+                              onFieldSubmitted,
+                            ) {
+                              // Mẹo: Xóa text thừa trong ô input ngay sau khi chọn xong để tránh giống như trong ảnh
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (_selectedLocations.contains(
+                                  textEditingController.text,
+                                )) {
+                                  textEditingController.clear();
+                                }
+                              });
+
+                              return TextFormField(
+                                controller: textEditingController,
+                                focusNode: focusNode,
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF0F172A),
+                                  fontSize: 13,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText:
+                                      'Khu vực học tập/làm việc mong muốn',
+                                  labelStyle: GoogleFonts.inter(
+                                    color: const Color(0xFF475569),
+                                    fontSize: 12,
+                                  ),
+                                  hintText:
+                                      'Gõ để tìm kiếm (Ví dụ: Hà Nội, TP. Hồ Chí Minh...)',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 12,
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: themeColor),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 14,
+                                  ),
+                                ),
+                              );
+                            },
                       ),
-                      const SizedBox(width: 12),
-                      // Khu vực sinh sống
-                      Expanded(
-                        flex: 3,
-                        child: TextFormField(
-                          controller: _locationController,
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF0F172A),
-                            fontSize: 13,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Khu vực học tập/làm việc',
-                            labelStyle: GoogleFonts.inter(
-                              color: const Color(0xFF475569),
-                              fontSize: 12,
-                            ),
-                            hintText: 'Ví dụ: Hà Nội, Tp.HCM',
-                            hintStyle: GoogleFonts.inter(
-                              color: const Color(0xFF94A3B8),
-                              fontSize: 12,
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+
+                      // Hiển thị các Tags/Pills ở NGAY DƯỚI ô nhập liệu (nếu có)
+                      if (_selectedLocations.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _selectedLocations.map((loc) {
+                            return Chip(
+                              label: Text(
+                                loc,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: themeColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: themeColor),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Colors.redAccent,
+                              deleteIcon: Icon(
+                                Icons.cancel,
+                                size: 16,
+                                color: themeColor,
                               ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Colors.redAccent,
+                              onDeleted: () {
+                                setState(() {
+                                  _selectedLocations.remove(loc);
+                                });
+                              },
+                              backgroundColor: themeColor.withValues(
+                                alpha: 0.1,
                               ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val == null || val.trim().isEmpty) {
-                              return 'Nhập khu vực';
-                            }
-                            return null;
-                          },
+                              side: BorderSide.none,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            );
+                          }).toList(),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Học vấn Dropdown
+                  // 3. TRÌNH ĐỘ HỌC VẤN
                   DropdownButtonFormField<String>(
                     value: _educationLevel,
                     dropdownColor: Colors.white,
@@ -640,7 +710,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Sở thích cá nhân
+                  // 4. SỞ THÍCH CÁ NHÂN
                   TextFormField(
                     controller: _hobbyController,
                     maxLines: 2,
@@ -695,7 +765,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Form nhập ngành nghề mục tiêu (chỉ hiện khi chọn Targeted Mode)
             if (_mode == 'Targeted') ...[
               Text(
                 'NGÀNH NGHỀ MỤC TIÊU',
@@ -753,7 +822,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
               const SizedBox(height: 28),
             ],
 
-            // Nút bấm Bắt đầu
             ElevatedButton(
               onPressed: _initializeSurvey,
               style: ElevatedButton.styleFrom(
@@ -861,7 +929,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     );
   }
 
-  // --- BƯỚC 1 & 3: HIỂN THỊ TRẠNG THÁI LOADING ---
   Widget _buildLoadingView(String text) {
     return Center(
       child: Column(
@@ -898,7 +965,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     );
   }
 
-  // --- BƯỚC 2: TRÌNH BÀY CÂU HỎI & CHỌN ĐÁP ÁN ---
   Widget _buildSurveyView() {
     if (_questions.isEmpty) {
       return const SizedBox.shrink();
@@ -917,7 +983,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Progress bar + Số thứ tự câu hỏi
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -948,7 +1013,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         ),
         const SizedBox(height: 12),
 
-        // Thanh tiến trình
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
@@ -960,7 +1024,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         ),
         const SizedBox(height: 28),
 
-        // Thẻ câu hỏi
         Expanded(
           child: SingleChildScrollView(
             child: Column(
@@ -992,7 +1055,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Danh sách options
                 ...options.map((opt) {
                   final text = opt['text'] ?? '';
                   final weight = opt['weight'] as int? ?? 3;
@@ -1075,10 +1137,8 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
         const SizedBox(height: 16),
 
-        // Hàng nút Quay lại / Tiếp theo / Nộp bài
         Row(
           children: [
-            // Nút Quay lại
             if (_currentQuestionIndex > 0)
               Expanded(
                 child: OutlinedButton(
@@ -1109,7 +1169,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
             const SizedBox(width: 12),
 
-            // Nút Tiếp theo hoặc Nộp bài
             Expanded(
               child: ElevatedButton(
                 onPressed: _answers.containsKey(_currentQuestionIndex)
