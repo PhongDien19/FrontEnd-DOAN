@@ -139,30 +139,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.history_rounded, color: textGray),
-            tooltip: 'Lịch sử AI',
-            onPressed: () {
-              final currentUserId =
-                  (auth.userProfile?['id'] ??
-                          auth.userProfile?['_id'] ??
-                          'mock_user_id')
-                      .toString();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => TestHistoryScreen(userId: currentUserId),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.chat_bubble_outline_rounded, color: textGray),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ChatScreen()),
-            ),
-          ),
           auth.isAuthenticated
               ? IconButton(
                   icon: Icon(Icons.account_circle_outlined, color: textGray),
@@ -190,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
-          // Background decorations (Làm nhạt đi)
+          // Background decorations
           Positioned(
             top: 20,
             left: -100,
@@ -269,9 +245,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
 
-                  // Thẻ 1: Đánh Giá Toàn Diện (Nền trắng, nút cam)
+                  // Thẻ: Đánh Giá Toàn Diện
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -301,24 +277,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFEF3C7), // Nền cam nhạt
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '$completedCount/4 Bài',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFFD97706),
-                                ),
-                              ),
-                            ),
+                            // Container(
+                            //   padding: const EdgeInsets.symmetric(
+                            //     horizontal: 12,
+                            //     vertical: 6,
+                            //   ),
+                            //   decoration: BoxDecoration(
+                            //     color: const Color(0xFFFEF3C7),
+                            //     borderRadius: BorderRadius.circular(12),
+                            //   ),
+                            //   child: Text(
+                            //     '$completedCount/4 Bài',
+                            //     style: GoogleFonts.inter(
+                            //       fontSize: 12,
+                            //       fontWeight: FontWeight.bold,
+                            //       color: const Color(0xFFD97706),
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -340,15 +316,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         const SizedBox(height: 20),
+
+                        // Nút Cam chính: Bây giờ khi nhấn sẽ chuyển sang DynamicSurveyScreen()
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const ComprehensiveReportScreen(),
+                                builder: (_) => const DynamicSurveyScreen(),
                               ),
-                            );
+                            ).then((_) {
+                              if (!context.mounted) return;
+                              Provider.of<AuthProvider>(
+                                context,
+                                listen: false,
+                              ).refreshProfile();
+                            });
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryOrange,
@@ -365,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 completedCount == 4
                                     ? 'Xem Báo Cáo Chi Tiết'
-                                    : 'Bắt đầu đánh giá miễn phí',
+                                    : 'Bắt đầu khảo sát',
                                 style: GoogleFonts.outfit(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -373,111 +356,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(width: 8),
                               const Icon(Icons.arrow_forward_rounded, size: 16),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Thẻ 2: Khảo Sát Hướng Nghiệp Động AI (Nền trắng, nút viền)
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Khảo Sát Hướng Nghiệp Động AI',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: textDark,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF3F4F6),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '15 Câu Hỏi',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: textGray,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Khảo sát kịch bản tình huống được AI tạo lập thời gian thực. Đánh giá đa chiều (Holland, Big Five, SCCT) và hỗ trợ chế độ khảo sát ẩn danh.',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: textGray,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const DynamicSurveyScreen(),
-                              ),
-                            ).then((_) {
-                              if (!context.mounted) {
-                                return;
-                              }
-                              Provider.of<AuthProvider>(
-                                context,
-                                listen: false,
-                              ).refreshProfile();
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: primaryOrange,
-                            side: BorderSide(color: primaryOrange),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Tìm hiểu quy trình',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -606,7 +484,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.palette_outlined,
                         accentColor: const Color(0xFFFF7A00),
                         isCompleted: hasHolland,
-                        onPressed: () => _startAssessment('holland'),
                       ),
                       _buildPillarCard(
                         title: 'Tính Cách (MBTI)',
@@ -614,7 +491,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.psychology_outlined,
                         accentColor: const Color(0xFF7C4DFF),
                         isCompleted: hasPersonality,
-                        onPressed: () => _startAssessment('personality'),
                       ),
                       _buildPillarCard(
                         title: 'Năng Lực Nhận Thức',
@@ -622,7 +498,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.lightbulb_outline_rounded,
                         accentColor: const Color(0xFF00B0FF),
                         isCompleted: hasCognitive,
-                        onPressed: () => _startAssessment('cognitive'),
                       ),
                       _buildPillarCard(
                         title: 'Giá Trị Cá Nhân',
@@ -631,7 +506,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.star_border_rounded,
                         accentColor: const Color(0xFFFFD600),
                         isCompleted: hasValues,
-                        onPressed: () => _startAssessment('values'),
                       ),
                     ],
                   ),
@@ -645,116 +519,78 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _startAssessment(String testType) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AssessmentFlowScreen(testType: testType),
-      ),
-    ).then((_) {
-      if (!mounted) {
-        return;
-      }
-      Provider.of<AuthProvider>(context, listen: false).refreshProfile();
-    });
-  }
-
   Widget _buildPillarCard({
     required String title,
     required String description,
     required IconData icon,
     required Color accentColor,
     required bool isCompleted,
-    required VoidCallback onPressed,
   }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isCompleted
-                ? accentColor.withValues(alpha: 0.5)
-                : const Color(0xFFE5E7EB),
-            width: isCompleted ? 1.5 : 1,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isCompleted
+              ? accentColor.withValues(alpha: 0.5)
+              : const Color(0xFFE5E7EB),
+          width: isCompleted ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: accentColor, size: 24),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                if (isCompleted)
-                  const Icon(
-                    Icons.check_circle_rounded,
-                    color: Colors.green,
-                    size: 20,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1F2937),
-                  ),
+                child: Icon(icon, color: accentColor, size: 24),
+              ),
+              if (isCompleted)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.green,
+                  size: 20,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: const Color(0xFF6B7280),
-                    height: 1.3,
-                  ),
-                ),
-              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.outfit(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1F2937),
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  isCompleted ? 'Xem lại' : 'Bắt đầu',
-                  style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: accentColor,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(Icons.arrow_forward_rounded, color: accentColor, size: 12),
-              ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              color: const Color(0xFF6B7280),
+              height: 1.3,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
