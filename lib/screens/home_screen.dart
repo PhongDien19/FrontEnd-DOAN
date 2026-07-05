@@ -23,6 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isConsulting = false;
   String? _consultResponse;
 
+  // State nhận diện chế độ tư vấn: 'AI' (chung), 'HOC' (trường học), 'LAM' (công ty)
+  String _currentMode = 'AI';
+
   // Định nghĩa bảng màu Light Mode
   final Color primaryOrange = const Color(0xFFF59E0B);
   final Color bgColor = const Color(0xFFFAFAFA);
@@ -35,15 +38,22 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _sendQuickConsult() async {
+  void _sendQuickConsult({String mode = 'AI'}) async {
     final query = _quickQuestionController.text.trim();
     if (query.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập tên ngành nghề hoặc câu hỏi của bạn!'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
     setState(() {
       _isConsulting = true;
       _consultResponse = null;
+      _currentMode = mode; // Lưu chế độ đang truy vấn
     });
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -52,6 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'educationLevel': auth.educationLevel,
       'age': auth.userProfile?['age'] ?? 18,
       'hobby': auth.hobby,
+      'requestType':
+          mode, // Gửi xuống API để AI/Backend biết yêu cầu Học hay Làm
     };
 
     final result = await ApiService.consultCareer({
@@ -277,24 +289,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            // Container(
-                            //   padding: const EdgeInsets.symmetric(
-                            //     horizontal: 12,
-                            //     vertical: 6,
-                            //   ),
-                            //   decoration: BoxDecoration(
-                            //     color: const Color(0xFFFEF3C7),
-                            //     borderRadius: BorderRadius.circular(12),
-                            //   ),
-                            //   child: Text(
-                            //     '$completedCount/4 Bài',
-                            //     style: GoogleFonts.inter(
-                            //       fontSize: 12,
-                            //       fontWeight: FontWeight.bold,
-                            //       color: const Color(0xFFD97706),
-                            //     ),
-                            //   ),
-                            // ),
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -317,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Nút Cam chính: Bây giờ khi nhấn sẽ chuyển sang DynamicSurveyScreen()
+                        // Nút Cam chính: Chuyển sang DynamicSurveyScreen()
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -364,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Khung chat tư vấn
+                  // Khung chat tư vấn hướng nghiệp nhanh
                   Text(
                     'Tư Vấn Hướng Nghiệp Nhanh',
                     style: GoogleFonts.outfit(
@@ -380,10 +374,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: const Color(0xFFE5E7EB)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // 1. Ô nhập từ khoá ngành nghề hoặc câu hỏi
                         Row(
                           children: [
                             Expanded(
@@ -392,9 +394,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(color: textDark, fontSize: 14),
                                 decoration: const InputDecoration(
                                   hintText:
-                                      'Ví dụ: Học ngành IT ra trường làm gì?',
+                                      'Nhập ngành nghề (VD: IT, Marketing, Logistics)...',
                                   hintStyle: TextStyle(
                                     color: Color(0xFF9CA3AF),
+                                    fontSize: 13,
                                   ),
                                   border: InputBorder.none,
                                   isDense: true,
@@ -402,11 +405,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     vertical: 8,
                                   ),
                                 ),
-                                onSubmitted: (_) => _sendQuickConsult(),
+                                onSubmitted: (_) =>
+                                    _sendQuickConsult(mode: 'AI'),
                               ),
                             ),
                             IconButton(
-                              icon: _isConsulting
+                              icon: _isConsulting && _currentMode == 'AI'
                                   ? SizedBox(
                                       width: 18,
                                       height: 18,
@@ -424,21 +428,80 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                               onPressed: _isConsulting
                                   ? null
-                                  : _sendQuickConsult,
+                                  : () => _sendQuickConsult(mode: 'AI'),
                             ),
                           ],
                         ),
+
+                        const SizedBox(height: 12),
+
+                        // 2. Hai Option Box: HỌC & LÀM
+                        Row(
+                          children: [
+                            // Option 1: HỌC Ở ĐÂU? (Trường học)
+                            Expanded(
+                              child: _buildActionOptionBox(
+                                title: 'Học ở đâu?',
+                                subtitle: 'Các trường đào tạo',
+                                icon: Icons.school_outlined,
+                                color: const Color(
+                                  0xFF3B82F6,
+                                ), // Màu xanh dương
+                                isLoading:
+                                    _isConsulting && _currentMode == 'HOC',
+                                onTap: _isConsulting
+                                    ? null
+                                    : () => _sendQuickConsult(mode: 'HOC'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Option 2: LÀM Ở ĐÂU? (Việc làm, công ty)
+                            Expanded(
+                              child: _buildActionOptionBox(
+                                title: 'Làm ở đâu?',
+                                subtitle: 'Công ty tuyển dụng',
+                                icon: Icons.work_outline_rounded,
+                                color: const Color(0xFF10B981), // Màu xanh lá
+                                isLoading:
+                                    _isConsulting && _currentMode == 'LAM',
+                                onTap: _isConsulting
+                                    ? null
+                                    : () => _sendQuickConsult(mode: 'LAM'),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // 3. Phản hồi từ AI
                         if (_consultResponse != null) ...[
                           const Divider(color: Color(0xFFE5E7EB), height: 24),
-                          Text(
-                            'AI Phản Hồi:',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: primaryOrange,
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                _currentMode == 'HOC'
+                                    ? Icons.school
+                                    : (_currentMode == 'LAM'
+                                          ? Icons.work
+                                          : Icons.auto_awesome),
+                                size: 16,
+                                color: primaryOrange,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _currentMode == 'HOC'
+                                    ? 'Danh Sách Trường Đào Tạo:'
+                                    : (_currentMode == 'LAM'
+                                          ? 'Công Ty & Nhu Cầu Tuyển Dụng:'
+                                          : 'AI Phản Hồi:'),
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: primaryOrange,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
@@ -515,6 +578,72 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Widget hỗ trợ tạo Option Box (Học / Làm)
+  Widget _buildActionOptionBox({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isLoading,
+    required VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: isLoading
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                      ),
+                    )
+                  : Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: textDark,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 10, color: textGray),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
