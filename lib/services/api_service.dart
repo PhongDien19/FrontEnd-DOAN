@@ -34,6 +34,23 @@ class ApiService {
     return headers;
   }
 
+  // Safe JSON parse: returns a Map when possible, otherwise returns
+  // a map with success=false and raw body for diagnostics.
+  static Map<String, dynamic> _safeParseResponse(http.Response response) {
+    try {
+      final parsed = jsonDecode(response.body);
+      if (parsed is Map<String, dynamic>) return parsed;
+      return {'success': true, 'data': parsed};
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Invalid JSON from server',
+        'raw': response.body,
+        'statusCode': response.statusCode
+      };
+    }
+  }
+
   // --- 1. AUTHENTICATION ENDPOINTS ---
 
   // Đăng nhập thường
@@ -48,9 +65,9 @@ class ApiService {
         body: jsonEncode({'username': email, 'password': password}),
       );
 
-      final data = jsonDecode(response.body);
+      final data = _safeParseResponse(response);
       if (response.statusCode == 200 && data['success'] == true) {
-        currentUserId = data['user']['id']?.toString();
+        currentUserId = (data['user'] != null ? data['user']['id']?.toString() : null);
       }
       return data;
     } catch (e) {
@@ -74,7 +91,7 @@ class ApiService {
           'fullName': fullName,
         }),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Không thể kết nối tới máy chủ: $e'};
     }
@@ -89,7 +106,7 @@ class ApiService {
         Uri.parse('$baseUrl/profile/$userId'),
         headers: _headers,
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy thông tin cá nhân: $e'};
     }
@@ -106,7 +123,7 @@ class ApiService {
         headers: _headers,
         body: jsonEncode(profileData),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {
         'success': false,
@@ -122,7 +139,7 @@ class ApiService {
         Uri.parse('$baseUrl/history/$userId'),
         headers: _headers,
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy lịch sử: $e'};
     }
@@ -138,7 +155,7 @@ class ApiService {
         headers: _headers,
         body: jsonEncode({'question': question}),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi kết nối chat: $e'};
     }
@@ -154,7 +171,7 @@ class ApiService {
         headers: _headers,
         body: jsonEncode({'info': info}),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi kết nối tư vấn: $e'};
     }
@@ -176,7 +193,7 @@ class ApiService {
         headers: _headers,
         body: jsonEncode(body),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi tạo bài test: $e'};
     }
@@ -188,7 +205,7 @@ class ApiService {
         Uri.parse('$baseUrl/test/evaluate/$sessionId'),
         headers: _headers,
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi đánh giá bài test: $e'};
     }
@@ -216,7 +233,7 @@ class ApiService {
           'userContext': userContext,
         }),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lưu câu hỏi: $e'};
     }
@@ -229,7 +246,7 @@ class ApiService {
         Uri.parse('$baseUrl/test/questions/$sessionId'),
         headers: _headers,
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi tải danh sách câu hỏi: $e'};
     }
@@ -246,7 +263,7 @@ class ApiService {
         headers: _headers,
         body: jsonEncode({'sessionId': sessionId, 'userId': userId}),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi đồng bộ kết quả test: $e'};
     }
@@ -265,7 +282,7 @@ class ApiService {
         headers: _headers,
         body: jsonEncode(context),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy báo cáo tổng hợp: $e'};
     }
@@ -296,7 +313,7 @@ class ApiService {
           if (hobby != null && hobby.isNotEmpty) 'hobby': hobby,
         }),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi khởi tạo khảo sát động: $e'};
     }
@@ -313,7 +330,7 @@ class ApiService {
         headers: _headers,
         body: jsonEncode({'sessionId': sessionId, 'answers': answers}),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi nộp kết quả khảo sát: $e'};
     }
@@ -335,7 +352,7 @@ class ApiService {
           'comment': comment,
         }),
       );
-      return jsonDecode(response.body);
+      return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi gửi phản hồi: $e'};
     }
