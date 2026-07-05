@@ -138,20 +138,20 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     }
 
     // Đọc và xử lý dữ liệu điểm số (Ô không nhập tự động mặc định bằng 0.0)
-    Map<String, dynamic> academicData = {};
-    if (_educationLevel == 'Học sinh THCS' ||
-        _educationLevel == 'Học sinh THPT') {
-      Map<String, double> scores = {};
-      for (var subject in _subjectNames) {
-        String textVal = _subjectControllers[subject]!.text.trim();
-        scores[subject] = double.tryParse(textVal) ?? 0.0;
-      }
-      academicData = {'type': 'high_school', 'scores': scores};
-    } else if (_educationLevel == 'Cao đẳng' || _educationLevel == 'Đại học') {
-      String gpaText = _gpaController.text.trim();
-      double gpa = double.tryParse(gpaText) ?? 0.0;
-      academicData = {'type': 'university', 'gpa': gpa};
-    }
+    // Map<String, dynamic> academicData = {};
+    // if (_educationLevel == 'Học sinh THCS' ||
+    //     _educationLevel == 'Học sinh THPT') {
+    //   Map<String, double> scores = {};
+    //   for (var subject in _subjectNames) {
+    //     String textVal = _subjectControllers[subject]!.text.trim();
+    //     scores[subject] = double.tryParse(textVal) ?? 0.0;
+    //   }
+    //   academicData = {'type': 'high_school', 'scores': scores};
+    // } else if (_educationLevel == 'Cao đẳng' || _educationLevel == 'Đại học') {
+    //   String gpaText = _gpaController.text.trim();
+    //   double gpa = double.tryParse(gpaText) ?? 0.0;
+    //   academicData = {'type': 'university', 'gpa': gpa};
+    // }
 
     setState(() {
       _step = 1;
@@ -656,7 +656,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
                   // 3. TRÌNH ĐỘ HỌC VẤN
                   DropdownButtonFormField<String>(
-                    value: _educationLevel,
+                    initialValue: _educationLevel,
                     dropdownColor: Colors.white,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF0F172A),

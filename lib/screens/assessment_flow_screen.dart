@@ -157,13 +157,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     if (evalResult['success'] == true) {
       if (auth.isAuthenticated) {
         await auth.claimTestResult(_sessionId);
-        if (mounted)
+        if (mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) => const ComprehensiveReportScreen(),
             ),
           );
+        }
         return;
       }
       setState(() => _step = 4);

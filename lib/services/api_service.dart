@@ -290,7 +290,7 @@ class ApiService {
           'mode': mode,
           if (targetCareer != null && targetCareer.isNotEmpty)
             'target_career': targetCareer,
-          if (age != null) 'age': age,
+          'age': age,
           if (education != null && education.isNotEmpty) 'education': education,
           if (location != null && location.isNotEmpty) 'location': location,
           if (hobby != null && hobby.isNotEmpty) 'hobby': hobby,
