@@ -4,14 +4,15 @@ import '../services/api_service.dart';
 
 class TestHistoryScreen extends StatefulWidget {
   final String userId;
-  // Thêm vai trò người dùng: 'student' (học sinh) hoặc 'worker' (người đi làm/sinh viên sắp tốt nghiệp)
   final String userRole;
+  final String?
+  initialSessionId; // Thêm tham số nhận ID bài test cần mở tự động
 
   const TestHistoryScreen({
     super.key,
     required this.userId,
-    this.userRole =
-        'worker', // Mặc định là 'worker', bạn có thể truyền 'student' từ màn hình trước vào
+    this.userRole = 'worker',
+    this.initialSessionId,
   });
 
   @override
@@ -42,6 +43,19 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         _history = res['history'] ?? [];
         _isLoading = false;
       });
+
+      // Kiểm tra nếu có initialSessionId từ ProfileScreen truyền sang thì tự động hiển thị chi tiết 4 tab
+      if (widget.initialSessionId != null && _history.isNotEmpty) {
+        final targetSession = _history.firstWhere(
+          (s) => s['sessionId']?.toString() == widget.initialSessionId,
+          orElse: () => null,
+        );
+        if (targetSession != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _viewSessionDetails(targetSession);
+          });
+        }
+      }
     } else {
       setState(() {
         _isLoading = false;
@@ -68,20 +82,18 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
     return '$hour:$minute - $day/$month/$year';
   }
 
-  // BẢNG CHI TIẾT VỚI 4 TABS ĐIỀU HƯỚNG THEO THIẾT KẾ CỦA BẠN
   void _viewSessionDetails(dynamic session) {
     final isDiscovery = session['mode'] == 'discovery';
     final questions = session['questions'] as List<dynamic>? ?? [];
     final roadmap = session['roadmap'] as List<dynamic>? ?? [];
 
-    // Dữ liệu mở rộng từ API cho Tab 4
     final matchingSchools = session['matchingSchools'] as List<dynamic>? ?? [];
     final marketSalaries = session['marketSalaries'] as List<dynamic>? ?? [];
     final hiringCompanies = session['hiringCompanies'] as List<dynamic>? ?? [];
 
     final color = isDiscovery
-        ? const Color(0xFF059669) // Xanh lục cho Khám phá
-        : const Color(0xFF6C63FF); // Tím cho Mục tiêu
+        ? const Color(0xFF059669)
+        : const Color(0xFF6C63FF);
 
     final isStudent = widget.userRole == 'student';
 
@@ -93,7 +105,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        // Sử dụng DefaultTabController gồm 4 Tabs
         return DefaultTabController(
           length: 4,
           child: DraggableScrollableSheet(
@@ -134,7 +145,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // THANH TAB BAR 4 MỤC
                   TabBar(
                     isScrollable: true,
                     tabAlignment: TabAlignment.start,
@@ -154,7 +164,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       const Tab(text: 'Câu hỏi'),
                       const Tab(text: 'Đánh giá'),
                       const Tab(text: 'Ngành nghề phù hợp'),
-                      // Tab 4 tự động đổi tên theo vai trò người dùng
                       Tab(
                         text: isStudent
                             ? 'Trường phù hợp'
@@ -164,20 +173,12 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                   ),
                   const Divider(color: Color(0xFFE5E7EB), height: 1),
 
-                  // NỘI DUNG 4 TABS
                   Expanded(
                     child: TabBarView(
                       children: [
-                        // TAB 1: DANH SÁCH CÂU HỎI
                         _buildQuestionsTab(questions, color, scrollController),
-
-                        // TAB 2: ĐÁNH GIÁ HƯỚNG NGHIỆP
                         _buildEvaluationTab(session, color, scrollController),
-
-                        // TAB 3: LỘ TRÌNH & CHỨNG CHỈ CẦN THIẾT
                         _buildRoadmapTab(roadmap, color, scrollController),
-
-                        // TAB 4: TRƯỜNG HỌC (STUDENT) HOẶC THỊ TRƯỜNG LAO ĐỘNG (WORKER)
                         isStudent
                             ? _buildStudentTab(
                                 matchingSchools,
@@ -201,8 +202,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       },
     );
   }
-
-  // --- CÁC COMPONENT GIAO DIỆN CON VẼ THEO LIGHT THEME ---
 
   Widget _buildQuestionsTab(
     List<dynamic> questions,
@@ -362,9 +361,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       itemCount: roadmap.length,
       itemBuilder: (context, index) {
         final step = roadmap[index];
-        final certs =
-            step['certs'] as List<dynamic>? ??
-            []; // Nhận danh sách chứng chỉ nếu có
+        final certs = step['certs'] as List<dynamic>? ?? [];
 
         return Container(
           margin: const EdgeInsets.only(bottom: 14),
@@ -407,7 +404,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         height: 1.4,
                       ),
                     ),
-                    // HIỂN THỊ CHỨNG CHỈ CẦN THIẾT (NẾU CÓ)
                     if (certs.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       Wrap(
@@ -459,7 +455,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
     );
   }
 
-  // TAB 4 CHO HỌC SINH: TRƯỜNG HỌC PHÙ HỢP
   Widget _buildStudentTab(
     List<dynamic> schools,
     Color color,
@@ -556,7 +551,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
     );
   }
 
-  // TAB 4 CHO NGƯỜI ĐI LÀM: THỊ TRƯỜNG LAO ĐỘNG & VIỆC LÀM
   Widget _buildWorkerTab(
     List<dynamic> salaries,
     List<dynamic> companies,
@@ -613,7 +607,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                            value: 0.65, // Tạo thanh bar trực quan
+                            value: 0.65,
                             backgroundColor: const Color(0xFFE5E7EB),
                             color: Colors.orange,
                             minHeight: 6,
@@ -713,7 +707,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Nền sáng
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,

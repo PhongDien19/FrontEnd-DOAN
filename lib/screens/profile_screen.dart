@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
 import 'test_history_screen.dart';
-import 'login_screen.dart'; // Import màn hình đăng nhập để chuyển hướng khi logout
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -54,12 +54,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final res = await ApiService.getHistory(auth.userId!);
 
-    setState(() {
-      _isLoadingHistory = false;
-      if (res['success'] == true) {
-        _history = res['history'] ?? [];
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _isLoadingHistory = false;
+        if (res['success'] == true) {
+          _history = res['history'] ?? [];
+        }
+      });
+    }
   }
 
   void _saveProfile() async {
@@ -97,7 +99,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Hàm xử lý đăng xuất kèm hộp thoại xác nhận từ người dùng
   void _handleLogout() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -146,11 +147,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (confirm == true && mounted) {
       final auth = Provider.of<AuthProvider>(context, listen: false);
-      await auth
-          .logout(); // Gọi hàm logout trong AuthProvider để xóa token/dữ liệu đã lưu
+      await auth.logout();
 
       if (mounted) {
-        // Chuyển hướng người dùng về màn hình Đăng nhập và xóa sạch lịch sử điều hướng (back stack)
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -158,123 +157,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
-  }
-
-  void _viewTestDetails(dynamic session) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        final questions = session['questions'] as List<dynamic>;
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          maxChildSize: 0.9,
-          minChildSize: 0.4,
-          expand: false,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1D5DB),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  session['testName'] ?? 'Chi tiết bài trắc nghiệm',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1F2937),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Mã phiên: ${session['sessionId']}',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-                const Divider(color: Color(0xFFE5E7EB), height: 24),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: questions.length,
-                    itemBuilder: (context, index) {
-                      final q = questions[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF9FAFB),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Câu ${index + 1}: ${q['questionText']}',
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1F2937),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Text(
-                                  'Đã trả lời: ',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: const Color(0xFF6B7280),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFF59E0B,
-                                    ).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    q['userAnswer'] ?? 'Chưa trả lời',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFFF59E0B),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   @override
@@ -285,7 +167,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFFFAFAFA),
       body: Stack(
         children: [
-          // Background Glows
           Positioned(
             top: -50,
             right: -50,
@@ -305,11 +186,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // App Bar override
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Tránh lệch tiêu đề khi thêm nút bên phải
                       auth.isAuthenticated
                           ? Row(
                               mainAxisSize: MainAxisSize.min,
@@ -321,9 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   onPressed: () => Navigator.pop(context),
                                 ),
-                                const SizedBox(
-                                  width: 48,
-                                ), // Tạo khoảng đối xứng bằng độ rộng nút Logout
+                                const SizedBox(width: 48),
                               ],
                             )
                           : IconButton(
@@ -355,7 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   onPressed: () {
                                     setState(() {
                                       if (_isEditing) {
-                                        _initFields(); // Reset fields
+                                        _initFields();
                                       }
                                       _isEditing = !_isEditing;
                                     });
@@ -364,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 IconButton(
                                   icon: const Icon(
                                     Icons.logout_rounded,
-                                    color: Color(0xFFEF4444), // Màu đỏ cảnh báo
+                                    color: Color(0xFFEF4444),
                                   ),
                                   onPressed: _handleLogout,
                                 ),
@@ -375,7 +252,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Avatar Info
                   Center(
                     child: Column(
                       children: [
@@ -413,7 +289,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 36),
 
-                  // Edit or View Profile Form
                   Form(
                     key: _formKey,
                     child: Column(
@@ -519,7 +394,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 36),
 
-                  // Test History Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -644,7 +518,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // Sắp xếp theo ngày gần nhất và lấy tối đa 3 mục preview
     final sortedHistory = List.from(_history);
     sortedHistory.sort((a, b) {
       final aDate =
@@ -672,7 +545,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final questionsCount = questions.length;
             final dateStr = _formatDate(session['createdAt']);
 
-            // Lấy score và xác định màu của badge score
             final score = session['score'] != null
                 ? double.tryParse(session['score'].toString())
                 : null;
@@ -750,8 +622,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: BoxDecoration(
                           color:
                               (score > 3
-                                      ? const Color(0xFF10B981) // Green
-                                      : const Color(0xFFF59E0B)) // Orange
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFF59E0B))
                                   .withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -774,7 +646,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
-                onTap: () => _viewTestDetails(session),
+                // THAY ĐỔI: Nhấn vào item sẽ chuyển ngay sang màn hình TestHistoryScreen và mở bài test này
+                onTap: () {
+                  final auth = Provider.of<AuthProvider>(
+                    context,
+                    listen: false,
+                  );
+                  if (auth.userId != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TestHistoryScreen(
+                          userId: auth.userId!,
+                          initialSessionId: session['sessionId']?.toString(),
+                        ),
+                      ),
+                    );
+                  }
+                },
               ),
             );
           },
