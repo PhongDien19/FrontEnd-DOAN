@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
 import 'test_history_screen.dart';
+import 'login_screen.dart'; // Import màn hình đăng nhập để chuyển hướng khi logout
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -91,6 +92,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
             content: Text(res['message'] ?? 'Lỗi cập nhật. Vui lòng thử lại!'),
             backgroundColor: Colors.redAccent,
           ),
+        );
+      }
+    }
+  }
+
+  // Hàm xử lý đăng xuất kèm hộp thoại xác nhận từ người dùng
+  void _handleLogout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Đăng xuất',
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1F2937),
+            ),
+          ),
+          content: Text(
+            'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng không?',
+            style: GoogleFonts.inter(color: const Color(0xFF4B5563)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Hủy',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                'Đăng xuất',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFEF4444),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true && mounted) {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      await auth
+          .logout(); // Gọi hàm logout trong AuthProvider để xóa token/dữ liệu đã lưu
+
+      if (mounted) {
+        // Chuyển hướng người dùng về màn hình Đăng nhập và xóa sạch lịch sử điều hướng (back stack)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
         );
       }
     }
@@ -245,13 +309,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back_rounded,
-                          color: Color(0xFF1F2937),
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
+                      // Tránh lệch tiêu đề khi thêm nút bên phải
+                      auth.isAuthenticated
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.arrow_back_rounded,
+                                    color: Color(0xFF1F2937),
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                                const SizedBox(
+                                  width: 48,
+                                ), // Tạo khoảng đối xứng bằng độ rộng nút Logout
+                              ],
+                            )
+                          : IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: Color(0xFF1F2937),
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                            ),
                       Text(
                         'Hồ Sơ & Lịch Sử',
                         style: GoogleFonts.outfit(
@@ -261,21 +342,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       auth.isAuthenticated
-                          ? IconButton(
-                              icon: Icon(
-                                _isEditing
-                                    ? Icons.close_rounded
-                                    : Icons.edit_rounded,
-                                color: const Color(0xFF1F2937),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  if (_isEditing) {
-                                    _initFields(); // Reset fields
-                                  }
-                                  _isEditing = !_isEditing;
-                                });
-                              },
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    _isEditing
+                                        ? Icons.close_rounded
+                                        : Icons.edit_rounded,
+                                    color: const Color(0xFF1F2937),
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      if (_isEditing) {
+                                        _initFields(); // Reset fields
+                                      }
+                                      _isEditing = !_isEditing;
+                                    });
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.logout_rounded,
+                                    color: Color(0xFFEF4444), // Màu đỏ cảnh báo
+                                  ),
+                                  onPressed: _handleLogout,
+                                ),
+                              ],
                             )
                           : const SizedBox(width: 48),
                     ],
