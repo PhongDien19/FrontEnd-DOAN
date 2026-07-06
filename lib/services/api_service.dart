@@ -4,16 +4,30 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // Bật/tắt kết nối Local (true) hoặc Production Render (false)
-  static const bool useLocal = true; 
+  static const bool useLocal = true;
 
+  /// Xác định base URL tuỳ theo nền tảng đang chạy:
+  ///  - Flutter Web (Chrome/Edge/Safari): dùng `http://localhost:5000/api`
+  ///    (vì `10.0.2.2` chỉ dành cho Android emulator, không hoạt động trên trình duyệt web)
+  ///  - Android emulator: dùng `http://10.0.2.2:5000/api`
+  ///  - Các nền tảng khác (iOS sim, Windows, macOS, Linux): `http://localhost:5000/api`
   static String get baseUrl {
-    if (useLocal) {
-      return defaultTargetPlatform == TargetPlatform.android
-          ? 'http://10.0.2.2:5000/api'
-          : 'http://localhost:5000/api';
+    if (!useLocal) {
+      return 'https://server-ai-doan-1.onrender.com/api';
     }
-     return '0';
-     //'https://server-ai-doan-1.onrender.com/api';
+
+    // kIsWeb = true khi đang chạy trên trình duyệt (Chrome, Edge, Safari, Firefox...)
+    if (kIsWeb) {
+      return 'http://localhost:5000/api';
+    }
+
+    // Ưu tiên Android emulator vì `10.0.2.2` là alias đặc biệt của Android Studio
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:5000/api';
+    }
+
+    // iOS simulator, Windows, macOS, Linux... đều trỏ về localhost
+    return 'http://localhost:5000/api';
   }
 
   // Lưu trữ userId của người dùng hiện tại để tự động đính kèm vào header
@@ -39,14 +53,29 @@ class ApiService {
   static Map<String, dynamic> _safeParseResponse(http.Response response) {
     try {
       final parsed = jsonDecode(response.body);
-      if (parsed is Map<String, dynamic>) return parsed;
+      if (parsed is Map<String, dynamic>) {
+        // Nếu server trả về lỗi (success=false, HTTP 4xx/5xx),
+        // gắn statusCode vào payload để FE có thể hiển thị đúng thông điệp.
+        if (parsed['success'] == false && response.statusCode >= 400) {
+          return {
+            ...parsed,
+            'statusCode': response.statusCode,
+            // Tạo thông điệp hiển thị: ưu tiên errorMessage, sau đó tới message
+            'errorMessage': parsed['errorMessage'] ??
+                parsed['message'] ??
+                'Máy chủ trả về lỗi (${response.statusCode})',
+          };
+        }
+        return parsed;
+      }
       return {'success': true, 'data': parsed};
     } catch (e) {
       return {
         'success': false,
         'message': 'Invalid JSON from server',
+        'errorMessage': 'Phản hồi từ máy chủ không hợp lệ (HTTP ${response.statusCode})',
         'raw': response.body,
-        'statusCode': response.statusCode
+        'statusCode': response.statusCode,
       };
     }
   }
@@ -67,7 +96,9 @@ class ApiService {
 
       final data = _safeParseResponse(response);
       if (response.statusCode == 200 && data['success'] == true) {
-        currentUserId = (data['user'] != null ? data['user']['id']?.toString() : null);
+        currentUserId = (data['user'] != null
+            ? data['user']['id']?.toString()
+            : null);
       }
       return data;
     } catch (e) {
@@ -161,7 +192,10 @@ class ApiService {
     }
   }
 
-  // Tư vấn nghề nghiệp tổng quát
+  // Tư vấn nghề nghiệp tổng quát — dùng cho cả tư vấn AI chung lẫn "Học ở đâu?" / "Làm ở đâu?".
+  // Server trả về:
+  //   - Nếu requestType = 'HOC' / 'LAM' : advice là object JSON { summary, schools[] } hoặc { summary, companies[] }
+  //   - Ngược lại                         : advice là chuỗi văn bản tư vấn
   static Future<Map<String, dynamic>> consultCareer(
     Map<String, dynamic> info,
   ) async {
@@ -169,7 +203,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/consult'),
         headers: _headers,
-        body: jsonEncode({'info': info}),
+        body: jsonEncode(info),
       );
       return _safeParseResponse(response);
     } catch (e) {
