@@ -3,14 +3,29 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Bật/tắt kết nối Local (true) hoặc Production Render (false)
+  // Cấu hình môi trường backend:
+  //   useLocal = true        → trỏ về server Node.js đang chạy trên máy dev
+  //   useLocal = false       → trỏ về server Production trên Render
   static const bool useLocal = true;
+
+  // Khi useLocal = true trên Android, chọn 1 trong 2 chế độ sau:
+  //   useAndroidEmulatorAlias = true  → dùng 10.0.2.2 (chỉ chạy được trên Android Emulator)
+  //   useAndroidEmulatorAlias = false → dùng IP LAN của máy dev (chạy được trên thiết bị thật
+  //                                     cùng mạng WiFi với máy dev)
+  //
+  // ⚠️ Khi test trên điện thoại thật: BẬT useAndroidEmulatorAlias = false
+  //                                    và đảm bảo IP LAN bên dưới đúng với máy của bạn.
+  static const bool useAndroidEmulatorAlias = false;
+
+  /// IP LAN của máy chạy server Node.js (đổi nếu máy dev có IP khác).
+  /// Kiểm tra bằng lệnh: `ipconfig` (Windows) hoặc `ifconfig` (macOS/Linux).
+  static const String devLanIp = '192.168.1.245';
 
   /// Xác định base URL tuỳ theo nền tảng đang chạy:
   ///  - Flutter Web (Chrome/Edge/Safari): dùng `http://localhost:5000/api`
-  ///    (vì `10.0.2.2` chỉ dành cho Android emulator, không hoạt động trên trình duyệt web)
-  ///  - Android emulator: dùng `http://10.0.2.2:5000/api`
-  ///  - Các nền tảng khác (iOS sim, Windows, macOS, Linux): `http://localhost:5000/api`
+  ///  - Android Emulator: dùng `http://10.0.2.2:5000/api` (alias đặc biệt của AVD)
+  ///  - Android thiết bị thật: dùng `http://<devLanIp>:5000/api` (cùng WiFi với máy dev)
+  ///  - iOS simulator / Windows / macOS / Linux desktop: `http://localhost:5000/api`
   static String get baseUrl {
     if (!useLocal) {
       return 'https://server-ai-doan-1.onrender.com/api';
@@ -21,9 +36,10 @@ class ApiService {
       return 'http://localhost:5000/api';
     }
 
-    // Ưu tiên Android emulator vì `10.0.2.2` là alias đặc biệt của Android Studio
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000/api';
+      return useAndroidEmulatorAlias
+          ? 'http://10.0.2.2:5000/api'
+          : 'http://$devLanIp:5000/api';
     }
 
     // iOS simulator, Windows, macOS, Linux... đều trỏ về localhost

@@ -183,244 +183,243 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                   const SizedBox(height: 20),
                 ],
 
-                // NẾU LÀ CHẾ ĐỘ DISCOVERY -> HIỂN THỊ FILTER ĐI HỌC / ĐI LÀM
-                if (displayMode.toLowerCase() == 'discovery' &&
-                    compatibleCareers.isNotEmpty) ...[
-                  // 1. THANH FILTER CHUYỂN NHÁNH
-                  _buildPathFilter(),
-                  const SizedBox(height: 16),
+                // ========== THỨ TỰ HIỂN THỊ THỐNG NHẤT (áp dụng cho cả Discovery & Targeted) ==========
+// 1. Filter Đi học / Đi làm (chỉ Discovery)
+// 2. Điểm Mạnh & Tố Chất Cần Rèn (đầu trang)
+// 3. Lời nói ngắn / Người dùng thể hiện
+// 4. Lộ trình phát triển
+// 5. Cơ hội việc làm / Trường đào tạo
+// 6. Lời khuyên hướng nghiệp
 
-                  // 2. DANH SÁCH NGÀNH NGHỀ TỐI ƯU THEO FILTER
-                  _buildDiscoverySection(compatibleCareers),
-                  const SizedBox(height: 20),
-                ] else ...[
-                  // Các chế độ khác (Targeted) giữ nguyên
-                  if (roadmap.isNotEmpty) ...[
-                    _buildCard(
-                      title: 'Lộ Trình Phát Triển',
-                      icon: Icons.trending_up_rounded,
-                      iconColor: const Color(0xFF0284C7),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: List.generate(roadmap.length, (idx) {
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 10,
-                                    backgroundColor: const Color(
-                                      0xFF0284C7,
-                                    ).withValues(alpha: 0.1),
-                                    child: Text(
-                                      '${idx + 1}',
-                                      style: const TextStyle(
-                                        color: Color(0xFF0284C7),
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  if (idx < roadmap.length - 1)
-                                    Container(
-                                      width: 1.5,
-                                      height: 35,
-                                      color: const Color(0xFFE5E7EB),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 12.0),
-                                  child: Text(
-                                    roadmap[idx],
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFF4B5563),
-                                      fontSize: 13,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  if (certificates.isNotEmpty) ...[
-                    _buildCard(
-                      title: 'Chứng Chỉ Cần Thiết',
-                      icon: Icons.school_outlined,
-                      iconColor: const Color(0xFF9333EA),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: certificates
-                            .map(
-                              (cert) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.workspace_premium_rounded,
-                                      size: 16,
-                                      color: Color(0xFF9333EA),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        cert,
-                                        style: GoogleFonts.inter(
-                                          color: Colors.black87,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  if (onetMatches.isNotEmpty) ...[
-                    _buildCard(
-                      title: 'Vị Trí Công Việc Tương Đồng (O*NET)',
-                      icon: Icons.work_history_outlined,
-                      iconColor: const Color(0xFFEA580C),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: onetMatches
-                            .map(
-                              (job) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.star_border_rounded,
-                                      size: 16,
-                                      color: Color(0xFFEA580C),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        job,
-                                        style: GoogleFonts.inter(
-                                          color: Colors.black87,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  if (basicSalary.isNotEmpty) ...[
-                    _buildCard(
-                      title: 'Mức Lương Cơ Bản tại Việt Nam',
-                      icon: Icons.monetization_on_outlined,
-                      iconColor: const Color(0xFF059669),
-                      child: Text(
-                        basicSalary,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF4B5563),
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  if (laborMarket.isNotEmpty) ...[
-                    _buildCard(
-                      title: 'Thị Trường Lao Động tại Việt Nam',
-                      icon: Icons.bar_chart_rounded,
-                      iconColor: const Color(0xFFEA580C),
-                      child: Text(
-                        laborMarket,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF4B5563),
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ],
+// 1. THANH FILTER (chỉ hiển thị ở chế độ Discovery khi có compatibleCareers)
+if (displayMode.toLowerCase() == 'discovery' &&
+    compatibleCareers.isNotEmpty) ...[
+  _buildPathFilter(),
+  const SizedBox(height: 16),
+],
 
-                // Tổng quan (Summary)
-                if (summary.isNotEmpty) ...[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                    ),
-                    child: Text(
-                      summary,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: const Color(0xFF4B5563),
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+// 2. ĐIỂM MẠNH & TỐ CHẤT CẦN RÈN — luôn ở trên cùng
+Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: _buildListItemBox(
+        title: 'Điểm Mạnh',
+        items: strengths,
+        icon: Icons.check_circle_outline_rounded,
+        iconColor: const Color(0xFF059669),
+      ),
+    ),
+    const SizedBox(width: 16),
+    Expanded(
+      child: _buildListItemBox(
+        title: 'Tố Chất Cần Rèn',
+        items: weaknesses,
+        icon: Icons.error_outline_rounded,
+        iconColor: const Color(0xFFDC2626),
+      ),
+    ),
+  ],
+),
+const SizedBox(height: 20),
 
-                // Điểm mạnh / Điểm yếu
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildListItemBox(
-                        title: 'Điểm Mạnh',
-                        items: strengths,
-                        icon: Icons.check_circle_outline_rounded,
-                        iconColor: const Color(0xFF059669),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildListItemBox(
-                        title: 'Tố Chất Cần Rèn',
-                        items: weaknesses,
-                        icon: Icons.error_outline_rounded,
-                        iconColor: const Color(0xFFDC2626),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+// 3. LỜI NÓI NGẮN / NGƯỜI DÙNG THỂ HIỆN
+if (summary.isNotEmpty) ...[
+  _buildUserExpressedCard(summary, displayMode),
+  const SizedBox(height: 20),
+],
 
-                // Lời khuyên
-                _buildCard(
-                  title: 'Lời Khuyên Hướng Nghiệp',
-                  icon: Icons.lightbulb_outline_rounded,
-                  iconColor: const Color(0xFFD97706),
+// 4. LỘ TRÌNH PHÁT TRIỂN — hiển thị cho cả Discovery & Targeted (dùng chung 1 card)
+if (roadmap.isNotEmpty) ...[
+  _buildCard(
+    title: 'Lộ Trình Phát Triển',
+    icon: Icons.trending_up_rounded,
+    iconColor: displayMode.toLowerCase() == 'discovery' &&
+            _selectedPath == CareerPath.work
+        ? const Color(0xFF059669)
+        : const Color(0xFF0284C7),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(roadmap.length, (idx) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: [
+                CircleAvatar(
+                  radius: 10,
+                  backgroundColor:
+                      const Color(0xFF0284C7).withValues(alpha: 0.1),
                   child: Text(
-                    advice,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF4B5563),
-                      fontSize: 13,
-                      height: 1.5,
+                    '${idx + 1}',
+                    style: const TextStyle(
+                      color: Color(0xFF0284C7),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                if (idx < roadmap.length - 1)
+                  Container(
+                    width: 1.5,
+                    height: 35,
+                    color: const Color(0xFFE5E7EB),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: Text(
+                  roadmap[idx],
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF4B5563),
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
+    ),
+  ),
+  const SizedBox(height: 20),
+],
+
+// 5. CƠ HỘI VIỆC LÀM / TRƯỜNG ĐÀO TẠO
+if (displayMode.toLowerCase() == 'discovery' &&
+    compatibleCareers.isNotEmpty) ...[
+  // Discovery: hiển thị theo filter (trường đào tạo cho Đi học, thị trường tuyển dụng cho Đi làm)
+  _buildDiscoverySection(compatibleCareers),
+  const SizedBox(height: 20),
+] else ...[
+  // Targeted: hiển thị các thông tin về ngành nghề mục tiêu
+  if (certificates.isNotEmpty) ...[
+    _buildCard(
+      title: 'Chứng Chỉ Cần Thiết',
+      icon: Icons.school_outlined,
+      iconColor: const Color(0xFF9333EA),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: certificates
+            .map(
+              (cert) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.workspace_premium_rounded,
+                      size: 16,
+                      color: Color(0xFF9333EA),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        cert,
+                        style: GoogleFonts.inter(
+                          color: Colors.black87,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    ),
+    const SizedBox(height: 20),
+  ],
+  if (onetMatches.isNotEmpty) ...[
+    _buildCard(
+      title: 'Cơ Hội Việc Làm (O*NET)',
+      icon: Icons.work_history_outlined,
+      iconColor: const Color(0xFFEA580C),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: onetMatches
+            .map(
+              (job) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.star_border_rounded,
+                      size: 16,
+                      color: Color(0xFFEA580C),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        job,
+                        style: GoogleFonts.inter(
+                          color: Colors.black87,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    ),
+    const SizedBox(height: 20),
+  ],
+  if (basicSalary.isNotEmpty) ...[
+    _buildCard(
+      title: 'Mức Lương Cơ Bản tại Việt Nam',
+      icon: Icons.monetization_on_outlined,
+      iconColor: const Color(0xFF059669),
+      child: Text(
+        basicSalary,
+        style: GoogleFonts.inter(
+          color: const Color(0xFF4B5563),
+          fontSize: 13,
+          height: 1.4,
+        ),
+      ),
+    ),
+    const SizedBox(height: 20),
+  ],
+  if (laborMarket.isNotEmpty) ...[
+    _buildCard(
+      title: 'Thị Trường Lao Động tại Việt Nam',
+      icon: Icons.bar_chart_rounded,
+      iconColor: const Color(0xFFEA580C),
+      child: Text(
+        laborMarket,
+        style: GoogleFonts.inter(
+          color: const Color(0xFF4B5563),
+          fontSize: 13,
+          height: 1.4,
+        ),
+      ),
+    ),
+    const SizedBox(height: 20),
+  ],
+],
+
+// 6. LỜI KHUYÊN HƯỚNG NGHIỆP — luôn hiển thị cuối cùng
+_buildCard(
+  title: 'Lời Khuyên Hướng Nghiệp',
+  icon: Icons.lightbulb_outline_rounded,
+  iconColor: const Color(0xFFD97706),
+  child: Text(
+    advice,
+    style: GoogleFonts.inter(
+      color: const Color(0xFF4B5563),
+      fontSize: 13,
+      height: 1.5,
+    ),
+  ),
+),
+const SizedBox(height: 20),
 
                 // Đánh giá
                 _buildFeedbackSection(),
@@ -512,6 +511,95 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // --- WIDGET NGƯỜI DÙNG THỂ HIỆN / LỜI NÓI NGẮN ---
+  // Discovery: tiêu đề đổi theo nhánh (Đi học / Đi làm).
+  // Targeted: hiển thị tiêu đề chung "Lời nói ngắn về bạn".
+  Widget _buildUserExpressedCard(String summary, String displayMode) {
+    final bool isStudy = _selectedPath == CareerPath.study;
+    final bool isDiscovery = displayMode.toLowerCase() == 'discovery';
+
+    final String cardTitle = 'Lời nói ngắn về bạn';
+    final Color themeColor = isDiscovery
+        ? (isStudy
+            ? const Color(0xFF0284C7)
+            : const Color(0xFF059669))
+        : const Color(0xFF6366F1); // Tím indigo cho chế độ Targeted
+    final IconData iconData = isDiscovery
+        ? (isStudy
+            ? Icons.school_outlined
+            : Icons.work_outline_rounded)
+        : Icons.format_quote_rounded;
+    final String subTitle = isDiscovery
+        ? (isStudy
+            ? 'Phù hợp với môi trường học tập'
+            : 'Phù hợp với môi trường làm việc')
+        : 'Đánh giá tổng quan tính cách & năng lực';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: themeColor.withValues(alpha: 0.35),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: themeColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(iconData, color: themeColor, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      cardTitle,
+                      style: GoogleFonts.outfit(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1F2937),
+                      ),
+                    ),
+                    Text(
+                      subTitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: themeColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          const SizedBox(height: 12),
+          Text(
+            summary,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: const Color(0xFF4B5563),
+              height: 1.5,
+            ),
+          ),
+        ],
       ),
     );
   }

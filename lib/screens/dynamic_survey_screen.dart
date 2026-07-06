@@ -48,8 +48,22 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   ];
   List<String> _selectedLocations = [];
 
-  // Quản lý điểm số học tập
-  final List<String> _subjectNames = [
+  // Quản lý điểm số học tập — danh sách môn thay đổi theo Trình độ học vấn
+  // THCS: 9 môn (theo chương trình GDPT 2018)
+  static const List<String> _thcsSubjects = [
+    'Toán',
+    'Văn',
+    'Anh',
+    'Tin học',
+    'Lịch sử',
+    'Địa lý',
+    'Công nghệ',
+    'GDCD',
+    'Khoa học tự nhiên',
+  ];
+
+  // THPT: 9 môn (giữ nguyên như trước)
+  static const List<String> _thptSubjects = [
     'Văn',
     'Toán',
     'Anh Văn',
@@ -60,8 +74,24 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     'Sử',
     'GDCD',
   ];
+
+  /// Danh sách môn học đang active dựa trên _educationLevel
+  List<String> get _activeSubjects {
+    switch (_educationLevel) {
+      case 'Học sinh THCS':
+        return _thcsSubjects;
+      case 'Học sinh THPT':
+        return _thptSubjects;
+      default:
+        return const [];
+    }
+  }
+
   final Map<String, TextEditingController> _subjectControllers = {};
   final _gpaController = TextEditingController();
+
+  // Sở thích cá nhân (phục vụ cá nhân hóa khảo sát & tư vấn)
+  final _hobbyController = TextEditingController();
 
   // Dữ liệu khảo sát từ API
   String _sessionId = '';
@@ -75,8 +105,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   @override
   void initState() {
     super.initState();
-    // Khởi tạo controller cho 9 môn học
-    for (var subject in _subjectNames) {
+    // Khởi tạo controller cho tất cả các môn có thể xuất hiện
+    // (cả THCS + THPT) để giữ giá trị khi người dùng chuyển đổi trình độ học vấn
+    for (var subject in [..._thcsSubjects, ..._thptSubjects]) {
       _subjectControllers[subject] = TextEditingController();
     }
     _loadUserProfileContext();
@@ -89,6 +120,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       _targetCareerController.text = p['targetJob'] ?? '';
       _ageController.text = (p['age'] ?? '').toString();
       _educationLevel = p['educationLevel'] ?? 'Đại học';
+      _hobbyController.text = p['hobby'] ?? '';
 
       // Xử lý nạp dữ liệu khu vực từ profile (nếu có dạng "Hà Nội, TP.HCM")
       String locs = p['location'] ?? '';
@@ -110,6 +142,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       controller.dispose();
     }
     _gpaController.dispose();
+    _hobbyController.dispose();
     super.dispose();
   }
 
@@ -142,7 +175,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     // if (_educationLevel == 'Học sinh THCS' ||
     //     _educationLevel == 'Học sinh THPT') {
     //   Map<String, double> scores = {};
-    //   for (var subject in _subjectNames) {
+    //   for (var subject in _activeSubjects) {
     //     String textVal = _subjectControllers[subject]!.text.trim();
     //     scores[subject] = double.tryParse(textVal) ?? 0.0;
     //   }
@@ -160,6 +193,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     final targetCareer = _mode == 'Targeted' ? targetInput : null;
     final ageVal = int.tryParse(_ageController.text);
     final locationVal = _selectedLocations.join(', ');
+    final hobbyVal = _hobbyController.text.trim();
 
     final result = await ApiService.initSurvey(
       _mode,
@@ -167,7 +201,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       age: ageVal,
       education: _educationLevel,
       location: locationVal,
-      hobby: null,
+      hobby: hobbyVal.isEmpty ? null : hobbyVal,
     );
 
     if (result['success'] == true) {
@@ -689,8 +723,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                           'Học sinh THPT',
                           'Cao đẳng',
                           'Đại học',
-                          'Sau đại học',
-                          'Đã đi làm',
+                          'Khác',
                         ].map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -708,6 +741,54 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
                   // Khối nhập điểm học tập động dựa trên Trình độ học vấn
                   _buildAcademicScoreFields(brandColor),
+
+                  const SizedBox(height: 16),
+
+                  // 3b. Ô SỞ THÍCH CÁ NHÂN (giúp AI cá nhân hóa khảo sát tốt hơn)
+                  TextFormField(
+                    controller: _hobbyController,
+                    maxLines: 2,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 13,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Sở thích cá nhân',
+                      labelStyle: GoogleFonts.inter(
+                        color: const Color(0xFF475569),
+                        fontSize: 12,
+                      ),
+                      hintText:
+                          'Ví dụ: Đọc sách, chơi game, vẽ, du lịch, lập trình...',
+                      hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF94A3B8),
+                        fontSize: 12,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.favorite_outline_rounded,
+                        color: brandColor,
+                        size: 20,
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: brandColor),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -813,62 +894,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          for (int i = 0; i < _subjectNames.length; i += 3)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  for (
-                    int j = i;
-                    j < i + 3 && j < _subjectNames.length;
-                    j++
-                  ) ...[
-                    if (j > i) const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _subjectControllers[_subjectNames[j]],
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          labelText: _subjectNames[j],
-                          labelStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF475569),
-                          ),
-                          hintText: '0',
-                          hintStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF94A3B8),
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 12,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: themeColor),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+          ..._buildSubjectScoreGrid(themeColor),
         ],
       );
     } else if (_educationLevel == 'Cao đẳng' || _educationLevel == 'Đại học') {
@@ -914,6 +940,84 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       );
     }
     return const SizedBox.shrink();
+  }
+
+  /// Số cột hiển thị ô nhập điểm — phụ thuộc vào trình độ học vấn.
+  /// THCS: 2 cột (vì có môn "Khoa học tự nhiên" tên dài).
+  /// THPT: 3 cột (tên môn ngắn, hiển thị gọn hơn).
+  int _subjectColumnsForCurrentLevel() {
+    return _educationLevel == 'Học sinh THCS' ? 2 : 3;
+  }
+
+  /// Render grid các ô nhập điểm theo số cột được cấu hình.
+  List<Widget> _buildSubjectScoreGrid(Color themeColor) {
+    final int columns = _subjectColumnsForCurrentLevel();
+    final List<Widget> rows = [];
+
+    for (int i = 0; i < _activeSubjects.length; i += columns) {
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            children: [
+              for (
+                int j = i;
+                j < i + columns && j < _activeSubjects.length;
+                j++
+              ) ...[
+                if (j > i) const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller:
+                        _subjectControllers[_activeSubjects[j]],
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: const Color(0xFF0F172A),
+                    ),
+                    decoration: InputDecoration(
+                      labelText: _activeSubjects[j],
+                      labelStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF475569),
+                      ),
+                      // Tăng giãn cách dòng label để tên môn dài không bị cắt
+                      floatingLabelBehavior:
+                          FloatingLabelBehavior.always,
+                      hintText: '0',
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: themeColor),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+    return rows;
   }
 
   Widget _buildLoadingView(String text) {

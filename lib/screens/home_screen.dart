@@ -61,6 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    // Yêu cầu đăng nhập trước khi sử dụng Tư vấn nhanh
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (!auth.isAuthenticated) {
+      await _promptLoginBeforeConsult(mode);
+      // Sau khi quay lại từ LoginScreen, kiểm tra lại trạng thái đăng nhập.
+      // Nếu đã đăng nhập thành công thì tiếp tục tư vấn ngay (không bắt user
+      // phải bấm lại nút Gửi).
+      if (!mounted) return;
+      if (!auth.isAuthenticated) return;
+    }
+
     setState(() {
       _isConsulting = true;
       _consultResponse = null;
@@ -71,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _currentMode = mode; // Lưu chế độ đang truy vấn
     });
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
     final userContext = {
       'targetJob': auth.targetJob,
       'educationLevel': auth.educationLevel,
@@ -141,6 +151,48 @@ class _HomeScreenState extends State<HomeScreen> {
         _consultIsNetworkError = false;
       }
     });
+  }
+
+  // Hiển thị hộp thoại yêu cầu đăng nhập trước khi dùng Tư vấn nhanh.
+  // Nếu người dùng đồng ý, điều hướng sang LoginScreen.
+  Future<void> _promptLoginBeforeConsult(String mode) async {
+    // Nhớ lại mode mà người dùng đã chọn (AI / HOC / LAM)
+    // để khi quay lại từ LoginScreen có thể tiếp tục đúng chế độ.
+    _currentMode = mode;
+
+    final shouldLogin = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Yêu cầu đăng nhập'),
+        content: const Text(
+          'Bạn cần đăng nhập để sử dụng tính năng Tư vấn nhanh. '
+          'Đăng nhập ngay để nhận gợi ý nghề nghiệp phù hợp với bạn.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Để sau'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryOrange,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Đăng nhập'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+    if (shouldLogin != true) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
   }
 
   @override
