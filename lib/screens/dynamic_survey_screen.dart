@@ -148,6 +148,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
   // Khởi tạo câu hỏi khảo sát từ API
   void _initializeSurvey() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -170,30 +171,68 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       _mode = 'Targeted'; // Người dùng điền ngành nghề => Chế độ Mục tiêu
     }
 
-    // Đọc và xử lý dữ liệu điểm số (Ô không nhập tự động mặc định bằng 0.0)
-    // Map<String, dynamic> academicData = {};
-    // if (_educationLevel == 'Học sinh THCS' ||
-    //     _educationLevel == 'Học sinh THPT') {
-    //   Map<String, double> scores = {};
-    //   for (var subject in _activeSubjects) {
-    //     String textVal = _subjectControllers[subject]!.text.trim();
-    //     scores[subject] = double.tryParse(textVal) ?? 0.0;
-    //   }
-    //   academicData = {'type': 'high_school', 'scores': scores};
-    // } else if (_educationLevel == 'Cao đẳng' || _educationLevel == 'Đại học') {
-    //   String gpaText = _gpaController.text.trim();
-    //   double gpa = double.tryParse(gpaText) ?? 0.0;
-    //   academicData = {'type': 'university', 'gpa': gpa};
-    // }
+    final ageVal = int.tryParse(_ageController.text);
+    final locationVal = _selectedLocations.join(', ');
+    final hobbyVal = _hobbyController.text.trim();
+
+    // 1. Tạo model tạm Profile
+    final tempProfile = TempProfile(
+      fullName: auth.userProfile?['fullName'] ?? 'Người dùng',
+      targetJob: targetInput,
+      educationLevel: _educationLevel,
+      hobby: hobbyVal,
+      age: ageVal,
+      location: locationVal,
+    );
+
+    // 2. Đọc và xử lý dữ liệu điểm số
+    Map<String, dynamic>? academicData;
+    TempScores? tempScores;
+    if (_educationLevel == 'Học sinh THCS' || _educationLevel == 'Học sinh THPT') {
+      Map<String, double> scores = {};
+      for (var subject in _activeSubjects) {
+        String textVal = _subjectControllers[subject]!.text.trim();
+        scores[subject] = double.tryParse(textVal) ?? 0.0;
+      }
+      academicData = {'type': 'high_school', 'scores': scores};
+      tempScores = TempScores(
+        type: 'high_school',
+        scores: scores,
+      );
+    } else if (_educationLevel == 'Cao đẳng' || _educationLevel == 'Đại học') {
+      String gpaText = _gpaController.text.trim();
+      double gpa = double.tryParse(gpaText) ?? 0.0;
+      academicData = {'type': 'university_worker', 'gpa': gpa};
+      tempScores = TempScores(
+        type: 'university_worker',
+        scores: {'gpa': gpa},
+      );
+    }
+
+    // 3. Thực hiện lưu tạm hoặc lưu vào DB
+    if (!auth.isAuthenticated) {
+      auth.setTempProfile(tempProfile);
+      if (tempScores != null) {
+        auth.setTempScores(tempScores);
+      }
+    } else {
+      await auth.updateProfile(
+        fullName: tempProfile.fullName ?? 'Người dùng',
+        targetJob: tempProfile.targetJob ?? '',
+        educationLevel: tempProfile.educationLevel ?? '',
+        hobby: tempProfile.hobby ?? '',
+        age: tempProfile.age,
+        location: tempProfile.location,
+        studentScores: tempScores?.type == 'high_school' ? tempScores?.scores : null,
+        workerScores: tempScores?.type == 'university_worker' ? tempScores?.scores : null,
+      );
+    }
 
     setState(() {
       _step = 1;
     });
 
     final targetCareer = _mode == 'Targeted' ? targetInput : null;
-    final ageVal = int.tryParse(_ageController.text);
-    final locationVal = _selectedLocations.join(', ');
-    final hobbyVal = _hobbyController.text.trim();
 
     final result = await ApiService.initSurvey(
       _mode,
@@ -202,6 +241,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       education: _educationLevel,
       location: locationVal,
       hobby: hobbyVal.isEmpty ? null : hobbyVal,
+      academicData: academicData,
     );
 
     if (result['success'] == true) {

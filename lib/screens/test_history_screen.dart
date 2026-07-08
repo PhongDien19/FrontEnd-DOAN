@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 class TestHistoryScreen extends StatefulWidget {
   final String userId;
   final String userRole;
+  final String? educationLevel;
   final String?
   initialSessionId; // Thêm tham số nhận ID bài test cần mở tự động
 
@@ -13,6 +14,7 @@ class TestHistoryScreen extends StatefulWidget {
     super.key,
     required this.userId,
     this.userRole = 'worker',
+    this.educationLevel,
     this.initialSessionId,
   });
 
@@ -96,7 +98,21 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         ? const Color(0xFF059669)
         : const Color(0xFF6C63FF);
 
-    final isStudent = widget.userRole == 'student';
+    final isStudent = session['isStudent'] == true ||
+        widget.userRole == 'student' ||
+        (session['educationLevel'] != null &&
+            (session['educationLevel']
+                    .toString()
+                    .toLowerCase()
+                    .contains('học sinh') ||
+                session['educationLevel']
+                    .toString()
+                    .toLowerCase()
+                    .contains('thpt') ||
+                session['educationLevel']
+                    .toString()
+                    .toLowerCase()
+                    .contains('thcs')));
 
     showModalBottomSheet(
       context: context,

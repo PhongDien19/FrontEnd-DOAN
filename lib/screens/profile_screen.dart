@@ -653,12 +653,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     listen: false,
                   );
                   if (auth.userId != null) {
+                    final edu = auth.userProfile?['educationLevel']?.toString().toLowerCase() ?? '';
+                    final isStudent = edu.contains('học sinh') || edu.contains('thpt') || edu.contains('thcs');
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => TestHistoryScreen(
                           userId: auth.userId!,
+                          userRole: isStudent ? 'student' : 'worker',
                           initialSessionId: session['sessionId']?.toString(),
+                          educationLevel: session['educationLevel']?.toString() ?? auth.userProfile?['educationLevel'],
                         ),
                       ),
                     );
@@ -672,15 +676,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: () {
-              final auth = Provider.of<AuthProvider>(context, listen: false);
-              if (auth.userId != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TestHistoryScreen(userId: auth.userId!),
-                  ),
-                );
-              }
+                final auth = Provider.of<AuthProvider>(context, listen: false);
+                if (auth.userId != null) {
+                  final edu = auth.userProfile?['educationLevel']?.toString().toLowerCase() ?? '';
+                  final isStudent = edu.contains('học sinh') || edu.contains('thpt') || edu.contains('thcs');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TestHistoryScreen(
+                        userId: auth.userId!,
+                        userRole: isStudent ? 'student' : 'worker',
+                        educationLevel: auth.userProfile?['educationLevel'],
+                      ),
+                    ),
+                  );
+                }
             },
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),

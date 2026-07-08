@@ -2,6 +2,68 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+// ========== TEMPORARY MODELS FOR FRONTEND ==========
+
+/// Temporary Profile model - lưu tạm ở Frontend khi chưa đăng nhập
+class TempProfile {
+  final String? fullName;
+  final String? targetJob;
+  final String? educationLevel;
+  final String? hobby;
+  final int? age;
+  final String? location;
+
+  TempProfile({
+    this.fullName,
+    this.targetJob,
+    this.educationLevel,
+    this.hobby,
+    this.age,
+    this.location,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'fullName': fullName,
+        'targetJob': targetJob,
+        'educationLevel': educationLevel,
+        'hobby': hobby,
+        'age': age,
+        'location': location,
+      };
+
+  factory TempProfile.fromJson(Map<String, dynamic> json) => TempProfile(
+        fullName: json['fullName'],
+        targetJob: json['targetJob'],
+        educationLevel: json['educationLevel'],
+        hobby: json['hobby'],
+        age: json['age'],
+        location: json['location'],
+      );
+}
+
+/// Temporary Scores model - lưu tạm ở Frontend khi chưa đăng nhập
+class TempScores {
+  final String type; // 'high_school' hoặc 'university_worker'
+  final Map<String, dynamic> scores;
+
+  TempScores({
+    required this.type,
+    required this.scores,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'scores': scores,
+      };
+
+  factory TempScores.fromJson(Map<String, dynamic> json) => TempScores(
+        type: json['type'] ?? 'high_school',
+        scores: json['scores'] ?? {},
+      );
+}
+
+// ========== API SERVICE ==========
+
 class ApiService {
   // Cấu hình môi trường backend:
   //   useLocal = true        → trỏ về server Node.js đang chạy trên máy dev
@@ -348,6 +410,7 @@ class ApiService {
     String? education,
     String? location,
     String? hobby,
+    Map<String, dynamic>? academicData,
   }) async {
     try {
       final response = await http.post(
@@ -361,6 +424,7 @@ class ApiService {
           if (education != null && education.isNotEmpty) 'education': education,
           if (location != null && location.isNotEmpty) 'location': location,
           if (hobby != null && hobby.isNotEmpty) 'hobby': hobby,
+          'academicData': academicData,
         }),
       );
       return _safeParseResponse(response);
@@ -405,6 +469,51 @@ class ApiService {
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi gửi phản hồi: $e'};
+    }
+  }
+
+  // --- 7.1 SCORES ENDPOINTS ---
+
+  // Lấy điểm số của người dùng
+  static Future<Map<String, dynamic>> getScores(String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/profile/$userId/scores'),
+        headers: _headers,
+      );
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Lỗi lấy điểm số: $e'};
+    }
+  }
+
+  // Lưu/cập nhật điểm số
+  static Future<Map<String, dynamic>> saveScores(
+    String userId,
+    Map<String, dynamic> scoreData,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/profile/$userId/scores'),
+        headers: _headers,
+        body: jsonEncode(scoreData),
+      );
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Lỗi lưu điểm số: $e'};
+    }
+  }
+
+  // Xóa điểm số
+  static Future<Map<String, dynamic>> deleteScores(String userId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/profile/$userId/scores'),
+        headers: _headers,
+      );
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Lỗi xóa điểm số: $e'};
     }
   }
 }

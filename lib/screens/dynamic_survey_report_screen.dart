@@ -1199,11 +1199,18 @@ const SizedBox(height: 20),
 
   Widget _buildSchoolItem(dynamic school, Color themeColor) {
     final schoolName = school['schoolName'] ?? school['name'] ?? 'Tên trường';
+    final benchmark2025 = school['benchmark2025']?.toString();
     final benchmark2024 = school['benchmark2024']?.toString();
     final benchmark2023 = school['benchmark2023']?.toString();
     final benchmark2022 = school['benchmark2022']?.toString();
     final officialLink = school['officialLink'] ?? school['link'] ?? '';
     final admissionLink = school['admissionLink'] ?? '';
+    final scoreEvaluation = school['scoreEvaluation'] ?? '';
+
+    final bool has2025 = benchmark2025 != null && benchmark2025.isNotEmpty && benchmark2025 != 'N/A';
+    final String benchmarkText = has2025
+        ? '2025: $benchmark2025 • 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"}'
+        : '2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"} • 2022: ${benchmark2022 ?? "N/A"}';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1236,7 +1243,7 @@ const SizedBox(height: 20),
                 ),
               ),
               Text(
-                '2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"} • 2022: ${benchmark2022 ?? "N/A"}',
+                benchmarkText,
                 style: GoogleFonts.outfit(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -1294,6 +1301,32 @@ const SizedBox(height: 20),
                     },
                   ),
               ],
+            ),
+          ],
+          if (scoreEvaluation.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF3C7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.assessment_rounded, size: 14, color: const Color(0xFFD97706)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      scoreEvaluation,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: const Color(0xFF92400E),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],
