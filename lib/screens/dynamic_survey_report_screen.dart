@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import 'login_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum CareerPath { study, work }
 
@@ -125,6 +126,8 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
         _report['compatibleCareers'] as List<dynamic>? ?? [];
     final String basicSalary = _report['basicSalary'] ?? '';
     final String laborMarket = _report['laborMarket'] ?? '';
+    final trainingInstitutions = List<dynamic>.from(_report['trainingInstitutions'] ?? _report['schools'] ?? []);
+    final targetCompanies = List<dynamic>.from(_report['companies'] ?? _report['companyDetails'] ?? []);
 
     String displayMode = mode;
     if (displayMode.isEmpty) {
@@ -403,7 +406,35 @@ if (displayMode.toLowerCase() == 'discovery' &&
     ),
     const SizedBox(height: 20),
   ],
-],
+    if (trainingInstitutions.isNotEmpty) ...[
+      _buildCard(
+        title: 'Trường Đào Tạo Đề Xuất',
+        icon: Icons.school_rounded,
+        iconColor: const Color(0xFF0284C7),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: trainingInstitutions
+              .map((sch) => _buildSchoolItem(sch, const Color(0xFF0284C7)))
+              .toList(),
+        ),
+      ),
+      const SizedBox(height: 20),
+    ],
+    if (targetCompanies.isNotEmpty) ...[
+      _buildCard(
+        title: 'Doanh Nghiệp Tuyển Dụng Tiêu Biểu',
+        icon: Icons.business_center_rounded,
+        iconColor: const Color(0xFF059669),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: targetCompanies
+              .map((comp) => _buildCompanyItem(comp, const Color(0xFF059669)))
+              .toList(),
+        ),
+      ),
+      const SizedBox(height: 20),
+    ],
+  ],
 
 // 6. LỜI KHUYÊN HƯỚNG NGHIỆP — luôn hiển thị cuối cùng
 _buildCard(
@@ -722,84 +753,112 @@ const SizedBox(height: 20),
 
                 // HIỂN THỊ ĐỘNG THEO NHÁNH ĐI HỌC HOẶC ĐI LÀM
                 if (isStudy) ...[
-                  Text(
-                    '🏛️ Top các trường đào tạo nổi bật:',
-                    style: GoogleFonts.outfit(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1E3A8A),
+                  if (item['trainingInstitutions'] != null &&
+                      (item['trainingInstitutions'] as List).isNotEmpty) ...[
+                    Text(
+                      '🏛️ Các trường đào tạo đề xuất:',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1E3A8A),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: topSchools.map((school) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFBFDBFE)),
-                        ),
-                        child: Text(
-                          school,
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1D4ED8),
+                    const SizedBox(height: 8),
+                    ...(item['trainingInstitutions'] as List).map((sch) => _buildSchoolItem(sch, themeColor)),
+                  ] else ...[
+                    Text(
+                      '🏛️ Top các trường đào tạo nổi bật:',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1E3A8A),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: topSchools.map((school) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
                           ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                          ),
+                          child: Text(
+                            school,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1D4ED8),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ] else ...[
-                  Text(
-                    '🏢 Công ty & Tập đoàn đang tuyển dụng:',
-                    style: GoogleFonts.outfit(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF065F46),
+                  if (item['companyDetails'] != null &&
+                      (item['companyDetails'] as List).isNotEmpty) ...[
+                    Text(
+                      '🏢 Cơ hội việc làm nổi bật:',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF065F46),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: hiringCompanies.map((company) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFA7F3D0)),
-                        ),
-                        child: Text(
-                          company,
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF047857),
+                    const SizedBox(height: 8),
+                    ...(item['companyDetails'] as List).map((comp) => _buildCompanyItem(comp, themeColor)),
+                  ] else ...[
+                    Text(
+                      '🏢 Công ty & Tập đoàn đang tuyển dụng:',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF065F46),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: hiringCompanies.map((company) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
                           ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '🔥 Thị trường: $marketDemand',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                      color: const Color(0xFF6B7280),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                          ),
+                          child: Text(
+                            company,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF047857),
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '🔥 Thị trường: $marketDemand',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -1133,6 +1192,197 @@ const SizedBox(height: 20),
           ),
           const SizedBox(height: 16),
           child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSchoolItem(dynamic school, Color themeColor) {
+    final schoolName = school['schoolName'] ?? school['name'] ?? 'Tên trường';
+    final benchmark2024 = school['benchmark2024']?.toString();
+    final benchmark2023 = school['benchmark2023']?.toString();
+    final benchmark2022 = school['benchmark2022']?.toString();
+    final officialLink = school['officialLink'] ?? school['link'] ?? '';
+    final admissionLink = school['admissionLink'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            schoolName,
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: const Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(
+                'Điểm chuẩn: ',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF6B7280),
+                ),
+              ),
+              Text(
+                '2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"} • 2022: ${benchmark2022 ?? "N/A"}',
+                style: GoogleFonts.outfit(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: themeColor,
+                ),
+              ),
+            ],
+          ),
+          if (officialLink.isNotEmpty || admissionLink.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                if (officialLink.isNotEmpty)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    icon: Icon(Icons.language_rounded, size: 14, color: themeColor),
+                    label: Text(
+                      'Website',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: themeColor,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final url = officialLink.startsWith('http') ? officialLink : 'https://$officialLink';
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                if (officialLink.isNotEmpty && admissionLink.isNotEmpty)
+                  const SizedBox(width: 16),
+                if (admissionLink.isNotEmpty)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    icon: Icon(Icons.campaign_outlined, size: 14, color: themeColor),
+                    label: Text(
+                      'Tuyển sinh',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: themeColor,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final url = admissionLink.startsWith('http') ? admissionLink : 'https://$admissionLink';
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                    },
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompanyItem(dynamic company, Color themeColor) {
+    final companyName = company['companyName'] ?? company['name'] ?? 'Tên công ty';
+    final companyDescription = company['companyDescription'] ?? company['description'] ?? '';
+    final basicSalary = company['basicSalary'] ?? company['salary'] ?? '';
+    final careerLink = company['careerLink'] ?? company['link'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  companyName,
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+              ),
+              if (basicSalary.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: themeColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    basicSalary,
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: themeColor,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (companyDescription.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              companyDescription,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: const Color(0xFF4B5563),
+                height: 1.4,
+              ),
+            ),
+          ],
+          if (careerLink.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(50, 30),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              icon: Icon(Icons.link_rounded, size: 14, color: themeColor),
+              label: Text(
+                'Ứng tuyển / Xem việc làm',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: themeColor,
+                ),
+              ),
+              onPressed: () async {
+                final url = careerLink.startsWith('http') ? careerLink : 'https://$careerLink';
+                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+              },
+            ),
+          ],
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TestHistoryScreen extends StatefulWidget {
   final String userId;
@@ -490,59 +491,124 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        sch['name'] ?? 'Tên trường',
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            sch['name'] ?? 'Tên trường',
+                            style: GoogleFonts.outfit(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Ngành: ${sch['major'] ?? ''}',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF4B5563),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '📍 ${sch['location'] ?? ''}',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        sch['score'] ?? '',
                         style: GoogleFonts.outfit(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Ngành: ${sch['major'] ?? ''}',
-                        style: GoogleFonts.inter(
                           fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF4B5563),
+                          fontWeight: FontWeight.bold,
+                          color: color,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '📍 ${sch['location'] ?? ''}',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: const Color(0xFF6B7280),
+                    ),
+                  ],
+                ),
+                if ((sch['officialLink'] != null && sch['officialLink'].toString().isNotEmpty) ||
+                    (sch['admissionLink'] != null && sch['admissionLink'].toString().isNotEmpty)) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                  ),
+                  Row(
+                    children: [
+                      if (sch['officialLink'] != null && sch['officialLink'].toString().isNotEmpty)
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(50, 30),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          icon: Icon(Icons.language_rounded, size: 14, color: color),
+                          label: Text(
+                            'Website',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final urlString = sch['officialLink'].toString();
+                            final url = urlString.startsWith('http') ? urlString : 'https://$urlString';
+                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                          },
                         ),
-                      ),
+                      if (sch['officialLink'] != null &&
+                          sch['officialLink'].toString().isNotEmpty &&
+                          sch['admissionLink'] != null &&
+                          sch['admissionLink'].toString().isNotEmpty)
+                        const SizedBox(width: 16),
+                      if (sch['admissionLink'] != null && sch['admissionLink'].toString().isNotEmpty)
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(50, 30),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          icon: Icon(Icons.campaign_outlined, size: 14, color: color),
+                          label: Text(
+                            'Tuyển sinh',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final urlString = sch['admissionLink'].toString();
+                            final url = urlString.startsWith('http') ? urlString : 'https://$urlString';
+                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                          },
+                        ),
                     ],
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    sch['score'] ?? '',
-                    style: GoogleFonts.outfit(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                ),
+                ],
               ],
             ),
           ),
@@ -651,50 +717,109 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          comp['role'] ?? '',
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              comp['role'] ?? '',
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${comp['company'] ?? ''} • ${comp['loc'] ?? ''}',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${comp['company'] ?? ''} • ${comp['loc'] ?? ''}',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF6B7280),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE5E7EB),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              comp['type'] ?? 'Toàn thời gian',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF4B5563),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                          if (comp['salary'] != null && comp['salary'].toString().isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              comp['salary'].toString(),
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: color,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      comp['type'] ?? 'Toàn thời gian',
+                  if (comp['description'] != null && comp['description'].toString().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      comp['description'].toString(),
                       style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
                         color: const Color(0xFF4B5563),
+                        height: 1.4,
                       ),
                     ),
-                  ),
+                  ],
+                  if (comp['careerLink'] != null && comp['careerLink'].toString().isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                    ),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(50, 30),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      icon: Icon(Icons.link_rounded, size: 14, color: color),
+                      label: Text(
+                        'Ứng tuyển / Xem việc làm',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                      onPressed: () async {
+                        final urlString = comp['careerLink'].toString();
+                        final url = urlString.startsWith('http') ? urlString : 'https://$urlString';
+                        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
