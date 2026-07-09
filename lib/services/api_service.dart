@@ -81,7 +81,7 @@ class ApiService {
 
   /// IP LAN của máy chạy server Node.js (đổi nếu máy dev có IP khác).
   /// Kiểm tra bằng lệnh: `ipconfig` (Windows) hoặc `ifconfig` (macOS/Linux).
-  static const String devLanIp = '192.168.1.2';
+  static const String devLanIp = '192.168.137.1';
 
   /// Xác định base URL tuỳ theo nền tảng đang chạy:
   ///  - Flutter Web (Chrome/Edge/Safari): dùng `http://localhost:5000/api`
@@ -116,6 +116,17 @@ class ApiService {
     final rand = DateTime.now().millisecondsSinceEpoch.toString().substring(8);
     return '${prefix}_$rand';
   }
+
+  /// Timeout mặc định cho các request tới backend.
+  /// Tránh trường hợp app bị "treo" vĩnh viễn nếu server không phản hồi
+  /// (vd: mất kết nối, sai IP, server chưa bật) — lúc đó loading spinner sẽ
+  /// quay vĩnh viễn và nút bấm biến mất.
+  static const Duration _defaultTimeout = Duration(seconds: 35);
+
+  /// Timeout dài hơn cho các endpoint AI (consult, chat, generate-test, evaluate).
+  /// Gemini thường phản hồi trong 15-25 giây cho prompt dài — nếu dùng
+  /// `_defaultTimeout` (8s) sẽ bị TimeoutException dù server vẫn đang xử lý.
+  static const Duration _aiTimeout = Duration(seconds: 45);
 
   // Header cơ bản có kèm userId nếu đã đăng nhập
   static Map<String, String> get _headers {
@@ -170,7 +181,7 @@ class ApiService {
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': email, 'password': password}),
-      );
+      ).timeout(_defaultTimeout);
 
       final data = _safeParseResponse(response);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -199,7 +210,7 @@ class ApiService {
           'password': password,
           'fullName': fullName,
         }),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Không thể kết nối tới máy chủ: $e'};
@@ -214,7 +225,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/profile/$userId'),
         headers: _headers,
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy thông tin cá nhân: $e'};
@@ -231,7 +242,7 @@ class ApiService {
         Uri.parse('$baseUrl/profile/$userId'),
         headers: _headers,
         body: jsonEncode(profileData),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {
@@ -247,7 +258,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/history/$userId'),
         headers: _headers,
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy lịch sử: $e'};
@@ -263,7 +274,7 @@ class ApiService {
         Uri.parse('$baseUrl/chat/ask'),
         headers: _headers,
         body: jsonEncode({'question': question}),
-      );
+      ).timeout(_aiTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi kết nối chat: $e'};
@@ -282,7 +293,7 @@ class ApiService {
         Uri.parse('$baseUrl/consult'),
         headers: _headers,
         body: jsonEncode(info),
-      );
+      ).timeout(_aiTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi kết nối tư vấn: $e'};
@@ -304,7 +315,7 @@ class ApiService {
         Uri.parse('$baseUrl/test/generate'),
         headers: _headers,
         body: jsonEncode(body),
-      );
+      ).timeout(_aiTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi tạo bài test: $e'};
@@ -316,7 +327,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/test/evaluate/$sessionId'),
         headers: _headers,
-      );
+      ).timeout(_aiTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi đánh giá bài test: $e'};
@@ -344,7 +355,7 @@ class ApiService {
           'questions': questions,
           'userContext': userContext,
         }),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lưu câu hỏi: $e'};
@@ -357,7 +368,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/test/questions/$sessionId'),
         headers: _headers,
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi tải danh sách câu hỏi: $e'};
@@ -374,7 +385,7 @@ class ApiService {
         Uri.parse('$baseUrl/assessment/claim'),
         headers: _headers,
         body: jsonEncode({'sessionId': sessionId, 'userId': userId}),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi đồng bộ kết quả test: $e'};
@@ -393,7 +404,7 @@ class ApiService {
         Uri.parse('$baseUrl/assessment/comprehensive/$userId'),
         headers: _headers,
         body: jsonEncode(context),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy báo cáo tổng hợp: $e'};
@@ -426,7 +437,7 @@ class ApiService {
           if (hobby != null && hobby.isNotEmpty) 'hobby': hobby,
           'academicData': academicData,
         }),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi khởi tạo khảo sát động: $e'};
@@ -443,7 +454,7 @@ class ApiService {
         Uri.parse('$baseUrl/survey/submit'),
         headers: _headers,
         body: jsonEncode({'sessionId': sessionId, 'answers': answers}),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi nộp kết quả khảo sát: $e'};
@@ -465,7 +476,7 @@ class ApiService {
           'rating_score': ratingScore,
           'comment': comment,
         }),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi gửi phản hồi: $e'};
@@ -480,7 +491,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/profile/$userId/scores'),
         headers: _headers,
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy điểm số: $e'};
@@ -497,7 +508,7 @@ class ApiService {
         Uri.parse('$baseUrl/profile/$userId/scores'),
         headers: _headers,
         body: jsonEncode(scoreData),
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lưu điểm số: $e'};
@@ -510,7 +521,7 @@ class ApiService {
       final response = await http.delete(
         Uri.parse('$baseUrl/profile/$userId/scores'),
         headers: _headers,
-      );
+      ).timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi xóa điểm số: $e'};

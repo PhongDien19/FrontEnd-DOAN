@@ -85,37 +85,62 @@ class AuthProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final res = await ApiService.login(email, password);
+    try {
+      final res = await ApiService.login(email, password);
 
-    if (res['success'] == true) {
-      _currentUser = res['user'];
-      _userProfile = res['profile'];
-      _isAuthenticated = true;
-      ApiService.currentUserId = userId;
+      if (res['success'] == true) {
+        _currentUser = res['user'];
+        _userProfile = res['profile'];
+        _isAuthenticated = true;
+        ApiService.currentUserId = userId;
 
-      await _saveToPrefs();
+        await _saveToPrefs();
 
-      // Auto-sync temp profile and scores if exists
-      if (_tempProfile != null || _tempScores != null) {
-        await _syncTempDataToServer();
+        // Auto-sync temp profile and scores if exists
+        if (_tempProfile != null || _tempScores != null) {
+          await _syncTempDataToServer();
+        }
       }
-    }
 
-    _isLoading = false;
-    notifyListeners();
-    return res;
+      _isLoading = false;
+      notifyListeners();
+      return res;
+    } catch (e, st) {
+      debugPrint('Login error: $e\n$st');
+      _isLoading = false;
+      notifyListeners();
+      return {
+        'success': false,
+        'message':
+            'Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.',
+      };
+    }
   }
 
   // Đăng ký
-  Future<Map<String, dynamic>> register(String email, String password, String fullName) async {
+  Future<Map<String, dynamic>> register(
+    String email,
+    String password,
+    String fullName,
+  ) async {
     _isLoading = true;
     notifyListeners();
 
-    final res = await ApiService.register(email, password, fullName);
-
-    _isLoading = false;
-    notifyListeners();
-    return res;
+    try {
+      final res = await ApiService.register(email, password, fullName);
+      _isLoading = false;
+      notifyListeners();
+      return res;
+    } catch (e, st) {
+      debugPrint('Register error: $e\n$st');
+      _isLoading = false;
+      notifyListeners();
+      return {
+        'success': false,
+        'message':
+            'Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.',
+      };
+    }
   }
 
   // Auto-sync temp data lên server sau khi đăng nhập

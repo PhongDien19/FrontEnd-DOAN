@@ -104,6 +104,33 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     return 'work';
   }
 
+  /// Khoảng tuổi hợp lệ đối với từng trình độ học vấn.
+  /// Trả về null nếu trình độ không có ràng buộc tuổi (Cao đẳng/Khác).
+  /// Trả về (min, max, levelName). Người dùng chỉ được nhập trong khoảng này
+  /// nếu đã chọn đúng trình độ.
+  ({int min, int max})? _ageRangeForEducation() {
+    switch (_educationLevel) {
+      case 'Học sinh THCS':
+        return (min: 11, max: 14);
+      case 'Học sinh THPT':
+        return (min: 15, max: 18);
+      case 'Đại học':
+        return (min: 18, max: 100);
+      default:
+        // Cao đẳng / Khác: không có ràng buộc tuổi, hoặc dùng mức sàn 16
+        return null;
+    }
+  }
+
+  /// Trả về tên trình độ học vấn tương ứng với tuổi, dùng để gợi ý trong cảnh báo.
+  /// Trả về null nếu tuổi dưới ngưỡng tối thiểu.
+  String? _educationFromAge(int age) {
+    if (age >= 11 && age <= 14) return 'Học sinh THCS';
+    if (age >= 15 && age <= 18) return 'Học sinh THPT';
+    if (age >= 18) return 'Đại học';
+    return null;
+  }
+
   final Map<String, TextEditingController> _subjectControllers = {};
   final _gpaController = TextEditingController();
 
@@ -215,11 +242,37 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     TempScores? tempScores;
     if (_educationLevel == 'Học sinh THCS' || _educationLevel == 'Học sinh THPT') {
       Map<String, double> scores = {};
+      int enteredCount = 0;
       for (var subject in _activeSubjects) {
         String textVal = _subjectControllers[subject]!.text.trim();
-        scores[subject] = double.tryParse(textVal) ?? 0.0;
+        final parsed = double.tryParse(textVal);
+        // Chỉ tính là "đã nhập điểm" khi ô không rỗng VÀ parse được số hợp lệ
+        if (textVal.isNotEmpty && parsed != null) {
+          scores[subject] = parsed;
+          enteredCount++;
+        }
       }
-      academicData = {'type': 'high_school', 'scores': scores};
+
+      // Bắt buộc tối thiểu 6 môn (THCS/THPT) mới cho phép khảo sát.
+      if (enteredCount < 6) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Vui lòng nhập điểm ít nhất 6 môn (hiện tại mới nhập $enteredCount môn).',
+            ),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+
+      // Chỉ gửi các môn đã nhập điểm (không kèm môn bỏ trống / giá trị 0 mặc định)
+      academicData = {
+        'type': 'high_school',
+        'scores': scores,
+        'enteredSubjectCount': enteredCount,
+      };
       tempScores = TempScores(
         type: 'high_school',
         scores: scores,
@@ -625,6 +678,22 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       if (age == null || age < 5 || age > 100) {
                         return 'Từ 5-100';
                       }
+
+                      // Cảnh báo khi tuổi không khớp với Trình độ học vấn đã chọn.
+                      // - THCS (11-14) nhập <11: quá trẻ; nhập 15-18: nên chọn THPT.
+                      // - THPT (15-18) nhập <15: nên chọn THCS; nhập >18: nên chọn ĐH.
+                      // - Đại học (>=18) nhập <18: quá trẻ để vào ĐH.
+                      // Tuy nhiên KHÔNG tự ý đổi Trình độ — chỉ cảnh báo để user biết.
+                      final range = _ageRangeForEducation();
+                      if (range != null && (age < range.min || age > range.max)) {
+                        final suggested = _educationFromAge(age);
+                        if (suggested != null &&
+                            suggested != _educationLevel) {
+                          return 'Tuổi $age thường là "$suggested", không phải "$_educationLevel"';
+                        }
+                        return 'Tuổi $age ngoài khoảng ${range.min}-${range.max} của "$_educationLevel"';
+                      }
+
                       return null;
                     },
                   ),
@@ -1125,7 +1194,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       ),
                       floatingLabelBehavior:
                           FloatingLabelBehavior.always,
-                      hintText: '0',
+                      hintText: '—',
                       hintStyle: GoogleFonts.inter(
                         fontSize: 12,
                         color: const Color(0xFF94A3B8),
@@ -1157,8 +1226,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       ),
                     ),
                     validator: (val) {
+                      // Cho phép bỏ trống từng ô — kiểm tra số lượng môn nhập
+                      // được thực hiện ở _initializeSurvey (tối thiểu 6 môn).
+                      // Validator ở đây chỉ chặn nếu user nhập SAI định dạng.
                       if (val == null || val.trim().isEmpty) {
-                        return 'Nhập điểm';
+                        return null;
                       }
                       final score = double.tryParse(val.trim());
                       if (score == null) {
