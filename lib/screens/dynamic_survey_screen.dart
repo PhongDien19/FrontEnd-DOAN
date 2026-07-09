@@ -30,6 +30,12 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   String _educationLevel = 'Đại học';
   final _formKey = GlobalKey<FormState>();
 
+  // Hướng đi (dùng cho Discovery mode): 'study' = Đi học, 'work' = Đi làm.
+  // Giá trị này luôn được đồng bộ từ _pathFromEducation mỗi khi user đổi
+  // Trình độ học vấn, khi load profile hoặc trước khi submit.
+  // Mặc định = 'work' để khớp với _educationLevel mặc định là 'Đại học'.
+  String _selectedPath = 'work';
+
   // Filter khu vực
   final List<String> _locationOptions = [
     'Hà Nội',
@@ -87,6 +93,17 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     }
   }
 
+  /// Hướng đi tự động suy ra từ Trình độ học vấn:
+  /// - Học sinh THCS / THPT   → 'study' (Đi học)
+  /// - Cao đẳng / Đại học / Khác → 'work'  (Thị trường lao động)
+  String get _pathFromEducation {
+    if (_educationLevel == 'Học sinh THCS' ||
+        _educationLevel == 'Học sinh THPT') {
+      return 'study';
+    }
+    return 'work';
+  }
+
   final Map<String, TextEditingController> _subjectControllers = {};
   final _gpaController = TextEditingController();
 
@@ -120,6 +137,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       _targetCareerController.text = p['targetJob'] ?? '';
       _ageController.text = (p['age'] ?? '').toString();
       _educationLevel = p['educationLevel'] ?? 'Đại học';
+      // Đồng bộ hướng đi theo trình độ học vấn vừa load (giống cơ chế Targeted
+      // với nghề nghiệp: hướng đi cũng được quyết định ngầm, không cần UI).
+      _selectedPath = _pathFromEducation;
       _hobbyController.text = p['hobby'] ?? '';
 
       // Xử lý nạp dữ liệu khu vực từ profile (nếu có dạng "Hà Nội, TP.HCM")
@@ -170,6 +190,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     } else {
       _mode = 'Targeted'; // Người dùng điền ngành nghề => Chế độ Mục tiêu
     }
+
+    // Đồng bộ _selectedPath theo Trình độ học vấn ngay trước khi gọi API
+    // (phòng trường hợp user đổi trình độ học vấn mà chưa đóng dropdown
+    // hoặc _selectedPath bị lệch sau khi load profile).
+    _selectedPath = _pathFromEducation;
 
     final ageVal = int.tryParse(_ageController.text);
     final locationVal = _selectedLocations.join(', ');
@@ -323,6 +348,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
           builder: (_) => DynamicSurveyReportScreen(
             sessionId: _sessionId,
             initialReport: evaluation,
+            selectedPath: _selectedPath,
           ),
         ),
       );
@@ -646,6 +672,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                               return TextFormField(
                                 controller: textEditingController,
                                 focusNode: focusNode,
+                                textAlignVertical: TextAlignVertical.center,
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF0F172A),
                                   fontSize: 13,
@@ -665,6 +692,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                                   ),
                                   filled: true,
                                   fillColor: const Color(0xFFF8FAFC),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
@@ -677,11 +709,25 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                                       color: brandColor,
                                     ),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 14,
+                                  errorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Colors.redAccent,
+                                    ),
+                                  ),
+                                  focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Colors.redAccent,
+                                    ),
                                   ),
                                 ),
+                                validator: (val) {
+                                  if (_selectedLocations.isEmpty) {
+                                    return 'Chọn ít nhất 1 khu vực';
+                                  }
+                                  return null;
+                                },
                               );
                             },
                       ),
@@ -774,6 +820,8 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       if (newValue != null) {
                         setState(() {
                           _educationLevel = newValue;
+                          // Đồng bộ hướng đi theo trình độ học vấn mới
+                          _selectedPath = _pathFromEducation;
                         });
                       }
                     },
@@ -787,7 +835,8 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   // 3b. Ô SỞ THÍCH CÁ NHÂN (giúp AI cá nhân hóa khảo sát tốt hơn)
                   TextFormField(
                     controller: _hobbyController,
-                    maxLines: 2,
+                    maxLines: 1,
+                    textAlignVertical: TextAlignVertical.center,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF0F172A),
                       fontSize: 13,
@@ -809,12 +858,13 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         color: brandColor,
                         size: 20,
                       ),
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 40,
-                        minHeight: 40,
-                      ),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -823,11 +873,21 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: brandColor),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 14,
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.redAccent),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.redAccent),
                       ),
                     ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Vui lòng nhập sở thích cá nhân';
+                      }
+                      return null;
+                    },
                   ),
 
                   const SizedBox(height: 16),
@@ -836,6 +896,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   TextFormField(
                     controller: _targetCareerController,
                     maxLines: 1,
+                    textAlignVertical: TextAlignVertical.center,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF0F172A),
                       fontSize: 13,
@@ -860,6 +921,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       ),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -868,12 +934,22 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: brandColor),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 14,
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.redAccent),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.redAccent),
                       ),
                     ),
                   ),
+
+                  // 5. KHÔNG hiển thị UI chọn hướng đi.
+  //    Hướng đi (Đi Học / Đi Làm) được quyết định NGẦM theo Trình độ học vấn
+  //    và truyền thẳng vào Report screen (giống cơ chế Targeted):
+  //      • Học sinh THCS / THPT      → 'study' (Đi Học - Top trường)
+  //      • Cao đẳng / Đại học / Khác → 'work'  (Đi Làm - Thị trường lao động)
                 ],
               ),
             ),
@@ -945,6 +1021,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
           TextFormField(
             controller: _gpaController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            textAlignVertical: TextAlignVertical.center,
             style: GoogleFonts.inter(
               color: const Color(0xFF0F172A),
               fontSize: 13,
@@ -962,6 +1039,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
               ),
               filled: true,
               fillColor: const Color(0xFFF8FAFC),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -970,11 +1052,28 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: themeColor),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 14,
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.redAccent),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.redAccent),
               ),
             ),
+            validator: (val) {
+              if (val == null || val.trim().isEmpty) {
+                return 'Vui lòng nhập điểm GPA';
+              }
+              final gpa = double.tryParse(val.trim());
+              if (gpa == null) {
+                return 'Điểm phải là số';
+              }
+              if (gpa < 0 || gpa > 10) {
+                return 'Điểm từ 0 đến 10';
+              }
+              return null;
+            },
           ),
         ],
       );
@@ -1013,6 +1112,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    textAlignVertical: TextAlignVertical.center,
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       color: const Color(0xFF0F172A),
@@ -1023,7 +1123,6 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         fontSize: 12,
                         color: const Color(0xFF475569),
                       ),
-                      // Tăng giãn cách dòng label để tên môn dài không bị cắt
                       floatingLabelBehavior:
                           FloatingLabelBehavior.always,
                       hintText: '0',
@@ -1048,7 +1147,28 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: themeColor),
                       ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.redAccent),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.redAccent),
+                      ),
                     ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Nhập điểm';
+                      }
+                      final score = double.tryParse(val.trim());
+                      if (score == null) {
+                        return 'Phải là số';
+                      }
+                      if (score < 0 || score > 10) {
+                        return '0-10';
+                      }
+                      return null;
+                    },
                   ),
                 ),
               ],

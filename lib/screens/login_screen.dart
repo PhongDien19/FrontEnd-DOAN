@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
@@ -277,6 +278,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (!_isLoginMode) ...[
                               TextFormField(
                                 controller: _fullNameController,
+                                // Chỉ cho phép chữ cái (bao gồm tiếng Việt có dấu) và khoảng trắng,
+                                // chặn hoàn toàn số và ký tự đặc biệt ngay từ bàn phím.
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-ZÀ-ỹ\s]'),
+                                  ),
+                                ],
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF1F2937),
                                 ),
@@ -314,6 +322,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   if (val == null || val.trim().isEmpty) {
                                     return 'Vui lòng nhập họ và tên';
                                   }
+                                  // Không cho phép ký tự đặc biệt / số (phòng trường hợp paste)
+                                  if (!RegExp(
+                                    r'^[a-zA-ZÀ-ỹ\s]+$',
+                                  ).hasMatch(val.trim())) {
+                                    return 'Chỉ được nhập chữ cái và khoảng trắng';
+                                  }
                                   return null;
                                 },
                               ),
@@ -324,6 +338,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
+                              // Email chỉ cho phép chữ cái và số, kèm `@` và `.`
+                              // (cấu trúc email tối thiểu). Mọi khoảng trắng
+                              // và ký tự đặc biệt khác đều bị chặn từ bàn phím.
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(
+                                  RegExp(r'\s'),
+                                ),
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z0-9@.]'),
+                                ),
+                              ],
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF1F2937),
                               ),
@@ -361,8 +386,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 if (val == null || val.trim().isEmpty) {
                                   return 'Vui lòng nhập Email';
                                 }
+                                if (val.contains(' ')) {
+                                  return 'Email không được chứa khoảng trắng';
+                                }
                                 if (!RegExp(
-                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                  r'^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)+$',
                                 ).hasMatch(val.trim())) {
                                   return 'Email không hợp lệ';
                                 }
@@ -375,6 +403,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              // Mật khẩu chỉ cho phép chữ cái và số,
+                              // chặn mọi khoảng trắng và ký tự đặc biệt
+                              // (kể cả khi paste).
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(
+                                  RegExp(r'\s'),
+                                ),
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z0-9]'),
+                                ),
+                              ],
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF1F2937),
                               ),
@@ -422,6 +461,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               validator: (val) {
                                 if (val == null || val.isEmpty) {
                                   return 'Vui lòng nhập mật khẩu';
+                                }
+                                if (val.contains(' ')) {
+                                  return 'Mật khẩu không được chứa khoảng trắng';
+                                }
+                                // Chỉ chữ cái và số, không cho phép ký tự đặc biệt
+                                if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(val)) {
+                                  return 'Mật khẩu chỉ được chứa chữ cái và số';
                                 }
                                 if (val.length < 6) {
                                   return 'Mật khẩu phải dài ít nhất 6 ký tự';

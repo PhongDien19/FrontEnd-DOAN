@@ -12,10 +12,16 @@ class DynamicSurveyReportScreen extends StatefulWidget {
   final String sessionId;
   final Map<String, dynamic>? initialReport;
 
+  /// Hướng đi người dùng đã chọn ngay từ form nhập thông tin:
+  /// 'study' (Đi học) hoặc 'work' (Đi Làm). Áp dụng cho Discovery mode.
+  /// Targeted mode bỏ qua tham số này.
+  final String selectedPath;
+
   const DynamicSurveyReportScreen({
     super.key,
     required this.sessionId,
     this.initialReport,
+    this.selectedPath = 'study',
   });
 
   @override
@@ -30,8 +36,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
   final _commentController = TextEditingController();
   bool _isSendingFeedback = false;
 
-  // Thêm State quản lý nhánh: mặc định là Đi học
-  CareerPath _selectedPath = CareerPath.study;
+  // Hướng đi lấy trực tiếp từ tham số widget (đã được user chọn từ form).
+  // Trước đây dùng state nội bộ + filter 2 tab để đổi, nay bỏ filter.
+  CareerPath get _selectedPath =>
+      widget.selectedPath == 'work' ? CareerPath.work : CareerPath.study;
 
   @override
   void initState() {
@@ -43,6 +51,42 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  // Ép kiểu an toàn: chuyển bất kỳ giá trị dynamic nào về String, tránh crash khi AI
+  // trả về dữ liệu không đúng schema (number, Map, List...).
+  static String _safeString(dynamic v, {String fallback = ''}) {
+    if (v == null) return fallback;
+    if (v is String) return v;
+    if (v is num) return v.toString();
+    if (v is bool) return v.toString();
+    if (v is List) return fallback;
+    if (v is Map) return fallback;
+    return v.toString();
+  }
+
+  static List<String> _safeStringList(dynamic v, {List<String> fallback = const []}) {
+    if (v == null) return List<String>.from(fallback);
+    if (v is List) {
+      final result = <String>[];
+      for (final item in v) {
+        if (item is String) {
+          result.add(item);
+        } else if (item is Map) {
+          final name = item['companyName'] ?? item['name'];
+          if (name is String) result.add(name);
+        }
+        // bỏ qua các kiểu khác (num, bool, List lồng) để tránh render crash
+      }
+      return result;
+    }
+    return List<String>.from(fallback);
+  }
+
+  static Map<String, dynamic>? _safeMap(dynamic v) {
+    if (v is Map<String, dynamic>) return v;
+    if (v is Map) return Map<String, dynamic>.from(v);
+    return null;
   }
 
   void _submitFeedback() async {
@@ -112,22 +156,28 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
         ? const Color(0xFF059669)
         : const Color(0xFFDC2626);
 
-    final summary = _report['summary'] ?? '';
-    final strengths = List<String>.from(_report['strengths'] ?? []);
-    final weaknesses = List<String>.from(_report['weaknesses'] ?? []);
-    final advice = _report['advice'] ?? '';
+    final summary = _safeString(_report['summary']);
+    final strengths = _safeStringList(_report['strengths']);
+    final weaknesses = _safeStringList(_report['weaknesses']);
+    final advice = _safeString(_report['advice']);
 
-    final roadmap = List<String>.from(_report['roadmap'] ?? []);
-    final certificates = List<String>.from(_report['certificates'] ?? []);
-    final onetMatches = List<String>.from(_report['onetMatches'] ?? []);
+    final roadmap = _safeStringList(_report['roadmap']);
+    final certificates = _safeStringList(_report['certificates']);
+    final onetMatches = _safeStringList(_report['onetMatches']);
 
-    final String mode = _report['mode'] ?? '';
+    final String mode = _safeString(_report['mode']);
     final compatibleCareers =
-        _report['compatibleCareers'] as List<dynamic>? ?? [];
-    final String basicSalary = _report['basicSalary'] ?? '';
-    final String laborMarket = _report['laborMarket'] ?? '';
-    final trainingInstitutions = List<dynamic>.from(_report['trainingInstitutions'] ?? _report['schools'] ?? []);
-    final targetCompanies = List<dynamic>.from(_report['companies'] ?? _report['companyDetails'] ?? []);
+        (_report['compatibleCareers'] is List) ? (_report['compatibleCareers'] as List) : <dynamic>[];
+    final String basicSalary = _safeString(_report['basicSalary']);
+    final String laborMarket = _safeString(_report['laborMarket']);
+    final trainingInstitutions =
+        (_report['trainingInstitutions'] is List || _report['schools'] is List)
+            ? (_report['trainingInstitutions'] ?? _report['schools']) as List
+            : <dynamic>[];
+    final targetCompanies =
+        (_report['companies'] is List || _report['companyDetails'] is List)
+            ? (_report['companies'] ?? _report['companyDetails']) as List
+            : <dynamic>[];
 
     String displayMode = mode;
     if (displayMode.isEmpty) {
@@ -193,13 +243,6 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
 // 4. Lộ trình phát triển
 // 5. Cơ hội việc làm / Trường đào tạo
 // 6. Lời khuyên hướng nghiệp
-
-// 1. THANH FILTER (chỉ hiển thị ở chế độ Discovery khi có compatibleCareers)
-if (displayMode.toLowerCase() == 'discovery' &&
-    compatibleCareers.isNotEmpty) ...[
-  _buildPathFilter(),
-  const SizedBox(height: 16),
-],
 
 // 2. ĐIỂM MẠNH & TỐ CHẤT CẦN RÈN — luôn ở trên cùng
 Row(
@@ -295,7 +338,10 @@ if (roadmap.isNotEmpty) ...[
 // 5. CƠ HỘI VIỆC LÀM / TRƯỜNG ĐÀO TẠO
 if (displayMode.toLowerCase() == 'discovery' &&
     compatibleCareers.isNotEmpty) ...[
-  // Discovery: hiển thị theo filter (trường đào tạo cho Đi học, thị trường tuyển dụng cho Đi làm)
+  // Badge thông báo hướng đi đã chọn từ form (thay cho filter 2 tab cũ)
+  _buildSelectedPathBadge(),
+  const SizedBox(height: 16),
+  // Discovery: hiển thị theo hướng đã chọn (trường đào tạo cho Đi học, thị trường tuyển dụng cho Đi Làm)
   _buildDiscoverySection(compatibleCareers),
   const SizedBox(height: 20),
 ] else ...[
@@ -414,6 +460,7 @@ if (displayMode.toLowerCase() == 'discovery' &&
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: trainingInstitutions
+              .whereType<Map>()
               .map((sch) => _buildSchoolItem(sch, const Color(0xFF0284C7)))
               .toList(),
         ),
@@ -428,6 +475,7 @@ if (displayMode.toLowerCase() == 'discovery' &&
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: targetCompanies
+              .whereType<Map>()
               .map((comp) => _buildCompanyItem(comp, const Color(0xFF059669)))
               .toList(),
         ),
@@ -463,85 +511,54 @@ const SizedBox(height: 20),
     );
   }
 
-  // --- WIDGET TRUNG GIAN: THANH FILTER ĐI HỌC / ĐI LÀM ---
-  Widget _buildPathFilter() {
+  // --- WIDGET BADGE HƯỚNG ĐI ĐÃ CHỌN (thay thế filter 2 tab cũ) ---
+  Widget _buildSelectedPathBadge() {
+    final bool isStudy = _selectedPath == CareerPath.study;
+    final Color color = isStudy ? const Color(0xFF0284C7) : const Color(0xFF059669);
+    final String label = isStudy ? '🎓 Hướng Đi Học' : '💼 Hướng Đi Làm';
+    final String desc = isStudy
+        ? 'Danh sách trường đào tạo & ngành phù hợp'
+        : 'Danh sách công ty tuyển dụng & vị trí phù hợp';
+
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB).withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(16),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Expanded(
-            child: _buildFilterTab(
-              title: '🎓 Hướng Đi Học',
-              subTitle: 'Top Trường & Đào tạo',
-              isSelected: _selectedPath == CareerPath.study,
-              onTap: () => setState(() => _selectedPath = CareerPath.study),
-              activeColor: const Color(0xFF0284C7), // Màu Xanh Dương cho Học
-            ),
+          Icon(
+            isStudy ? Icons.school_rounded : Icons.work_rounded,
+            color: color,
+            size: 22,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 12),
           Expanded(
-            child: _buildFilterTab(
-              title: '💼 Hướng Đi Làm',
-              subTitle: 'Thị trường & Công ty',
-              isSelected: _selectedPath == CareerPath.work,
-              onTap: () => setState(() => _selectedPath = CareerPath.work),
-              activeColor: const Color(0xFF059669), // Màu Xanh Lá cho Làm
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  desc,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: const Color(0xFF475569),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterTab({
-    required String title,
-    required String subTitle,
-    required bool isSelected,
-    required VoidCallback onTap,
-    required Color activeColor,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.outfit(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: isSelected ? activeColor : const Color(0xFF6B7280),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subTitle,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                color: isSelected ? Colors.black87 : const Color(0xFF9CA3AF),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -651,28 +668,30 @@ const SizedBox(height: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: careers.map((item) {
-          final career = item['career'] ?? 'Chưa rõ tên ngành';
-          final reason = item['reason'] ?? '';
-          final matchRate = item['matchRate'] ?? 'Cao';
+          final career = _safeString(item['career'], fallback: 'Chưa rõ tên ngành');
+          final reason = _safeString(item['reason']);
+          final matchRate = _safeString(item['matchRate'], fallback: 'Cao');
 
           // Lấy dữ liệu tùy theo nhánh (Fallback nếu AI chưa trả code)
-          final studyInfo = item['studyInfo'] as Map<String, dynamic>?;
-          final topSchools = List<String>.from(
-            studyInfo?['topSchools'] ??
-                ['Đại học Bách Khoa', 'Đại học Quốc Gia', 'Đại học RMIT / FPT'],
+          final studyInfo = _safeMap(item['studyInfo']);
+          final topSchools = _safeStringList(
+            studyInfo?['topSchools'],
+            fallback: ['Đại học Bách Khoa', 'Đại học Quốc Gia', 'Đại học RMIT / FPT'],
           );
 
-          final workInfo = item['workInfo'] as Map<String, dynamic>?;
-          final hiringCompanies = List<String>.from(
-            workInfo?['hiringCompanies'] ??
-                [
-                  'FPT Software / Telecom',
-                  'Tập đoàn Viettel',
-                  'Các công ty đa quốc gia',
-                ],
+          final workInfo = _safeMap(item['workInfo']);
+          final hiringCompanies = _safeStringList(
+            workInfo?['hiringCompanies'],
+            fallback: [
+              'FPT Software / Telecom',
+              'Tập đoàn Viettel',
+              'Các công ty đa quốc gia',
+            ],
           );
-          final marketDemand =
-              workInfo?['marketDemand'] ?? 'Nhu cầu cao, mức lương hấp dẫn';
+          final marketDemand = _safeString(
+            workInfo?['marketDemand'],
+            fallback: 'Nhu cầu cao, mức lương hấp dẫn',
+          );
 
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
@@ -764,7 +783,9 @@ const SizedBox(height: 20),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ...(item['trainingInstitutions'] as List).map((sch) => _buildSchoolItem(sch, themeColor)),
+                    ...(item['trainingInstitutions'] as List)
+                        .whereType<Map>()
+                        .map((sch) => _buildSchoolItem(sch, themeColor)),
                   ] else ...[
                     Text(
                       '🏛️ Top các trường đào tạo nổi bật:',
@@ -813,7 +834,9 @@ const SizedBox(height: 20),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ...(item['companyDetails'] as List).map((comp) => _buildCompanyItem(comp, themeColor)),
+                    ...(item['companyDetails'] as List)
+                        .whereType<Map>()
+                        .map((comp) => _buildCompanyItem(comp, themeColor)),
                   ] else ...[
                     Text(
                       '🏢 Công ty & Tập đoàn đang tuyển dụng:',
@@ -1198,14 +1221,22 @@ const SizedBox(height: 20),
   }
 
   Widget _buildSchoolItem(dynamic school, Color themeColor) {
-    final schoolName = school['schoolName'] ?? school['name'] ?? 'Tên trường';
+    if (school is! Map) return const SizedBox.shrink();
+    final rawName = school['schoolName'] ?? school['name'];
+    final rawOfficial = school['officialLink'] ?? school['link'];
+    final rawAdmission = school['admissionLink'];
+    final rawEval = school['scoreEvaluation'];
+
+    final schoolName = (rawName is String && rawName.trim().isNotEmpty)
+        ? rawName
+        : 'Tên trường';
     final benchmark2025 = school['benchmark2025']?.toString();
     final benchmark2024 = school['benchmark2024']?.toString();
     final benchmark2023 = school['benchmark2023']?.toString();
     final benchmark2022 = school['benchmark2022']?.toString();
-    final officialLink = school['officialLink'] ?? school['link'] ?? '';
-    final admissionLink = school['admissionLink'] ?? '';
-    final scoreEvaluation = school['scoreEvaluation'] ?? '';
+    final officialLink = (rawOfficial is String) ? rawOfficial : '';
+    final admissionLink = (rawAdmission is String) ? rawAdmission : '';
+    final scoreEvaluation = (rawEval is String) ? rawEval : '';
 
     final bool has2025 = benchmark2025 != null && benchmark2025.isNotEmpty && benchmark2025 != 'N/A';
     final String benchmarkText = has2025
@@ -1335,10 +1366,20 @@ const SizedBox(height: 20),
   }
 
   Widget _buildCompanyItem(dynamic company, Color themeColor) {
-    final companyName = company['companyName'] ?? company['name'] ?? 'Tên công ty';
-    final companyDescription = company['companyDescription'] ?? company['description'] ?? '';
-    final basicSalary = company['basicSalary'] ?? company['salary'] ?? '';
-    final careerLink = company['careerLink'] ?? company['link'] ?? '';
+    if (company is! Map) {
+      return const SizedBox.shrink();
+    }
+    final rawName = company['companyName'] ?? company['name'];
+    final rawDesc = company['companyDescription'] ?? company['description'];
+    final rawSalary = company['basicSalary'] ?? company['salary'];
+    final rawLink = company['careerLink'] ?? company['link'];
+
+    final companyName = (rawName is String && rawName.trim().isNotEmpty)
+        ? rawName
+        : 'Tên công ty';
+    final companyDescription = (rawDesc is String) ? rawDesc : '';
+    final basicSalary = (rawSalary is String) ? rawSalary : '';
+    final careerLink = (rawLink is String) ? rawLink : '';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1352,9 +1393,10 @@ const SizedBox(height: 20),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
+                flex: 3,
                 child: Text(
                   companyName,
                   style: GoogleFonts.outfit(
@@ -1364,19 +1406,27 @@ const SizedBox(height: 20),
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
               if (basicSalary.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: themeColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    basicSalary,
-                    style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: themeColor,
+                Flexible(
+                  flex: 2,
+                  fit: FlexFit.loose,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: themeColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      basicSalary,
+                      textAlign: TextAlign.end,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: themeColor,
+                      ),
                     ),
                   ),
                 ),
