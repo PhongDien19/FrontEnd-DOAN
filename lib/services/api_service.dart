@@ -180,7 +180,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': email, 'password': password}),
+        body: jsonEncode({'email': email, 'password': password}),
       ).timeout(_defaultTimeout);
 
       final data = _safeParseResponse(response);
