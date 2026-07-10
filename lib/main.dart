@@ -15,26 +15,26 @@ void main() {
   );
 }
 
-/// Áp dụng font "Inter" (hỗ trợ đầy đủ tiếng Việt) cho toàn bộ TextTheme
-/// — fix lỗi chữ có dấu bị to/dày hơn chữ không dấu do fallback font hệ thống.
+/// Áp dụng font "Roboto" cho toàn bộ TextTheme
+/// — Roboto là font mặc định của Material Design, hỗ trợ tiếng Việt tốt.
 TextTheme _buildTextTheme(TextTheme base) {
-  return GoogleFonts.interTextTheme(base).copyWith(
-    // Đảm bảo các style cụ thể cũng dùng Inter
-    displayLarge: GoogleFonts.inter(textStyle: base.displayLarge),
-    displayMedium: GoogleFonts.inter(textStyle: base.displayMedium),
-    displaySmall: GoogleFonts.inter(textStyle: base.displaySmall),
-    headlineLarge: GoogleFonts.inter(textStyle: base.headlineLarge),
-    headlineMedium: GoogleFonts.inter(textStyle: base.headlineMedium),
-    headlineSmall: GoogleFonts.inter(textStyle: base.headlineSmall),
-    titleLarge: GoogleFonts.inter(textStyle: base.titleLarge),
-    titleMedium: GoogleFonts.inter(textStyle: base.titleMedium),
-    titleSmall: GoogleFonts.inter(textStyle: base.titleSmall),
-    bodyLarge: GoogleFonts.inter(textStyle: base.bodyLarge),
-    bodyMedium: GoogleFonts.inter(textStyle: base.bodyMedium),
-    bodySmall: GoogleFonts.inter(textStyle: base.bodySmall),
-    labelLarge: GoogleFonts.inter(textStyle: base.labelLarge),
-    labelMedium: GoogleFonts.inter(textStyle: base.labelMedium),
-    labelSmall: GoogleFonts.inter(textStyle: base.labelSmall),
+  return GoogleFonts.robotoTextTheme(base).copyWith(
+    // Đảm bảo các style cụ thể cũng dùng Roboto
+    displayLarge: GoogleFonts.roboto(textStyle: base.displayLarge),
+    displayMedium: GoogleFonts.roboto(textStyle: base.displayMedium),
+    displaySmall: GoogleFonts.roboto(textStyle: base.displaySmall),
+    headlineLarge: GoogleFonts.roboto(textStyle: base.headlineLarge),
+    headlineMedium: GoogleFonts.roboto(textStyle: base.headlineMedium),
+    headlineSmall: GoogleFonts.roboto(textStyle: base.headlineSmall),
+    titleLarge: GoogleFonts.roboto(textStyle: base.titleLarge),
+    titleMedium: GoogleFonts.roboto(textStyle: base.titleMedium),
+    titleSmall: GoogleFonts.roboto(textStyle: base.titleSmall),
+    bodyLarge: GoogleFonts.roboto(textStyle: base.bodyLarge),
+    bodyMedium: GoogleFonts.roboto(textStyle: base.bodyMedium),
+    bodySmall: GoogleFonts.roboto(textStyle: base.bodySmall),
+    labelLarge: GoogleFonts.roboto(textStyle: base.labelLarge),
+    labelMedium: GoogleFonts.roboto(textStyle: base.labelMedium),
+    labelSmall: GoogleFonts.roboto(textStyle: base.labelSmall),
   );
 }
 

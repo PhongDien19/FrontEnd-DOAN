@@ -278,13 +278,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (!_isLoginMode) ...[
                               TextFormField(
                                 controller: _fullNameController,
-                                // Chỉ cho phép chữ cái (bao gồm tiếng Việt có dấu) và khoảng trắng,
-                                // chặn hoàn toàn số và ký tự đặc biệt ngay từ bàn phím.
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[a-zA-ZÀ-ỹ\s]'),
-                                  ),
-                                ],
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF1F2937),
                                 ),
@@ -324,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   }
                                   // Không cho phép ký tự đặc biệt / số (phòng trường hợp paste)
                                   if (!RegExp(
-                                    r'^[a-zA-ZÀ-ỹ\s]+$',
+                                    r'^[a-zA-ZÀ-ỹ\u0300-\u036f\s]+$',
                                   ).hasMatch(val.trim())) {
                                     return 'Chỉ được nhập chữ cái và khoảng trắng';
                                   }
