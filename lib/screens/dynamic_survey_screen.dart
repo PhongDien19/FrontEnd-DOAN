@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
 import 'dynamic_survey_report_screen.dart';
+import 'login_screen.dart';
 
 class DynamicSurveyScreen extends StatefulWidget {
   const DynamicSurveyScreen({super.key});
@@ -396,9 +397,17 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       final evaluation = result['evaluation'] ?? {};
       final auth = Provider.of<AuthProvider>(context, listen: false);
 
-      if (auth.isAuthenticated) {
-        await auth.claimTestResult(_sessionId);
+      // Nếu chưa đăng nhập → bắt buộc đăng nhập trước khi xem kết quả.
+      // Lưu kết quả tạm vào state để có thể navigate sau khi đăng nhập xong.
+      if (!auth.isAuthenticated) {
+        await _showLoginRequiredDialog(
+          evaluation: evaluation,
+          sessionId: _sessionId,
+        );
+        return;
       }
+
+      await auth.claimTestResult(_sessionId);
 
       if (!mounted) {
         return;
@@ -425,6 +434,110 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         SnackBar(
           content: Text(result['message'] ?? 'Lỗi nộp bài. Vui lòng thử lại!'),
           backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  // Hiển thị dialog yêu cầu đăng nhập trước khi xem kết quả khảo sát.
+  // Sau khi đăng nhập thành công, navigate thẳng tới Report screen.
+  Future<void> _showLoginRequiredDialog({
+    required Map<String, dynamic> evaluation,
+    required String sessionId,
+  }) async {
+    if (!mounted) return;
+    setState(() {
+      _step = 2; // Cho phép user làm lại hoặc đăng nhập
+    });
+
+    final shouldLogin = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.lock_outline_rounded, color: brandColor, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Yêu cầu đăng nhập',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn đã hoàn thành 15 câu hỏi. Vui lòng đăng nhập để xem kết quả phân tích hướng nghiệp của mình.',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF475569),
+            fontSize: 13,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Để sau',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: brandColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              'Đăng nhập',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogin != true || !mounted) {
+      return;
+    }
+
+    // Mở màn hình đăng nhập
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+
+    if (!mounted) return;
+
+    // Sau khi quay lại, kiểm tra trạng thái đăng nhập
+    final updatedAuth = Provider.of<AuthProvider>(context, listen: false);
+    if (updatedAuth.isAuthenticated) {
+      // Đồng bộ kết quả khảo sát với user vừa đăng nhập
+      await updatedAuth.claimTestResult(sessionId);
+      if (!mounted) return;
+      // Navigate tới Report screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DynamicSurveyReportScreen(
+            sessionId: sessionId,
+            initialReport: evaluation,
+            selectedPath: _selectedPath,
+          ),
         ),
       );
     }

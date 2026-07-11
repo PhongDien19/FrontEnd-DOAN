@@ -81,7 +81,10 @@ class ApiService {
 
   /// IP LAN của máy chạy server Node.js (đổi nếu máy dev có IP khác).
   /// Kiểm tra bằng lệnh: `ipconfig` (Windows) hoặc `ifconfig` (macOS/Linux).
-  static const String devLanIp = '192.168.137.1';
+  
+  //static const String devLanIp = '192.168.137.1'; // IP chạy máy ảo
+  static const String devLanIp = '192.168.1.2'; //IP chạy máy thật
+
 
   /// Xác định base URL tuỳ theo nền tảng đang chạy:
   ///  - Flutter Web (Chrome/Edge/Safari): dùng `http://localhost:5000/api`

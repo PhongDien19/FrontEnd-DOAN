@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
 import 'comprehensive_report_screen.dart';
+import 'login_screen.dart';
 
 class AssessmentFlowScreen extends StatefulWidget {
   final String testType;
@@ -167,7 +168,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         }
         return;
       }
-      setState(() => _step = 4);
+      // Chưa đăng nhập: hiển thị dialog yêu cầu đăng nhập để xem kết quả.
+      await _showLoginRequiredDialog();
     } else {
       if (!mounted) return;
       setState(() => _step = 2);
@@ -175,6 +177,104 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         const SnackBar(
           content: Text('Lỗi chấm bài.'),
           backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  // Hiển thị dialog yêu cầu đăng nhập trước khi xem kết quả bài test
+  // (Holland / MBTI / Cognitive / Values).
+  Future<void> _showLoginRequiredDialog() async {
+    if (!mounted) return;
+    setState(() => _step = 2); // Cho phép làm lại hoặc đăng nhập
+
+    final shouldLogin = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.lock_outline_rounded,
+              color: Color(0xFF6C63FF),
+              size: 28,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Yêu cầu đăng nhập',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn đã hoàn thành bài test. Vui lòng đăng nhập để xem kết quả phân tích chi tiết.',
+          style: GoogleFonts.inter(
+            color: Colors.grey.shade700,
+            fontSize: 13,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Để sau',
+              style: GoogleFonts.outfit(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6C63FF),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              'Đăng nhập',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogin != true || !mounted) {
+      return;
+    }
+
+    // Mở màn hình đăng nhập
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+
+    if (!mounted) return;
+
+    final updatedAuth = Provider.of<AuthProvider>(context, listen: false);
+    if (updatedAuth.isAuthenticated) {
+      // Đồng bộ kết quả với user vừa đăng nhập
+      await updatedAuth.claimTestResult(_sessionId);
+      if (!mounted) return;
+      // Navigate tới màn comprehensive report
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const ComprehensiveReportScreen(),
         ),
       );
     }
