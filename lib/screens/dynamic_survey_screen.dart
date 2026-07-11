@@ -143,7 +143,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   List<dynamic> _questions = [];
   int _currentQuestionIndex = 0;
 
-  // Câu trả lời của người dùng: index -> weight
+  // Câu trả lời của người dùng: câu hỏi index -> lựa chọn index (0-4)
   final Map<int, int> _answers = {};
 
   @override
@@ -351,9 +351,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   }
 
   // Chọn câu trả lời cho câu hỏi hiện tại
-  void _selectAnswer(int weight) {
+  void _selectAnswer(int optionIndex) {
     setState(() {
-      _answers[_currentQuestionIndex] = weight;
+      _answers[_currentQuestionIndex] = optionIndex;
     });
   }
 
@@ -375,7 +375,16 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
     final List<int> orderedAnswers = [];
     for (int i = 0; i < _questions.length; i++) {
-      orderedAnswers.add(_answers[i] ?? 3);
+      final selectedOptIndex = _answers[i];
+      int weight = 3;
+      if (selectedOptIndex != null) {
+        final q = _questions[i];
+        final options = List<dynamic>.from(q['options'] ?? []);
+        if (selectedOptIndex >= 0 && selectedOptIndex < options.length) {
+          weight = options[selectedOptIndex]['weight'] as int? ?? 3;
+        }
+      }
+      orderedAnswers.add(weight);
     }
 
     final result = await ApiService.submitSurvey(_sessionId, orderedAnswers);
@@ -1371,15 +1380,16 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                ...options.map((opt) {
+                ...options.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final opt = entry.value;
                   final text = opt['text'] ?? '';
-                  final weight = opt['weight'] as int? ?? 3;
-                  final isSelected = _answers[_currentQuestionIndex] == weight;
+                  final isSelected = _answers[_currentQuestionIndex] == idx;
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: InkWell(
-                      onTap: () => _selectAnswer(weight),
+                      onTap: () => _selectAnswer(idx),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.symmetric(

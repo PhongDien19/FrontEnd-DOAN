@@ -166,6 +166,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     final onetMatches = _safeStringList(_report['onetMatches']);
 
     final String mode = _safeString(_report['mode']);
+    final String targetCareer = _safeString(_report['targetCareer'] ?? _report['careerName'] ?? _report['career'] ?? '');
     final compatibleCareers =
         (_report['compatibleCareers'] is List) ? (_report['compatibleCareers'] as List) : <dynamic>[];
     final String basicSalary = _safeString(_report['basicSalary']);
@@ -233,6 +234,12 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                 // Banner nhắc đăng nhập
                 if (!authProvider.isAuthenticated) ...[
                   _buildLoginBanner(),
+                  const SizedBox(height: 20),
+                ],
+
+                // ========== ĐIỂM PHÙ HỢP TỔNG QUAN ==========
+                if (displayMode.toLowerCase() != 'discovery') ...[
+                  _buildMatchScoreCard(rawScore, status, isPassed, statusColor, targetCareer),
                   const SizedBox(height: 20),
                 ],
 
@@ -504,6 +511,149 @@ const SizedBox(height: 20),
                 _buildFeedbackSection(),
                 const SizedBox(height: 36),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ========== WIDGET ĐIỂM PHÙ HỢP TỔNG QUAN ==========
+  Widget _buildMatchScoreCard(double score, String status, bool isPassed, Color statusColor, String targetCareer) {
+    // Nếu điểm số <= 5, ta coi như thang điểm 5 và nhân với 20 để quy đổi ra phần trăm khi phân cấp độ.
+    // Ngược lại, nếu điểm số > 5, ta coi như thang điểm 100.
+    final double percentage = (score <= 5) ? (score / 5 * 100) : score;
+
+    // Màu sắc theo mức độ phù hợp
+    Color scoreColor;
+    String scoreText;
+    if (percentage >= 80) {
+      scoreColor = const Color(0xFF059669);
+      scoreText = 'Phù hợp cao';
+    } else if (percentage >= 60) {
+      scoreColor = const Color(0xFF0284C7);
+      scoreText = 'Phù hợp khá';
+    } else if (percentage >= 40) {
+      scoreColor = const Color(0xFFD97706);
+      scoreText = 'Phù hợp trung bình';
+    } else {
+      scoreColor = const Color(0xFFDC2626);
+      scoreText = 'Cần cải thiện';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            statusColor.withValues(alpha: 0.15),
+            statusColor.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: statusColor.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: scoreColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  isPassed ? Icons.emoji_events_rounded : Icons.trending_up_rounded,
+                  color: scoreColor,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      targetCareer.isNotEmpty
+                          ? 'Độ Phù Hợp: $targetCareer'
+                          : 'Điểm Phù Hợp Ngành Nghề',
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Kết quả đánh giá từ thuật toán AI',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Hiển thị điểm số lớn
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                score <= 5 ? score.toStringAsFixed(2) : score.toStringAsFixed(0),
+                style: GoogleFonts.outfit(
+                  fontSize: 56,
+                  fontWeight: FontWeight.bold,
+                  color: scoreColor,
+                  height: 1,
+                ),
+              ),
+              Text(
+                score <= 5 ? ' / 5' : '%',
+                style: GoogleFonts.outfit(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: scoreColor.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Thanh tiến trình
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: (score / (score <= 5 ? 5 : 100)).clamp(0.0, 1.0),
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Nhãn mức độ phù hợp
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: scoreColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              scoreText,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: scoreColor,
+              ),
             ),
           ),
         ],
