@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../utils/pdf_export_service.dart';
+import '../utils/responsive.dart';
 
 class TestHistoryScreen extends StatefulWidget {
   final String userId;
   final String userRole;
   final String? educationLevel;
-  final String?
-  initialSessionId; // Thêm tham số nhận ID bài test cần mở tự động
+  final String? initialSessionId;
 
   const TestHistoryScreen({
     super.key,
@@ -25,6 +26,33 @@ class TestHistoryScreen extends StatefulWidget {
 class _TestHistoryScreenState extends State<TestHistoryScreen> {
   List<dynamic> _history = [];
   bool _isLoading = true;
+
+  void _exportPdf(BuildContext context) async {
+    final historyItems = _history.map((item) {
+      return {
+        'date': _formatDateTime(item['createdAt'] ?? ''),
+        'type': _safeString(item['testType'] ?? 'Khảo sát'),
+        'score': _safeString(item['score'] ?? item['matchScore'] ?? 'N/A'),
+        'status': (item['score'] != null || item['matchScore'] != null)
+            ? 'Hoàn thành'
+            : 'Đang xử lý',
+      };
+    }).toList();
+
+    await PdfExportService.exportTestHistory(
+      context: context,
+      userName: widget.userId,
+      historyItems: historyItems,
+    );
+  }
+
+  String _safeString(dynamic v, {String fallback = ''}) {
+    if (v == null) return fallback;
+    if (v is String) return v;
+    if (v is num) return v.toString();
+    if (v is bool) return v.toString();
+    return v.toString();
+  }
 
   @override
   void initState() {
@@ -47,7 +75,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         _isLoading = false;
       });
 
-      // Kiểm tra nếu có initialSessionId từ ProfileScreen truyền sang thì tự động hiển thị chi tiết 4 tab
       if (widget.initialSessionId != null && _history.isNotEmpty) {
         final targetSession = _history.firstWhere(
           (s) => s['sessionId']?.toString() == widget.initialSessionId,
@@ -65,7 +92,10 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(res['message'] ?? 'Lỗi tải lịch sử hướng nghiệp'),
+          content: Text(
+            res['message'] ?? 'Lỗi tải lịch sử hướng nghiệp',
+            style: TextStyle(fontSize: Responsive.font(context, 14)),
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -90,9 +120,12 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
     final questions = session['questions'] as List<dynamic>? ?? [];
     final roadmap = session['roadmap'] as List<dynamic>? ?? [];
 
-    final matchingSchools = session['matchingSchools'] as List<dynamic>? ?? [];
-    final marketSalaries = session['marketSalaries'] as List<dynamic>? ?? [];
-    final hiringCompanies = session['hiringCompanies'] as List<dynamic>? ?? [];
+    final matchingSchools =
+        session['matchingSchools'] as List<dynamic>? ?? [];
+    final marketSalaries =
+        session['marketSalaries'] as List<dynamic>? ?? [];
+    final hiringCompanies =
+        session['hiringCompanies'] as List<dynamic>? ?? [];
 
     final color = isDiscovery
         ? const Color(0xFF059669)
@@ -118,8 +151,10 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Responsive.s(context, 24)),
+        ),
       ),
       builder: (context) {
         return DefaultTabController(
@@ -132,35 +167,37 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
             builder: (context, scrollController) {
               return Column(
                 children: [
-                  const SizedBox(height: 12),
+                  SizedBox(height: Responsive.s(context, 12)),
                   Container(
-                    width: 40,
-                    height: 4,
+                    width: Responsive.s(context, 40),
+                    height: Responsive.s(context, 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFD1D5DB),
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(
+                        Responsive.s(context, 2),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: Responsive.s(context, 16)),
                   Text(
                     isDiscovery
                         ? 'Chi Tiết Phiên Khám Phá AI'
                         : 'Chi Tiết Kiểm Tra Mục Tiêu',
                     style: GoogleFonts.outfit(
-                      fontSize: 18,
+                      fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: Responsive.s(context, 4)),
                   Text(
                     'Session ID: ${session['sessionId']}',
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: Responsive.font(context, 12),
                       color: const Color(0xFF6B7280),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: Responsive.s(context, 12)),
 
                   TabBar(
                     isScrollable: true,
@@ -170,11 +207,11 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     labelColor: color,
                     unselectedLabelColor: const Color(0xFF6B7280),
                     labelStyle: GoogleFonts.outfit(
-                      fontSize: 14,
+                      fontSize: Responsive.font(context, 14),
                       fontWeight: FontWeight.bold,
                     ),
                     unselectedLabelStyle: GoogleFonts.outfit(
-                      fontSize: 14,
+                      fontSize: Responsive.font(context, 14),
                       fontWeight: FontWeight.w500,
                     ),
                     tabs: [
@@ -194,7 +231,11 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     child: TabBarView(
                       children: [
                         _buildQuestionsTab(questions, color, scrollController),
-                        _buildEvaluationTab(session, color, scrollController),
+                        _buildEvaluationTab(
+                          session,
+                          color,
+                          scrollController,
+                        ),
                         _buildRoadmapTab(roadmap, color, scrollController),
                         isStudent
                             ? _buildStudentTab(
@@ -229,22 +270,27 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Không có dữ liệu câu hỏi',
-          style: GoogleFonts.inter(color: Colors.black54),
+          style: GoogleFonts.inter(
+            color: Colors.black54,
+            fontSize: Responsive.font(context, 14),
+          ),
         ),
       );
     }
     return ListView.builder(
       controller: controller,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Responsive.s(context, 20)),
       itemCount: questions.length,
       itemBuilder: (context, index) {
         final item = questions[index];
         return Container(
-          margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.all(16),
+          margin: EdgeInsets.only(bottom: Responsive.s(context, 14)),
+          padding: EdgeInsets.all(Responsive.s(context, 16)),
           decoration: BoxDecoration(
             color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(
+              Responsive.s(context, 16),
+            ),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
           child: Column(
@@ -253,18 +299,20 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
               Text(
                 'Câu ${index + 1}: ${item['q']}',
                 style: GoogleFonts.outfit(
-                  fontSize: 14,
+                  fontSize: Responsive.font(context, 14),
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: Responsive.s(context, 10)),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(Responsive.s(context, 12)),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 10),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,14 +320,14 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     Icon(
                       Icons.subdirectory_arrow_right_rounded,
                       color: color,
-                      size: 16,
+                      size: Responsive.s(context, 16),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: Responsive.s(context, 8)),
                     Expanded(
                       child: Text(
                         item['a'],
                         style: GoogleFonts.inter(
-                          fontSize: 13,
+                          fontSize: Responsive.font(context, 13),
                           color: color,
                           fontWeight: FontWeight.w600,
                           height: 1.3,
@@ -308,46 +356,57 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
 
     return ListView(
       controller: controller,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Responsive.s(context, 20)),
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(Responsive.s(context, 20)),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
+            borderRadius: BorderRadius.circular(
+              Responsive.s(context, 20),
+            ),
+            border: Border.all(
+              color: color.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(Icons.auto_awesome_rounded, color: color, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'ĐÁP ÁN HƯỚNG NGHIỆP PHÙ HỢP NHẤT',
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: color,
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: color,
+                    size: Responsive.s(context, 20),
+                  ),
+                  SizedBox(width: Responsive.s(context, 8)),
+                  Expanded(
+                    child: Text(
+                      'ĐÁP ÁN HƯỚNG NGHIỆP PHÙ HỢP NHẤT',
+                      style: GoogleFonts.outfit(
+                        fontSize: Responsive.font(context, 12),
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: Responsive.s(context, 12)),
               Text(
                 recommendedCareer,
                 style: GoogleFonts.outfit(
-                  fontSize: 20,
+                  fontSize: Responsive.font(context, 20),
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: Responsive.s(context, 8)),
               Text(
                 reason,
                 style: GoogleFonts.inter(
-                  fontSize: 13,
+                  fontSize: Responsive.font(context, 13),
                   color: const Color(0xFF4B5563),
                   height: 1.4,
                 ),
@@ -368,38 +427,47 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Chưa có thông tin lộ trình',
-          style: GoogleFonts.inter(color: Colors.black54),
+          style: GoogleFonts.inter(
+            color: Colors.black54,
+            fontSize: Responsive.font(context, 14),
+          ),
         ),
       );
     }
     return ListView.builder(
       controller: controller,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Responsive.s(context, 20)),
       itemCount: roadmap.length,
       itemBuilder: (context, index) {
         final step = roadmap[index];
         final certs = step['certs'] as List<dynamic>? ?? [];
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.all(16),
+          margin: EdgeInsets.only(bottom: Responsive.s(context, 14)),
+          padding: EdgeInsets.all(Responsive.s(context, 16)),
           decoration: BoxDecoration(
             color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(
+              Responsive.s(context, 16),
+            ),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: EdgeInsets.all(Responsive.s(context, 6)),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.trending_up_rounded, color: color, size: 16),
+                child: Icon(
+                  Icons.trending_up_rounded,
+                  color: color,
+                  size: Responsive.s(context, 16),
+                ),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: Responsive.s(context, 14)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,34 +475,36 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     Text(
                       step['stage'] ?? '',
                       style: GoogleFonts.outfit(
-                        fontSize: 14,
+                        fontSize: Responsive.font(context, 14),
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: Responsive.s(context, 6)),
                     Text(
                       step['desc'] ?? '',
                       style: GoogleFonts.inter(
-                        fontSize: 12,
+                        fontSize: Responsive.font(context, 12),
                         color: const Color(0xFF4B5563),
                         height: 1.4,
                       ),
                     ),
                     if (certs.isNotEmpty) ...[
-                      const SizedBox(height: 10),
+                      SizedBox(height: Responsive.s(context, 10)),
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
                         children: certs.map<Widget>((cert) {
                           return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Responsive.s(context, 8),
+                              vertical: Responsive.s(context, 4),
                             ),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(
+                                Responsive.s(context, 6),
+                              ),
                               border: Border.all(
                                 color: color.withValues(alpha: 0.3),
                               ),
@@ -444,14 +514,14 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                               children: [
                                 Icon(
                                   Icons.verified_outlined,
-                                  size: 12,
+                                  size: Responsive.s(context, 12),
                                   color: color,
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: Responsive.s(context, 4)),
                                 Text(
                                   cert.toString(),
                                   style: GoogleFonts.inter(
-                                    fontSize: 10,
+                                    fontSize: Responsive.font(context, 10),
                                     fontWeight: FontWeight.w600,
                                     color: color,
                                   ),
@@ -481,30 +551,35 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Chưa có thông tin trường học phù hợp từ hệ thống',
-          style: GoogleFonts.inter(color: Colors.black54),
+          style: GoogleFonts.inter(
+            color: Colors.black54,
+            fontSize: Responsive.font(context, 14),
+          ),
         ),
       );
     }
     return ListView(
       controller: controller,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Responsive.s(context, 20)),
       children: [
         Text(
           'DANH SÁCH TRƯỜNG ĐÀO TẠO ĐỢT KHẢO SÁT',
           style: GoogleFonts.inter(
-            fontSize: 11,
+            fontSize: Responsive.font(context, 11),
             fontWeight: FontWeight.bold,
             color: const Color(0xFF6B7280),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: Responsive.s(context, 12)),
         ...schools.map(
           (sch) => Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
+            margin: EdgeInsets.only(bottom: Responsive.s(context, 12)),
+            padding: EdgeInsets.all(Responsive.s(context, 16)),
             decoration: BoxDecoration(
               color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(
+                Responsive.s(context, 16),
+              ),
               border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
             child: Column(
@@ -520,25 +595,25 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                           Text(
                             sch['name'] ?? 'Tên trường',
                             style: GoogleFonts.outfit(
-                              fontSize: 15,
+                              fontSize: Responsive.font(context, 15),
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: Responsive.s(context, 4)),
                           Text(
                             'Ngành: ${sch['major'] ?? ''}',
                             style: GoogleFonts.inter(
-                              fontSize: 13,
+                              fontSize: Responsive.font(context, 13),
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF4B5563),
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: Responsive.s(context, 2)),
                           Text(
                             '📍 ${sch['location'] ?? ''}',
                             style: GoogleFonts.inter(
-                              fontSize: 12,
+                              fontSize: Responsive.font(context, 12),
                               color: const Color(0xFF6B7280),
                             ),
                           ),
@@ -546,18 +621,20 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.s(context, 10),
+                        vertical: Responsive.s(context, 6),
                       ),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 8),
+                        ),
                       ),
                       child: Text(
                         sch['score'] ?? '',
                         style: GoogleFonts.outfit(
-                          fontSize: 13,
+                          fontSize: Responsive.font(context, 13),
                           fontWeight: FontWeight.bold,
                           color: color,
                         ),
@@ -565,61 +642,94 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     ),
                   ],
                 ),
-                if ((sch['officialLink'] != null && sch['officialLink'].toString().isNotEmpty) ||
-                    (sch['admissionLink'] != null && sch['admissionLink'].toString().isNotEmpty)) ...[
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                if ((sch['officialLink'] != null &&
+                        sch['officialLink'].toString().isNotEmpty) ||
+                    (sch['admissionLink'] != null &&
+                        sch['admissionLink'].toString().isNotEmpty)) ...[
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: Responsive.s(context, 8),
+                    ),
+                    child: const Divider(
+                      height: 1,
+                      color: Color(0xFFE5E7EB),
+                    ),
                   ),
                   Row(
                     children: [
-                      if (sch['officialLink'] != null && sch['officialLink'].toString().isNotEmpty)
+                      if (sch['officialLink'] != null &&
+                          sch['officialLink'].toString().isNotEmpty)
                         TextButton.icon(
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            minimumSize: const Size(50, 30),
+                            minimumSize: Size(
+                              Responsive.s(context, 50),
+                              Responsive.s(context, 30),
+                            ),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          icon: Icon(Icons.language_rounded, size: 14, color: color),
+                          icon: Icon(
+                            Icons.language_rounded,
+                            size: Responsive.s(context, 14),
+                            color: color,
+                          ),
                           label: Text(
                             'Website',
                             style: GoogleFonts.inter(
-                              fontSize: 11,
+                              fontSize: Responsive.font(context, 11),
                               fontWeight: FontWeight.bold,
                               color: color,
                             ),
                           ),
                           onPressed: () async {
                             final urlString = sch['officialLink'].toString();
-                            final url = urlString.startsWith('http') ? urlString : 'https://$urlString';
-                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                            final url = urlString.startsWith('http')
+                                ? urlString
+                                : 'https://$urlString';
+                            await launchUrl(
+                              Uri.parse(url),
+                              mode: LaunchMode.externalApplication,
+                            );
                           },
                         ),
                       if (sch['officialLink'] != null &&
                           sch['officialLink'].toString().isNotEmpty &&
                           sch['admissionLink'] != null &&
                           sch['admissionLink'].toString().isNotEmpty)
-                        const SizedBox(width: 16),
-                      if (sch['admissionLink'] != null && sch['admissionLink'].toString().isNotEmpty)
+                        SizedBox(width: Responsive.s(context, 16)),
+                      if (sch['admissionLink'] != null &&
+                          sch['admissionLink'].toString().isNotEmpty)
                         TextButton.icon(
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            minimumSize: const Size(50, 30),
+                            minimumSize: Size(
+                              Responsive.s(context, 50),
+                              Responsive.s(context, 30),
+                            ),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          icon: Icon(Icons.campaign_outlined, size: 14, color: color),
+                          icon: Icon(
+                            Icons.campaign_outlined,
+                            size: Responsive.s(context, 14),
+                            color: color,
+                          ),
                           label: Text(
                             'Tuyển sinh',
                             style: GoogleFonts.inter(
-                              fontSize: 11,
+                              fontSize: Responsive.font(context, 11),
                               fontWeight: FontWeight.bold,
                               color: color,
                             ),
                           ),
                           onPressed: () async {
                             final urlString = sch['admissionLink'].toString();
-                            final url = urlString.startsWith('http') ? urlString : 'https://$urlString';
-                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                            final url = urlString.startsWith('http')
+                                ? urlString
+                                : 'https://$urlString';
+                            await launchUrl(
+                              Uri.parse(url),
+                              mode: LaunchMode.externalApplication,
+                            );
                           },
                         ),
                     ],
@@ -643,43 +753,54 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Chưa có thông tin thị trường tuyển dụng lúc này',
-          style: GoogleFonts.inter(color: Colors.black54),
+          style: GoogleFonts.inter(
+            color: Colors.black54,
+            fontSize: Responsive.font(context, 14),
+          ),
         ),
       );
     }
     return ListView(
       controller: controller,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Responsive.s(context, 20)),
       children: [
         if (salaries.isNotEmpty) ...[
           Text(
             'MỨC LƯƠNG THEO CẤP ĐỘ (THÁNG 5/2025)',
             style: GoogleFonts.inter(
-              fontSize: 11,
+              fontSize: Responsive.font(context, 11),
               fontWeight: FontWeight.bold,
               color: const Color(0xFF6B7280),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: Responsive.s(context, 12)),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(Responsive.s(context, 16)),
             decoration: BoxDecoration(
               color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(
+                Responsive.s(context, 16),
+              ),
               border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
             child: Column(
               children: salaries.map((sal) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                    vertical: Responsive.s(context, 8),
+                  ),
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 110,
+                        width: Responsive.s(
+                          context,
+                          110,
+                          max: 200,
+                        ),
                         child: Text(
                           sal['level'] ?? '',
                           style: GoogleFonts.inter(
-                            fontSize: 12,
+                            fontSize: Responsive.font(context, 12),
                             color: Colors.black87,
                             fontWeight: FontWeight.w500,
                           ),
@@ -687,20 +808,22 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       ),
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 4),
+                          ),
                           child: LinearProgressIndicator(
                             value: 0.65,
                             backgroundColor: const Color(0xFFE5E7EB),
                             color: Colors.orange,
-                            minHeight: 6,
+                            minHeight: Responsive.s(context, 6),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      SizedBox(width: Responsive.s(context, 14)),
                       Text(
                         sal['range'] ?? '',
                         style: GoogleFonts.outfit(
-                          fontSize: 12,
+                          fontSize: Responsive.font(context, 12),
                           fontWeight: FontWeight.bold,
                           color: Colors.orange.shade700,
                         ),
@@ -711,26 +834,28 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
               }).toList(),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: Responsive.s(context, 24)),
         ],
 
         if (companies.isNotEmpty) ...[
           Text(
             'CƠ HỘI VIỆC LÀM NỔI BẬT',
             style: GoogleFonts.inter(
-              fontSize: 11,
+              fontSize: Responsive.font(context, 11),
               fontWeight: FontWeight.bold,
               color: const Color(0xFF6B7280),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: Responsive.s(context, 12)),
           ...companies.map(
             (comp) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
+              margin: EdgeInsets.only(bottom: Responsive.s(context, 12)),
+              padding: EdgeInsets.all(Responsive.s(context, 16)),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 16),
+                ),
                 border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
               child: Column(
@@ -746,16 +871,16 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                             Text(
                               comp['role'] ?? '',
                               style: GoogleFonts.outfit(
-                                fontSize: 14,
+                                fontSize: Responsive.font(context, 14),
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: Responsive.s(context, 4)),
                             Text(
                               '${comp['company'] ?? ''} • ${comp['loc'] ?? ''}',
                               style: GoogleFonts.inter(
-                                fontSize: 12,
+                                fontSize: Responsive.font(context, 12),
                                 color: const Color(0xFF6B7280),
                               ),
                             ),
@@ -766,29 +891,32 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Responsive.s(context, 10),
+                              vertical: Responsive.s(context, 4),
                             ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFE5E7EB),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(
+                                Responsive.s(context, 6),
+                              ),
                             ),
                             child: Text(
                               comp['type'] ?? 'Toàn thời gian',
                               style: GoogleFonts.inter(
-                                fontSize: 11,
+                                fontSize: Responsive.font(context, 11),
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF4B5563),
                               ),
                             ),
                           ),
-                          if (comp['salary'] != null && comp['salary'].toString().isNotEmpty) ...[
-                            const SizedBox(height: 4),
+                          if (comp['salary'] != null &&
+                              comp['salary'].toString().isNotEmpty) ...[
+                            SizedBox(height: Responsive.s(context, 4)),
                             Text(
                               comp['salary'].toString(),
                               style: GoogleFonts.outfit(
-                                fontSize: 11,
+                                fontSize: Responsive.font(context, 11),
                                 fontWeight: FontWeight.bold,
                                 color: color,
                               ),
@@ -798,41 +926,60 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       ),
                     ],
                   ),
-                  if (comp['description'] != null && comp['description'].toString().isNotEmpty) ...[
-                    const SizedBox(height: 8),
+                  if (comp['description'] != null &&
+                      comp['description'].toString().isNotEmpty) ...[
+                    SizedBox(height: Responsive.s(context, 8)),
                     Text(
                       comp['description'].toString(),
                       style: GoogleFonts.inter(
-                        fontSize: 12,
+                        fontSize: Responsive.font(context, 12),
                         color: const Color(0xFF4B5563),
                         height: 1.4,
                       ),
                     ),
                   ],
-                  if (comp['careerLink'] != null && comp['careerLink'].toString().isNotEmpty) ...[
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6),
-                      child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                  if (comp['careerLink'] != null &&
+                      comp['careerLink'].toString().isNotEmpty) ...[
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: Responsive.s(context, 6),
+                      ),
+                      child: const Divider(
+                        height: 1,
+                        color: Color(0xFFE5E7EB),
+                      ),
                     ),
                     TextButton.icon(
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
-                        minimumSize: const Size(50, 30),
+                        minimumSize: Size(
+                          Responsive.s(context, 50),
+                          Responsive.s(context, 30),
+                        ),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      icon: Icon(Icons.link_rounded, size: 14, color: color),
+                      icon: Icon(
+                        Icons.link_rounded,
+                        size: Responsive.s(context, 14),
+                        color: color,
+                      ),
                       label: Text(
                         'Ứng tuyển / Xem việc làm',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: Responsive.font(context, 11),
                           fontWeight: FontWeight.bold,
                           color: color,
                         ),
                       ),
                       onPressed: () async {
                         final urlString = comp['careerLink'].toString();
-                        final url = urlString.startsWith('http') ? urlString : 'https://$urlString';
-                        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                        final url = urlString.startsWith('http')
+                            ? urlString
+                            : 'https://$urlString';
+                        await launchUrl(
+                          Uri.parse(url),
+                          mode: LaunchMode.externalApplication,
+                        );
                       },
                     ),
                   ],
@@ -857,14 +1004,31 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
           'Lịch Sử Phiên Hướng Nghiệp',
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: Responsive.font(context, 18),
             color: Colors.black87,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: Colors.black87,
+            size: Responsive.s(context, 24),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.picture_as_pdf_rounded,
+              color: Colors.black87,
+              size: Responsive.s(context, 24),
+            ),
+            tooltip: 'Xuất PDF',
+            onPressed: _history.isNotEmpty
+                ? () => _exportPdf(context)
+                : null,
+          ),
+        ],
       ),
       body: SafeArea(
         child: _isLoading
@@ -872,154 +1036,181 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                 child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
               )
             : _history.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.history_toggle_off_rounded,
-                      size: 64,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Bạn chưa thực hiện bài đánh giá nào.',
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                itemCount: _history.length,
-                itemBuilder: (context, index) {
-                  final session = _history[index];
-                  final isDiscovery = session['mode'] == 'discovery';
-                  final title =
-                      session['title'] ??
-                      (isDiscovery
-                          ? 'Khám Phá (Discovery)'
-                          : 'Mục Tiêu (Target)');
-                  final subtitle =
-                      session['subtitle'] ??
-                      (isDiscovery
-                          ? 'Gợi ý: ${session['recommendedCareer']}'
-                          : 'Mục tiêu: ${session['targetJob']}');
-                  final details = session['details'];
-                  final color = isDiscovery
-                      ? const Color(0xFF059669)
-                      : const Color(0xFF6C63FF);
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.history_toggle_off_rounded,
+                          size: Responsive.s(context, 64),
+                          color: const Color(0xFF9CA3AF),
+                        ),
+                        SizedBox(height: Responsive.s(context, 16)),
+                        Text(
+                          'Bạn chưa thực hiện bài đánh giá nào.',
+                          style: GoogleFonts.outfit(
+                            fontSize: Responsive.font(context, 16),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black54,
+                          ),
                         ),
                       ],
                     ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => _viewSessionDetails(session),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: color.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    isDiscovery
-                                        ? Icons.explore_rounded
-                                        : Icons.track_changes_rounded,
-                                    color: color,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        title,
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        subtitle,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          color: color,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (session['relevanceScore'] != null)
-                                  Text(
-                                    '${session['relevanceScore']}',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: color,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            if (details != null) ...[
-                              const SizedBox(height: 12),
-                              Text(
-                                details,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: const Color(0xFF4B5563),
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 14),
-                            const Divider(color: Color(0xFFF3F4F6)),
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatDateTime(session['createdAt']),
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: const Color(0xFF9CA3AF),
-                              ),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Responsive.s(context, 20),
+                      vertical: Responsive.s(context, 16),
+                    ),
+                    itemCount: _history.length,
+                    itemBuilder: (context, index) {
+                      final session = _history[index];
+                      final isDiscovery = session['mode'] == 'discovery';
+                      final title = session['title'] ??
+                          (isDiscovery
+                              ? 'Khám Phá (Discovery)'
+                              : 'Mục Tiêu (Target)');
+                      final subtitle = session['subtitle'] ??
+                          (isDiscovery
+                              ? 'Gợi ý: ${session['recommendedCareer']}'
+                              : 'Mục tiêu: ${session['targetJob']}');
+                      final details = session['details'];
+                      final color = isDiscovery
+                          ? const Color(0xFF059669)
+                          : const Color(0xFF6C63FF);
+
+                      return Container(
+                        margin: EdgeInsets.only(
+                          bottom: Responsive.s(context, 16),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 20),
+                          ),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 20),
+                          ),
+                          onTap: () => _viewSessionDetails(session),
+                          child: Padding(
+                            padding: EdgeInsets.all(
+                              Responsive.s(context, 20),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        Responsive.s(context, 8),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: color.withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        isDiscovery
+                                            ? Icons.explore_rounded
+                                            : Icons.track_changes_rounded,
+                                        color: color,
+                                        size: Responsive.s(context, 18),
+                                      ),
+                                    ),
+                                    SizedBox(width: Responsive.s(context, 14)),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            title,
+                                            style: GoogleFonts.outfit(
+                                              fontSize: Responsive.font(
+                                                context,
+                                                15,
+                                              ),
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: Responsive.s(
+                                              context,
+                                              2,
+                                            ),
+                                          ),
+                                          Text(
+                                            subtitle,
+                                            style: GoogleFonts.inter(
+                                              fontSize: Responsive.font(
+                                                context,
+                                                13,
+                                              ),
+                                              color: color,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (session['relevanceScore'] != null)
+                                      Text(
+                                        '${session['relevanceScore']}',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: Responsive.font(
+                                            context,
+                                            16,
+                                          ),
+                                          fontWeight: FontWeight.bold,
+                                          color: color,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                if (details != null) ...[
+                                  SizedBox(
+                                    height: Responsive.s(context, 12),
+                                  ),
+                                  Text(
+                                    details,
+                                    style: GoogleFonts.inter(
+                                      fontSize: Responsive.font(
+                                        context,
+                                        13,
+                                      ),
+                                      color: const Color(0xFF4B5563),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                                SizedBox(height: Responsive.s(context, 14)),
+                                const Divider(color: Color(0xFFF3F4F6)),
+                                SizedBox(height: Responsive.s(context, 4)),
+                                Text(
+                                  _formatDateTime(session['createdAt']),
+                                  style: GoogleFonts.inter(
+                                    fontSize: Responsive.font(context, 11),
+                                    color: const Color(0xFF9CA3AF),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
       ),
     );
   }

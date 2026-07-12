@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/responsive.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,7 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
         if (!_isLoginMode) {
-          // Sau khi đăng ký thành công, tự động chuyển sang chế độ đăng nhập và điền email
           setState(() {
             _isLoginMode = true;
             _passwordController.clear();
@@ -85,27 +85,27 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isLoading = Provider.of<AuthProvider>(context).isLoading;
+    final isWide = Responsive.isWideScreen(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Stack(
         children: [
-          // Back Button if can pop
           if (Navigator.canPop(context))
             Positioned(
-              top: 16,
-              left: 16,
+              top: Responsive.s(context, 16),
+              left: Responsive.s(context, 16),
               child: SafeArea(
                 child: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back_rounded,
-                    color: Color(0xFF1F2937),
+                    color: const Color(0xFF1F2937),
+                    size: Responsive.s(context, 24),
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
             ),
-          // Background Glows
           Positioned(
             top: -size.height * 0.2,
             right: -size.width * 0.2,
@@ -131,180 +131,267 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          // Main Content
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0),
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.s(context, 28),
+              ),
               child: SafeArea(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Brand Logo / Icon
                     Center(
                       child: Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: EdgeInsets.all(Responsive.s(context, 20)),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                          color: const Color(0xFFF59E0B).withValues(
+                            alpha: 0.1,
+                          ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.explore_rounded,
-                          size: 48,
-                          color: Color(0xFFF59E0B),
+                          size: Responsive.s(context, 48),
+                          color: const Color(0xFFF59E0B),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: Responsive.s(context, 24)),
 
-                    // Title
                     Text(
                       'CAREER PATHWAY',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.outfit(
-                        fontSize: 32,
+                        fontSize: Responsive.font(context, 32),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 2,
                         color: const Color(0xFF1F2937),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: Responsive.s(context, 8)),
                     Text(
                       'Hệ Thống Tư Vấn Hướng Nghiệp AI',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 15,
+                        fontSize: Responsive.font(context, 15),
                         color: const Color(0xFF6B7280),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    SizedBox(height: Responsive.s(context, 40)),
 
-                    // Login/Register Card Container
-                    Container(
-                      padding: const EdgeInsets.all(28.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: const Color(0xFFE5E7EB),
-                          width: 1.0,
+                    Center(
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: isWide ? 500 : double.infinity,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                        padding: EdgeInsets.all(Responsive.s(context, 28)),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 24),
                           ),
-                        ],
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Switcher Tab
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        setState(() => _isLoginMode = true),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          'Đăng Nhập',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: _isLoginMode
-                                                ? const Color(0xFF1F2937)
-                                                : const Color(0xFF9CA3AF),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Container(
-                                          height: 3,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              2,
-                                            ),
-                                            color: _isLoginMode
-                                                ? const Color(0xFFF59E0B)
-                                                : Colors.transparent,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        setState(() => _isLoginMode = false),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          'Đăng Ký',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: !_isLoginMode
-                                                ? const Color(0xFF1F2937)
-                                                : const Color(0xFF9CA3AF),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Container(
-                                          height: 3,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              2,
-                                            ),
-                                            color: !_isLoginMode
-                                                ? const Color(0xFFF59E0B)
-                                                : Colors.transparent,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          border: Border.all(
+                            color: const Color(0xFFE5E7EB),
+                            width: 1.0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
                             ),
-                            const SizedBox(height: 32),
+                          ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () => setState(
+                                        () => _isLoginMode = true,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            'Đăng Nhập',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: Responsive.font(
+                                                context,
+                                                18,
+                                              ),
+                                              fontWeight: FontWeight.bold,
+                                              color: _isLoginMode
+                                                  ? const Color(0xFF1F2937)
+                                                  : const Color(0xFF9CA3AF),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: Responsive.s(
+                                              context,
+                                              8,
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 3,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                              color: _isLoginMode
+                                                  ? const Color(0xFFF59E0B)
+                                                  : Colors.transparent,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () => setState(
+                                        () => _isLoginMode = false,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            'Đăng Ký',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: Responsive.font(
+                                                context,
+                                                18,
+                                              ),
+                                              fontWeight: FontWeight.bold,
+                                              color: !_isLoginMode
+                                                  ? const Color(0xFF1F2937)
+                                                  : const Color(0xFF9CA3AF),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: Responsive.s(
+                                              context,
+                                              8,
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 3,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                              color: !_isLoginMode
+                                                  ? const Color(0xFFF59E0B)
+                                                  : Colors.transparent,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: Responsive.s(context, 32)),
 
-                            // Full Name Input (Register Only)
-                            if (!_isLoginMode) ...[
+                              if (!_isLoginMode) ...[
+                                TextFormField(
+                                  controller: _fullNameController,
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF1F2937),
+                                    fontSize: Responsive.font(context, 14),
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'Họ và tên',
+                                    labelStyle: TextStyle(
+                                      color: const Color(0xFF6B7280),
+                                      fontSize: Responsive.font(context, 14),
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.person_outline_rounded,
+                                      color: const Color(0xFF9CA3AF),
+                                      size: Responsive.s(context, 22),
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF3F4F6),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        Responsive.s(context, 16),
+                                      ),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        Responsive.s(context, 16),
+                                      ),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE5E7EB),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        Responsive.s(context, 16),
+                                      ),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFF59E0B),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                  validator: (val) {
+                                    if (val == null || val.trim().isEmpty) {
+                                      return 'Vui lòng nhập họ và tên';
+                                    }
+                                    if (val.trim().length < 2) {
+                                      return 'Tên phải có ít nhất 2 ký tự';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                SizedBox(height: Responsive.s(context, 20)),
+                              ],
+
                               TextFormField(
-                                controller: _fullNameController,
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF1F2937),
+                                  fontSize: Responsive.font(context, 14),
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: 'Họ và tên',
-                                  labelStyle: const TextStyle(
-                                    color: Color(0xFF6B7280),
+                                  labelText: 'Email',
+                                  labelStyle: TextStyle(
+                                    color: const Color(0xFF6B7280),
+                                    fontSize: Responsive.font(context, 14),
                                   ),
-                                  prefixIcon: const Icon(
-                                    Icons.person_outline_rounded,
-                                    color: Color(0xFF9CA3AF),
+                                  prefixIcon: Icon(
+                                    Icons.email_outlined,
+                                    color: const Color(0xFF9CA3AF),
+                                    size: Responsive.s(context, 22),
                                   ),
                                   filled: true,
                                   fillColor: const Color(0xFFF3F4F6),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(
+                                      Responsive.s(context, 16),
+                                    ),
                                     borderSide: BorderSide.none,
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(
+                                      Responsive.s(context, 16),
+                                    ),
                                     borderSide: const BorderSide(
                                       color: Color(0xFFE5E7EB),
                                       width: 1,
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(
+                                      Responsive.s(context, 16),
+                                    ),
                                     borderSide: const BorderSide(
                                       color: Color(0xFFF59E0B),
                                       width: 1.5,
@@ -313,208 +400,154 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
-                                    return 'Vui lòng nhập họ và tên';
+                                    return 'Vui lòng nhập Email';
                                   }
-                                  // Không cho phép ký tự đặc biệt / số (phòng trường hợp paste)
+                                  if (val.contains(' ')) {
+                                    return 'Email không được chứa khoảng trắng';
+                                  }
                                   if (!RegExp(
-                                    r'^[a-zA-ZÀ-ỹ\u0300-\u036f\s]+$',
+                                    r'^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)+$',
                                   ).hasMatch(val.trim())) {
-                                    return 'Chỉ được nhập chữ cái và khoảng trắng';
+                                    return 'Email không hợp lệ';
                                   }
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 20),
-                            ],
+                              SizedBox(height: Responsive.s(context, 20)),
 
-                            // Email Input
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              // Email chỉ cho phép chữ cái và số, kèm `@` và `.`
-                              // (cấu trúc email tối thiểu). Mọi khoảng trắng
-                              // và ký tự đặc biệt khác đều bị chặn từ bàn phím.
-                              inputFormatters: [
-                                FilteringTextInputFormatter.deny(
-                                  RegExp(r'\s'),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF1F2937),
+                                  fontSize: Responsive.font(context, 14),
                                 ),
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z0-9@.]'),
-                                ),
-                              ],
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF1F2937),
-                              ),
-                              decoration: InputDecoration(
-                                labelText: 'Email',
-                                labelStyle: const TextStyle(
-                                  color: Color(0xFF6B7280),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.email_outlined,
-                                  color: Color(0xFF9CA3AF),
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF3F4F6),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE5E7EB),
-                                    width: 1,
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                inputFormatters: [
+                                  TelexTextInputFormatter(),
+                                ],
+                                decoration: InputDecoration(
+                                  labelText: 'Mật khẩu',
+                                  labelStyle: TextStyle(
+                                    color: const Color(0xFF6B7280),
+                                    fontSize: Responsive.font(context, 14),
                                   ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFF59E0B),
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (val == null || val.trim().isEmpty) {
-                                  return 'Vui lòng nhập Email';
-                                }
-                                if (val.contains(' ')) {
-                                  return 'Email không được chứa khoảng trắng';
-                                }
-                                if (!RegExp(
-                                  r'^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)+$',
-                                ).hasMatch(val.trim())) {
-                                  return 'Email không hợp lệ';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 20),
-
-                            // Password Input
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              // Mật khẩu chỉ cho phép chữ cái và số,
-                              // chặn mọi khoảng trắng và ký tự đặc biệt
-                              // (kể cả khi paste).
-                              inputFormatters: [
-                                FilteringTextInputFormatter.deny(
-                                  RegExp(r'\s'),
-                                ),
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z0-9]'),
-                                ),
-                              ],
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF1F2937),
-                              ),
-                              decoration: InputDecoration(
-                                labelText: 'Mật khẩu',
-                                labelStyle: const TextStyle(
-                                  color: Color(0xFF6B7280),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.lock_outlined,
-                                  color: Color(0xFF9CA3AF),
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
+                                  prefixIcon: Icon(
+                                    Icons.lock_outlined,
                                     color: const Color(0xFF9CA3AF),
+                                    size: Responsive.s(context, 22),
                                   ),
-                                  onPressed: () => setState(
-                                    () => _obscurePassword = !_obscurePassword,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      color: const Color(0xFF9CA3AF),
+                                      size: Responsive.s(context, 22),
+                                    ),
+                                    onPressed: () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF3F4F6),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      Responsive.s(context, 16),
+                                    ),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      Responsive.s(context, 16),
+                                    ),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE5E7EB),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      Responsive.s(context, 16),
+                                    ),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFF59E0B),
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
-                                filled: true,
-                                fillColor: const Color(0xFFF3F4F6),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE5E7EB),
-                                    width: 1,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFF59E0B),
-                                    width: 1.5,
-                                  ),
-                                ),
+                                validator: (val) {
+                                  if (val == null || val.isEmpty) {
+                                    return 'Vui lòng nhập mật khẩu';
+                                  }
+                                  if (val.contains(' ')) {
+                                    return 'Mật khẩu không được chứa khoảng trắng';
+                                  }
+                                  if (!RegExp(
+                                    r'^[a-zA-Z0-9]+$',
+                                  ).hasMatch(val)) {
+                                    return 'Mật khẩu chỉ được chứa chữ cái và số';
+                                  }
+                                  if (val.length < 6) {
+                                    return 'Mật khẩu phải dài ít nhất 6 ký tự';
+                                  }
+                                  return null;
+                                },
                               ),
-                              validator: (val) {
-                                if (val == null || val.isEmpty) {
-                                  return 'Vui lòng nhập mật khẩu';
-                                }
-                                if (val.contains(' ')) {
-                                  return 'Mật khẩu không được chứa khoảng trắng';
-                                }
-                                // Chỉ chữ cái và số, không cho phép ký tự đặc biệt
-                                if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(val)) {
-                                  return 'Mật khẩu chỉ được chứa chữ cái và số';
-                                }
-                                if (val.length < 6) {
-                                  return 'Mật khẩu phải dài ít nhất 6 ký tự';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 32),
+                              SizedBox(height: Responsive.s(context, 32)),
 
-                            // Action Button
-                            ElevatedButton(
-                              onPressed: isLoading ? null : _submitForm,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                              ElevatedButton(
+                                onPressed: isLoading ? null : _submitForm,
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: Responsive.s(context, 16),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      Responsive.s(context, 16),
+                                    ),
+                                  ),
+                                  backgroundColor: const Color(0xFFF59E0B),
+                                  shadowColor: Colors.transparent,
+                                  elevation: 0,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                backgroundColor: const Color(0xFFF59E0B),
-                                shadowColor: Colors.transparent,
-                                elevation: 0,
-                              ),
-                              child: Container(
-                                alignment: Alignment.center,
-                                constraints: const BoxConstraints(
-                                  minHeight: 20,
-                                ), // Adjusted constraints to fit standard button height without gradient wrap
-                                child: isLoading
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  constraints: const BoxConstraints(
+                                    minHeight: 20,
+                                  ),
+                                  child: isLoading
+                                      ? SizedBox(
+                                          width: Responsive.s(context, 24),
+                                          height: Responsive.s(context, 24),
+                                          child:
+                                              const CircularProgressIndicator(
+                                                strokeWidth: 2.5,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(Colors.white),
                                               ),
+                                        )
+                                      : Text(
+                                          _isLoginMode
+                                              ? 'Đăng Nhập'
+                                              : 'Tạo Tài Khoản',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: Responsive.font(
+                                              context,
+                                              16,
+                                            ),
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 1,
+                                          ),
                                         ),
-                                      )
-                                    : Text(
-                                        _isLoginMode
-                                            ? 'Đăng Nhập'
-                                            : 'Tạo Tài Khoản',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          letterSpacing: 1,
-                                        ),
-                                      ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -524,6 +557,112 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class TelexTextInputFormatter extends TextInputFormatter {
+  static const Map<String, List<String>> _vietnameseMap = {
+    // Lowercase d
+    'đ': ['dd', ''],
+
+    // Lowercase a
+    'á': ['a', 's'], 'à': ['a', 'f'], 'ả': ['a', 'r'], 'ã': ['a', 'x'], 'ạ': ['a', 'j'],
+    'â': ['aa', ''], 'ấ': ['aa', 's'], 'ầ': ['aa', 'f'], 'ẩ': ['aa', 'r'], 'ẫ': ['aa', 'x'], 'ậ': ['aa', 'j'],
+    'ă': ['aw', ''], 'ắ': ['aw', 's'], 'ằ': ['aw', 'f'], 'ẳ': ['aw', 'r'], 'ẵ': ['aw', 'x'], 'ặ': ['aw', 'j'],
+
+    // Lowercase e
+    'é': ['e', 's'], 'è': ['e', 'f'], 'ẻ': ['e', 'r'], 'ẽ': ['e', 'x'], 'ẹ': ['e', 'j'],
+    'ê': ['ee', ''], 'ế': ['ee', 's'], 'ề': ['ee', 'f'], 'ể': ['ee', 'r'], 'ễ': ['ee', 'x'], 'ệ': ['ee', 'j'],
+
+    // Lowercase i
+    'í': ['i', 's'], 'ì': ['i', 'f'], 'ỉ': ['i', 'r'], 'ĩ': ['i', 'x'], 'ị': ['i', 'j'],
+
+    // Lowercase o
+    'ó': ['o', 's'], 'ò': ['o', 'f'], 'ỏ': ['o', 'r'], 'õ': ['o', 'x'], 'ọ': ['o', 'j'],
+    'ô': ['oo', ''], 'ố': ['oo', 's'], 'ồ': ['oo', 'f'], 'ổ': ['oo', 'r'], 'ỗ': ['oo', 'x'], 'ộ': ['oo', 'j'],
+    'ơ': ['ow', ''], 'ớ': ['ow', 's'], 'ờ': ['ow', 'f'], 'ở': ['ow', 'r'], 'ỡ': ['ow', 'x'], 'ợ': ['ow', 'j'],
+
+    // Lowercase u
+    'ú': ['u', 's'], 'ù': ['u', 'f'], 'ủ': ['u', 'r'], 'ũ': ['u', 'x'], 'ụ': ['u', 'j'],
+    'ư': ['uw', ''], 'ứ': ['uw', 's'], 'ừ': ['uw', 'f'], 'ử': ['uw', 'r'], 'ữ': ['uw', 'x'], 'ự': ['uw', 'j'],
+
+    // Lowercase y
+    'ý': ['y', 's'], 'ỳ': ['y', 'f'], 'ỷ': ['y', 'r'], 'ỹ': ['y', 'x'], 'ỵ': ['y', 'j'],
+
+    // Uppercase D
+    'Đ': ['DD', ''],
+
+    // Uppercase A
+    'Á': ['A', 'S'], 'À': ['A', 'F'], 'Ả': ['A', 'R'], 'Ã': ['A', 'X'], 'Ạ': ['A', 'J'],
+    'Â': ['AA', ''], 'Ấ': ['AA', 'S'], 'Ầ': ['AA', 'F'], 'Ẩ': ['AA', 'R'], 'Ẫ': ['AA', 'X'], 'Ậ': ['AA', 'J'],
+    'Ă': ['AW', ''], 'Ắ': ['AW', 'S'], 'Ằ': ['AW', 'F'], 'Ẳ': ['AW', 'R'], 'Ẵ': ['AW', 'X'], 'Ặ': ['AW', 'J'],
+
+    // Uppercase E
+    'É': ['E', 'S'], 'È': ['E', 'F'], 'Ẻ': ['E', 'R'], 'Ẽ': ['E', 'X'], 'Ẹ': ['E', 'J'],
+    'Ê': ['EE', ''], 'Ế': ['EE', 'S'], 'Ề': ['EE', 'F'], 'Ể': ['EE', 'R'], 'Ễ': ['EE', 'X'], 'Ệ': ['EE', 'J'],
+
+    // Uppercase I
+    'Í': ['I', 'S'], 'Ì': ['I', 'F'], 'Ỉ': ['I', 'R'], 'Ĩ': ['I', 'X'], 'Ị': ['I', 'J'],
+
+    // Uppercase O
+    'Ó': ['O', 'S'], 'Ò': ['O', 'F'], 'Ỏ': ['O', 'R'], 'Õ': ['O', 'X'], 'Ọ': ['O', 'J'],
+    'Ô': ['OO', ''], 'Ố': ['OO', 'S'], 'Ồ': ['OO', 'F'], 'Ổ': ['OO', 'R'], 'Ỗ': ['OO', 'X'], 'Ộ': ['OO', 'J'],
+    'Ơ': ['OW', ''], 'Ớ': ['OW', 'S'], 'Ờ': ['OW', 'F'], 'Ở': ['OW', 'R'], 'Ỡ': ['OW', 'X'], 'Ợ': ['OW', 'J'],
+
+    // Uppercase U
+    'Ú': ['U', 'S'], 'Ù': ['U', 'F'], 'Ủ': ['U', 'R'], 'Ũ': ['U', 'X'], 'Ụ': ['U', 'J'],
+    'Ư': ['UW', ''], 'Ứ': ['UW', 'S'], 'Ừ': ['UW', 'F'], 'Ử': ['UW', 'R'], 'Ữ': ['UW', 'X'], 'Ự': ['UW', 'J'],
+
+    // Uppercase Y
+    'Ý': ['Y', 'S'], 'Ỳ': ['Y', 'F'], 'Ỷ': ['Y', 'R'], 'Ỹ': ['Y', 'X'], 'Ỵ': ['Y', 'J'],
+  };
+
+  static String convertVietnameseToTelex(String input) {
+    final RegExp wordRegex = RegExp(
+      r'([a-zA-ZÀÁẢÃẠÂẦẤẨẪẬĂẰẮẲẴẶÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐa-zàáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]+)'
+    );
+
+    return input.replaceAllMapped(wordRegex, (match) {
+      final word = match.group(0)!;
+      String resultWord = '';
+      String toneKey = '';
+
+      for (int i = 0; i < word.length; i++) {
+        final char = word[i];
+        if (_vietnameseMap.containsKey(char)) {
+          final mapping = _vietnameseMap[char]!;
+          resultWord += mapping[0];
+          if (mapping[1].isNotEmpty) {
+            toneKey = mapping[1].toLowerCase();
+          }
+        } else {
+          resultWord += char;
+        }
+      }
+      return resultWord + toneKey;
+    });
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final String newText = newValue.text;
+    final String convertedText = convertVietnameseToTelex(newText);
+
+    if (newText == convertedText) {
+      return newValue;
+    }
+
+    final int selectionIndex = newValue.selection.end + (convertedText.length - newText.length);
+
+    return TextEditingValue(
+      text: convertedText,
+      selection: TextSelection.collapsed(
+        offset: selectionIndex.clamp(0, convertedText.length),
       ),
     );
   }

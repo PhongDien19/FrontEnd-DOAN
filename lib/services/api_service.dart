@@ -83,7 +83,7 @@ class ApiService {
   /// Kiểm tra bằng lệnh: `ipconfig` (Windows) hoặc `ifconfig` (macOS/Linux).
   
   //static const String devLanIp = '192.168.137.1'; // IP chạy máy ảo
-  static const String devLanIp = '192.168.1.2'; //IP chạy máy thật
+  static const String devLanIp = '192.168.2.16'; //IP chạy máy thật
 
 
   /// Xác định base URL tuỳ theo nền tảng đang chạy:
@@ -129,7 +129,7 @@ class ApiService {
   /// Timeout dài hơn cho các endpoint AI (consult, chat, generate-test, evaluate).
   /// Gemini thường phản hồi trong 15-25 giây cho prompt dài — nếu dùng
   /// `_defaultTimeout` (8s) sẽ bị TimeoutException dù server vẫn đang xử lý.
-  static const Duration _aiTimeout = Duration(seconds: 45);
+  static const Duration _aiTimeout = Duration(seconds: 60);
 
   // Header cơ bản có kèm userId nếu đã đăng nhập
   static Map<String, String> get _headers {
@@ -440,7 +440,7 @@ class ApiService {
           if (hobby != null && hobby.isNotEmpty) 'hobby': hobby,
           'academicData': academicData,
         }),
-      ).timeout(_defaultTimeout);
+      ).timeout(_aiTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi khởi tạo khảo sát động: $e'};
@@ -457,7 +457,7 @@ class ApiService {
         Uri.parse('$baseUrl/survey/submit'),
         headers: _headers,
         body: jsonEncode({'sessionId': sessionId, 'answers': answers}),
-      ).timeout(_defaultTimeout);
+      ).timeout(_aiTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi nộp kết quả khảo sát: $e'};

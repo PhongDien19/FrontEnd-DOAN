@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
+import '../utils/responsive.dart';
 import 'dynamic_survey_report_screen.dart';
 import 'login_screen.dart';
 
@@ -203,8 +204,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
     if (_selectedLocations.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng chọn ít nhất 1 khu vực học tập/làm việc!'),
+        SnackBar(
+          content: Text(
+            'Vui lòng chọn ít nhất 1 khu vực học tập/làm việc!',
+            style: TextStyle(fontSize: Responsive.font(context, 14)),
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -256,15 +260,16 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
       // Bắt buộc tối thiểu 6 môn (THCS/THPT) mới cho phép khảo sát.
       if (enteredCount < 6) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Vui lòng nhập điểm ít nhất 6 môn (hiện tại mới nhập $enteredCount môn).',
-            ),
-            backgroundColor: Colors.redAccent,
-            duration: const Duration(seconds: 3),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Vui lòng nhập điểm ít nhất 6 môn (hiện tại mới nhập $enteredCount môn).',
+            style: TextStyle(fontSize: Responsive.font(context, 14)),
           ),
-        );
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 3),
+        ),
+      );
         return;
       }
 
@@ -344,6 +349,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         SnackBar(
           content: Text(
             result['message'] ?? 'Lỗi khởi tạo khảo sát. Vui lòng thử lại!',
+            style: TextStyle(fontSize: Responsive.font(context, 14)),
           ),
           backgroundColor: Colors.redAccent,
         ),
@@ -363,7 +369,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     if (_answers.length < _questions.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lòng trả lời đầy đủ các câu hỏi trước khi nộp!'),
+          content: Text(
+            'Vui lòng trả lời đầy đủ các câu hỏi trước khi nộp!',
+          ),
           backgroundColor: Colors.amber,
         ),
       );
@@ -554,12 +562,16 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
           _testName,
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: Responsive.font(context, 18),
             color: const Color(0xFF0F172A),
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF334155)),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: const Color(0xFF334155),
+            size: Responsive.s(context, 24),
+          ),
           onPressed: () {
             if (_step == 2) {
               showDialog(
@@ -567,18 +579,24 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 builder: (context) => AlertDialog(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(
+                      Responsive.s(context, 20),
+                    ),
                   ),
                   title: Text(
                     'Hủy bỏ khảo sát?',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFF0F172A),
                       fontWeight: FontWeight.bold,
+                      fontSize: Responsive.font(context, 18),
                     ),
                   ),
                   content: Text(
                     'Mọi câu trả lời của bạn trong phiên này sẽ không được lưu lại.',
-                    style: GoogleFonts.inter(color: const Color(0xFF64748B)),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF64748B),
+                      fontSize: Responsive.font(context, 14),
+                    ),
                   ),
                   actions: [
                     TextButton(
@@ -587,6 +605,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         style: GoogleFonts.outfit(
                           color: brandColor,
                           fontWeight: FontWeight.bold,
+                          fontSize: Responsive.font(context, 14),
                         ),
                       ),
                       onPressed: () => Navigator.pop(context),
@@ -597,6 +616,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         style: GoogleFonts.outfit(
                           color: Colors.redAccent,
                           fontWeight: FontWeight.bold,
+                          fontSize: Responsive.font(context, 14),
                         ),
                       ),
                       onPressed: () {
@@ -617,11 +637,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         children: [
           // Background Gradient circles đồng bộ theo tone Vàng Cam nhạt
           Positioned(
-            top: 80,
-            left: -120,
+            top: Responsive.s(context, 80),
+            left: -Responsive.s(context, 120),
             child: Container(
-              width: 320,
-              height: 320,
+              width: Responsive.s(context, 320),
+              height: Responsive.s(context, 320),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: brandColor.withValues(alpha: 0.04),
@@ -629,11 +649,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             ),
           ),
           Positioned(
-            bottom: 80,
-            right: -120,
+            bottom: Responsive.s(context, 80),
+            right: -Responsive.s(context, 120),
             child: Container(
-              width: 320,
-              height: 320,
+              width: Responsive.s(context, 320),
+              height: Responsive.s(context, 320),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: brandColor.withValues(alpha: 0.03),
@@ -642,7 +662,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(Responsive.s(context, 24)),
               child: _buildBody(),
             ),
           ),
@@ -677,76 +697,80 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+          Container(
+            padding: EdgeInsets.all(Responsive.s(context, 20)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(
+                Responsive.s(context, 24),
               ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 48,
-                    color: brandColor,
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Cấu Hình Khảo Sát Động AI',
-                    style: GoogleFonts.outfit(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Hệ thống AI sẽ tự động sinh câu hỏi thực tế dựa trên thông tin cá nhân của bạn.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: const Color(0xFF475569),
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-
-            Text(
-              'THÔNG TIN CÁ NHÂN (CÁ NHÂN HÓA ĐÁNH GIÁ)',
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF64748B),
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  size: Responsive.s(context, 48),
+                  color: brandColor,
+                ),
+                SizedBox(height: Responsive.s(context, 14)),
+                Text(
+                  'Cấu Hình Khảo Sát Động AI',
+                  style: GoogleFonts.outfit(
+                    fontSize: Responsive.font(context, 20),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
                   ),
-                ],
+                ),
+                SizedBox(height: Responsive.s(context, 8)),
+                Text(
+                  'Hệ thống AI sẽ tự động sinh câu hỏi thực tế dựa trên thông tin cá nhân của bạn.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: Responsive.font(context, 13),
+                    color: const Color(0xFF475569),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: Responsive.s(context, 24)),
+
+          Text(
+            'THÔNG TIN CÁ NHÂN (CÁ NHÂN HÓA ĐÁNH GIÁ)',
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 11),
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF64748B),
+              letterSpacing: 1.2,
+            ),
+          ),
+          SizedBox(height: Responsive.s(context, 12)),
+
+          Container(
+            padding: EdgeInsets.all(Responsive.s(context, 20)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(
+                Responsive.s(context, 20),
               ),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -756,40 +780,48 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                     keyboardType: TextInputType.number,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF0F172A),
-                      fontSize: 13,
+                      fontSize: Responsive.font(context, 13),
                     ),
                     decoration: InputDecoration(
                       labelText: 'Độ tuổi',
                       labelStyle: GoogleFonts.inter(
                         color: const Color(0xFF475569),
-                        fontSize: 12,
+                        fontSize: Responsive.font(context, 12),
                       ),
                       hintText: 'Ví dụ: 18',
                       hintStyle: GoogleFonts.inter(
                         color: const Color(0xFF94A3B8),
-                        fontSize: 12,
+                        fontSize: Responsive.font(context, 12),
                       ),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 12),
+                        ),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 12),
+                        ),
                         borderSide: const BorderSide(color: brandColor),
                       ),
                       errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 12),
+                        ),
                         borderSide: const BorderSide(color: Colors.redAccent),
                       ),
                       focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 12),
+                        ),
                         borderSide: const BorderSide(color: Colors.redAccent),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 14,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: Responsive.s(context, 12),
+                        vertical: Responsive.s(context, 14),
                       ),
                     ),
                     validator: (val) {

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
+import '../utils/responsive.dart';
 import 'comprehensive_report_screen.dart';
 import 'login_screen.dart';
 
@@ -93,15 +94,13 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         final testData = result['test'] ?? result;
         _testName = testData['testName'] ?? _testTitle;
         _questions = testData['questions'] ?? [];
-        _options =
-            testData['options'] ??
-            [
-              "Hoàn toàn không đúng",
-              "Không đúng",
-              "Khó nói",
-              "Đúng",
-              "Hoàn toàn đúng",
-            ];
+        _options = testData['options'] ?? [
+          "Hoàn toàn không đúng",
+          "Không đúng",
+          "Khó nói",
+          "Đúng",
+          "Hoàn toàn đúng",
+        ];
         _currentQuestionIndex = 0;
         _answers.clear();
         _step = 2;
@@ -111,7 +110,10 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       setState(() => _step = 0);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? 'Lỗi sinh câu hỏi.'),
+          content: Text(
+            result['message'] ?? 'Lỗi sinh câu hỏi.',
+            style: TextStyle(fontSize: Responsive.font(context, 14)),
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -168,25 +170,25 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         }
         return;
       }
-      // Chưa đăng nhập: hiển thị dialog yêu cầu đăng nhập để xem kết quả.
       await _showLoginRequiredDialog();
     } else {
       if (!mounted) return;
       setState(() => _step = 2);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lỗi chấm bài.'),
+        SnackBar(
+          content: Text(
+            'Lỗi chấm bài.',
+            style: TextStyle(fontSize: Responsive.font(context, 14)),
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
     }
   }
 
-  // Hiển thị dialog yêu cầu đăng nhập trước khi xem kết quả bài test
-  // (Holland / MBTI / Cognitive / Values).
   Future<void> _showLoginRequiredDialog() async {
     if (!mounted) return;
-    setState(() => _step = 2); // Cho phép làm lại hoặc đăng nhập
+    setState(() => _step = 2);
 
     final shouldLogin = await showDialog<bool>(
       context: context,
@@ -194,21 +196,24 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 20),
+          ),
         ),
         title: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.lock_outline_rounded,
-              color: Color(0xFF6C63FF),
-              size: 28,
+              color: const Color(0xFF6C63FF),
+              size: Responsive.s(context, 28),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: Responsive.s(context, 10)),
             Expanded(
               child: Text(
                 'Yêu cầu đăng nhập',
                 style: GoogleFonts.outfit(
                   fontWeight: FontWeight.bold,
+                  fontSize: Responsive.font(context, 18),
                   color: Colors.black87,
                 ),
               ),
@@ -219,7 +224,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           'Bạn đã hoàn thành bài test. Vui lòng đăng nhập để xem kết quả phân tích chi tiết.',
           style: GoogleFonts.inter(
             color: Colors.grey.shade700,
-            fontSize: 13,
+            fontSize: Responsive.font(context, 13),
             height: 1.4,
           ),
         ),
@@ -231,6 +236,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               style: GoogleFonts.outfit(
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w600,
+                fontSize: Responsive.font(context, 14),
               ),
             ),
           ),
@@ -240,13 +246,18 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               backgroundColor: const Color(0xFF6C63FF),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 12),
+                ),
               ),
               elevation: 0,
             ),
             child: Text(
               'Đăng nhập',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                fontSize: Responsive.font(context, 14),
+              ),
             ),
           ),
         ],
@@ -257,7 +268,6 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       return;
     }
 
-    // Mở màn hình đăng nhập
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -267,10 +277,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
 
     final updatedAuth = Provider.of<AuthProvider>(context, listen: false);
     if (updatedAuth.isAuthenticated) {
-      // Đồng bộ kết quả với user vừa đăng nhập
       await updatedAuth.claimTestResult(_sessionId);
       if (!mounted) return;
-      // Navigate tới màn comprehensive report
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -283,7 +291,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Màu nền sáng
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -292,14 +300,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           _testTitle,
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: Responsive.font(context, 18),
             color: Colors.black87,
           ),
         ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(Responsive.s(context, 24)),
           child: _buildBody(),
         ),
       ),
@@ -317,7 +325,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       case 2:
         return _buildQuestionCard();
       case 3:
-        return _buildLoadingState('AI đang chấm điểm và phân tích kết quả...');
+        return _buildLoadingState(
+          'AI đang chấm điểm và phân tích kết quả...',
+        );
       case 4:
         return _buildClaimPrompt();
       default:
@@ -333,71 +343,75 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(Responsive.s(context, 20)),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 20),
+                ),
                 border: Border.all(color: Colors.grey.shade200),
               ),
               child: Column(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.tune_rounded,
-                    size: 40,
-                    color: Color(0xFF6C63FF),
+                    size: Responsive.s(context, 40),
+                    color: const Color(0xFF6C63FF),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: Responsive.s(context, 12)),
                   Text(
                     'Cá Nhân Hóa Đánh Giá',
                     style: GoogleFonts.outfit(
-                      fontSize: 18,
+                      fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: Responsive.s(context, 8)),
                   Text(
                     'AI sẽ tự động điều chỉnh bộ câu hỏi dựa theo mục tiêu của bạn.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: Responsive.font(context, 12),
                       color: Colors.grey.shade600,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: Responsive.s(context, 24)),
             _buildTextField(
               _targetJobController,
               'Công việc mục tiêu',
               'Ví dụ: Lập trình viên',
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: Responsive.s(context, 20)),
             _buildTextField(
               _ageController,
               'Tuổi của bạn',
               '18',
               isNumber: true,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: Responsive.s(context, 20)),
             _buildTextField(
               _hobbyController,
               'Sở thích & Điểm mạnh',
               'Ví dụ: Đọc sách',
             ),
-            const SizedBox(height: 36),
+            SizedBox(height: Responsive.s(context, 36)),
             ElevatedButton(
               onPressed: _generateQuestions,
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(
+                  vertical: Responsive.s(context, 16),
+                ),
                 backgroundColor: const Color(0xFF6C63FF),
               ),
               child: Text(
                 'Bắt đầu làm bài',
                 style: GoogleFonts.outfit(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: Responsive.font(context, 16),
                   color: Colors.white,
                 ),
               ),
@@ -417,16 +431,30 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     return TextFormField(
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      style: TextStyle(
+        fontSize: Responsive.font(context, 14),
+      ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(
+          fontSize: Responsive.font(context, 14),
+        ),
+        hintText: hint,
+        hintStyle: TextStyle(
+          fontSize: Responsive.font(context, 13),
+        ),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 16),
+          ),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 16),
+          ),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
       ),
@@ -441,11 +469,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
           ),
-          const SizedBox(height: 30),
+          SizedBox(height: Responsive.s(context, 30)),
           Text(
             loadingText,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade700),
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 14),
+              color: Colors.grey.shade700,
+            ),
           ),
         ],
       ),
@@ -464,26 +495,32 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           value: progress,
           backgroundColor: Colors.grey.shade200,
           valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+          minHeight: Responsive.s(context, 6),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: Responsive.s(context, 40)),
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(28),
+            padding: EdgeInsets.all(Responsive.s(context, 28)),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(
+                Responsive.s(context, 24),
+              ),
               border: Border.all(color: Colors.grey.shade200),
             ),
             child: Center(
               child: Text(
                 qText,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(fontSize: 18, color: Colors.black87),
+                style: GoogleFonts.inter(
+                  fontSize: Responsive.font(context, 18),
+                  color: Colors.black87,
+                ),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: Responsive.s(context, 40)),
         _buildLikertOptions(),
       ],
     );
@@ -494,21 +531,36 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       children: _options.map((opt) {
         final isSelected = _answers[_currentQuestionIndex] == opt;
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12.0),
+          padding: EdgeInsets.only(
+            bottom: Responsive.s(context, 12),
+          ),
           child: SizedBox(
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => _selectAnswer(opt),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(
+                  vertical: Responsive.s(context, 16),
+                ),
                 backgroundColor: isSelected
                     ? const Color(0xFF6C63FF)
                     : Colors.white,
+                side: BorderSide(
+                  color: isSelected
+                      ? const Color(0xFF6C63FF)
+                      : Colors.grey.shade300,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 12),
+                  ),
+                ),
               ),
               child: Text(
                 opt,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
+                  fontSize: Responsive.font(context, 14),
                 ),
               ),
             ),
@@ -522,19 +574,32 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     return Center(
       child: Column(
         children: [
-          const Icon(Icons.cloud_done_rounded, size: 64, color: Colors.green),
-          const SizedBox(height: 20),
+          Icon(
+            Icons.cloud_done_rounded,
+            size: Responsive.s(context, 64),
+            color: Colors.green,
+          ),
+          SizedBox(height: Responsive.s(context, 20)),
           Text(
             'Đã Hoàn Thành!',
             style: GoogleFonts.outfit(
-              fontSize: 22,
+              fontSize: Responsive.font(context, 22),
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: Responsive.s(context, 40)),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Xem kết quả'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.s(context, 32),
+                vertical: Responsive.s(context, 12),
+              ),
+            ),
+            child: Text(
+              'Xem kết quả',
+              style: TextStyle(fontSize: Responsive.font(context, 14)),
+            ),
           ),
         ],
       ),

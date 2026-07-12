@@ -60,6 +60,19 @@ class MainApp extends StatelessWidget {
         textTheme: _buildTextTheme(ThemeData.dark().textTheme),
         primaryTextTheme: _buildTextTheme(ThemeData.dark().primaryTextTheme),
       ),
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        // Respect system text scale for better IME compatibility (especially for Vietnamese input).
+        // Only clamp the maximum to prevent text from becoming too large on high-DPI screens.
+        final TextScaler effectiveScaler = mq.textScaler.clamp(
+          minScaleFactor: 0.0,
+          maxScaleFactor: 1.3,
+        );
+        return MediaQuery(
+          data: mq.copyWith(textScaler: effectiveScaler),
+          child: child!,
+        );
+      },
       home: const HomeScreen(),
     );
   }

@@ -3,8 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/responsive.dart';
 import 'login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../utils/pdf_export_service.dart';
+import 'chat_screen.dart';
 
 enum CareerPath { study, work }
 
@@ -87,6 +90,182 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     if (v is Map<String, dynamic>) return v;
     if (v is Map) return Map<String, dynamic>.from(v);
     return null;
+  }
+
+  void _openChatWithContext(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          initialContext: _report.isNotEmpty
+              ? {
+                  'summary': _report['summary'] ?? '',
+                  'strengths': _report['strengths'] ?? [],
+                  'weaknesses': _report['weaknesses'] ?? [],
+                  'advice': _report['advice'] ?? '',
+                  'targetCareer': _report['targetCareer'] ?? _report['careerName'] ?? _report['career'] ?? '',
+                }
+              : null,
+        ),
+      ),
+    );
+  }
+
+  void _exportPdf(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userName = authProvider.fullName.isNotEmpty ? authProvider.fullName : 'Người dùng';
+    final date = _safeString(_report['date'] ?? DateTime.now().toIso8601String());
+    final displayMode = _safeString(_report['displayMode'] ?? 'discovery');
+
+    // Build scores map
+    final scores = <String, dynamic>{};
+    if (_report['matchScore'] != null) {
+      scores['Điểm Phù Hợp'] = _report['matchScore'];
+    }
+    if (_report['matchPercentage'] != null) {
+      scores['Tỷ Lệ Phù Hợp'] = '${_report['matchPercentage']}%';
+    }
+
+    // Build interpretations
+    final interpretations = <String, dynamic>{};
+
+    final strengths = _safeStringList(_report['strengths']);
+    if (strengths.isNotEmpty) {
+      interpretations['Điểm Mạnh'] = strengths.join('\n');
+    }
+
+    final weaknesses = _safeStringList(_report['weaknesses']);
+    if (weaknesses.isNotEmpty) {
+      interpretations['Tố Chất Cần Rèn'] = weaknesses.join('\n');
+    }
+
+    final summary = _safeString(_report['summary']);
+    if (summary.isNotEmpty) {
+      interpretations['Lời Nói Ngắn'] = summary;
+    }
+
+    final roadmap = _safeStringList(_report['roadmap']);
+    if (roadmap.isNotEmpty) {
+      interpretations['Lộ Trình Phát Triển'] = roadmap.join('\n');
+    }
+
+    final advice = _safeString(_report['advice']);
+    if (advice.isNotEmpty) {
+      interpretations['Lời Khuyên Hướng Nghiệp'] = advice;
+    }
+
+    final compatibleCareers =
+        (_report['compatibleCareers'] is List) ? (_report['compatibleCareers'] as List) : <dynamic>[];
+    final String targetCareer = _safeString(_report['targetCareer'] ?? _report['careerName'] ?? _report['career'] ?? '');
+    final trainingInstitutions =
+        (_report['trainingInstitutions'] is List || _report['schools'] is List)
+            ? (_report['trainingInstitutions'] ?? _report['schools']) as List
+            : <dynamic>[];
+    final targetCompanies =
+        (_report['companies'] is List || _report['companyDetails'] is List)
+            ? (_report['companies'] ?? _report['companyDetails']) as List
+            : <dynamic>[];
+
+    String? careerRec;
+    final buffer = StringBuffer();
+
+    if (displayMode.toLowerCase() == 'discovery') {
+      if (compatibleCareers.isNotEmpty) {
+        buffer.writeln('CÁC NGÀNH NGHỀ PHÙ HỢP GỢI Ý:');
+        for (final item in compatibleCareers) {
+          if (item is! Map) continue;
+          final cName = _safeString(item['careerName'] ?? item['name']);
+          final cReason = _safeString(item['reason'] ?? item['interpretation']);
+          buffer.writeln('\n• Ngành nghề: $cName');
+          if (cReason.isNotEmpty) {
+            buffer.writeln('  Phân tích: $cReason');
+          }
+
+          if (_selectedPath == CareerPath.study) {
+            final schList = item['trainingInstitutions'];
+            if (schList is List && schList.isNotEmpty) {
+              buffer.writeln('  🏛️ Trường đào tạo đề xuất:');
+              for (final sch in schList) {
+                if (sch is! Map) continue;
+                final sName = _safeString(sch['schoolName'] ?? sch['name']);
+                final benchmark2024 = sch['benchmark2024']?.toString();
+                final benchmark2023 = sch['benchmark2023']?.toString();
+                buffer.write('    - $sName');
+                if (benchmark2024 != null || benchmark2023 != null) {
+                  buffer.write(' (Điểm chuẩn: 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"})');
+                }
+                buffer.writeln();
+              }
+            }
+          } else {
+            final compList = item['companyDetails'];
+            if (compList is List && compList.isNotEmpty) {
+              buffer.writeln('  🏢 Cơ hội việc làm & Doanh nghiệp gợi ý:');
+              for (final comp in compList) {
+                if (comp is! Map) continue;
+                final compName = _safeString(comp['companyName'] ?? comp['name']);
+                final pos = _safeString(comp['position'] ?? comp['jobOpportunities']);
+                buffer.write('    - $compName');
+                if (pos.isNotEmpty) {
+                  buffer.write(' ($pos)');
+                }
+                buffer.writeln();
+              }
+            }
+          }
+        }
+      }
+    } else {
+      // Targeted Mode
+      buffer.writeln('NGÀNH NGHỀ MỤC TIÊU: $targetCareer\n');
+      if (_selectedPath == CareerPath.study) {
+        if (trainingInstitutions.isNotEmpty) {
+          buffer.writeln('🏛️ Trường đào tạo đề xuất:');
+          for (final sch in trainingInstitutions) {
+            if (sch is! Map) continue;
+            final sName = _safeString(sch['schoolName'] ?? sch['name']);
+            final benchmark2024 = sch['benchmark2024']?.toString();
+            final benchmark2023 = sch['benchmark2023']?.toString();
+            buffer.write('  - $sName');
+            if (benchmark2024 != null || benchmark2023 != null) {
+              buffer.write(' (Điểm chuẩn: 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"})');
+            }
+            buffer.writeln();
+          }
+        }
+      } else {
+        if (targetCompanies.isNotEmpty) {
+          buffer.writeln('🏢 Doanh nghiệp tuyển dụng tiêu biểu:');
+          for (final comp in targetCompanies) {
+            if (comp is! Map) continue;
+            final compName = _safeString(comp['companyName'] ?? comp['name']);
+            final pos = _safeString(comp['position'] ?? comp['jobOpportunities']);
+            buffer.write('  - $compName');
+            if (pos.isNotEmpty) {
+              buffer.write(' ($pos)');
+            }
+            buffer.writeln();
+          }
+        }
+      }
+    }
+
+    if (buffer.isNotEmpty) {
+      careerRec = buffer.toString().trim();
+    }
+
+    await PdfExportService.exportSurveyReport(
+      context: context,
+      title: displayMode == 'discovery'
+          ? 'Báo Cáo Khảo Sát Động - Discovery'
+          : 'Báo Cáo Khảo Sát Động - Targeted',
+      userName: userName,
+      testType: displayMode == 'discovery' ? 'Discovery' : 'Targeted',
+      date: date,
+      scores: scores,
+      interpretations: interpretations,
+      careerRecommendations: careerRec,
+    );
   }
 
   void _submitFeedback() async {
@@ -203,22 +382,46 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
           'Báo Cáo Khảo Sát Động AI',
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: Responsive.font(context, 18),
             color: Colors.black87,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: Colors.black87),
+          icon: Icon(
+            Icons.close_rounded,
+            color: Colors.black87,
+            size: Responsive.s(context, 24),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: Colors.black87,
+              size: Responsive.s(context, 24),
+            ),
+            tooltip: 'Trao đổi thêm với AI',
+            onPressed: () => _openChatWithContext(context),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.picture_as_pdf_rounded,
+              color: Colors.black87,
+              size: Responsive.s(context, 24),
+            ),
+            tooltip: 'Xuất PDF',
+            onPressed: () => _exportPdf(context),
+          ),
+        ],
       ),
       body: Stack(
         children: [
           Positioned(
-            bottom: -50,
-            right: -50,
+            bottom: -Responsive.s(context, 50),
+            right: -Responsive.s(context, 50),
             child: Container(
-              width: 250,
+              width: Responsive.s(context, 250),
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -227,20 +430,26 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
             ),
           ),
           SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(Responsive.s(context, 20)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Banner nhắc đăng nhập
                 if (!authProvider.isAuthenticated) ...[
                   _buildLoginBanner(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: Responsive.s(context, 20)),
                 ],
 
                 // ========== ĐIỂM PHÙ HỢP TỔNG QUAN ==========
                 if (displayMode.toLowerCase() != 'discovery') ...[
-                  _buildMatchScoreCard(rawScore, status, isPassed, statusColor, targetCareer),
-                  const SizedBox(height: 20),
+                  _buildMatchScoreCard(
+                    rawScore,
+                    status,
+                    isPassed,
+                    statusColor,
+                    targetCareer,
+                  ),
+                  SizedBox(height: Responsive.s(context, 20)),
                 ],
 
                 // ========== THỨ TỰ HIỂN THỊ THỐNG NHẤT (áp dụng cho cả Discovery & Targeted) ==========
@@ -1423,12 +1632,14 @@ const SizedBox(height: 20),
                   color: const Color(0xFF6B7280),
                 ),
               ),
-              Text(
-                benchmarkText,
-                style: GoogleFonts.outfit(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: themeColor,
+              Expanded(
+                child: Text(
+                  benchmarkText,
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: themeColor,
+                  ),
                 ),
               ),
             ],

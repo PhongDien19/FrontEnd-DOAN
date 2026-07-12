@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
+import '../utils/pdf_export_service.dart';
+import '../utils/responsive.dart';
+import 'chat_screen.dart';
 
 class ComprehensiveReportScreen extends StatefulWidget {
   const ComprehensiveReportScreen({super.key});
@@ -22,6 +25,81 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
   void initState() {
     super.initState();
     _fetchReport();
+  }
+
+  void _exportPdf(BuildContext context) async {
+    if (_report == null) return;
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final userName = auth.fullName.isNotEmpty ? auth.fullName : 'Người dùng';
+    final reportDate = _safeString(_report!['createdAt'] ?? DateTime.now().toString());
+
+    // Build assessments list
+    final assessments = <Map<String, dynamic>>[];
+
+    final holland = _report!['hollandResult'] as Map<String, dynamic>?;
+    if (holland != null) {
+      assessments.add({
+        'title': 'Trắc Nghiệm Holland - Định Hướng Nghề Nghiệp',
+        'score': holland['topScore'] ?? 'N/A',
+        'interpretation': _safeString(holland['interpretation'] ?? ''),
+      });
+    }
+
+    final personality = _report!['personalityResult'] as Map<String, dynamic>?;
+    if (personality != null) {
+      assessments.add({
+        'title': 'Trắc Nghiệm Nhân Cách - Big Five',
+        'score': personality['topScore'] ?? 'N/A',
+        'interpretation': _safeString(personality['interpretation'] ?? ''),
+      });
+    }
+
+    final cognitive = _report!['cognitiveResult'] as Map<String, dynamic>?;
+    if (cognitive != null) {
+      assessments.add({
+        'title': 'Trắc Nghiệm Nhận Thức - Trí Tuệ',
+        'score': cognitive['topScore'] ?? 'N/A',
+        'interpretation': _safeString(cognitive['interpretation'] ?? ''),
+      });
+    }
+
+    final values = _report!['valuesResult'] as Map<String, dynamic>?;
+    if (values != null) {
+      assessments.add({
+        'title': 'Trắc Nghiệm Giá Trị - Đạo Đức',
+        'score': values['topScore'] ?? 'N/A',
+        'interpretation': _safeString(values['interpretation'] ?? ''),
+      });
+    }
+
+    final overallAnalysis = _safeString(_report!['overallAnalysis'] ?? '');
+    final careerSuggestions = _safeStringList(_report!['careerSuggestions'] ?? []);
+
+    await PdfExportService.exportComprehensiveReport(
+      context: context,
+      userName: userName,
+      reportDate: reportDate,
+      assessments: assessments,
+      overallAnalysis: overallAnalysis,
+      careerSuggestions: careerSuggestions,
+    );
+  }
+
+  String _safeString(dynamic v, {String fallback = ''}) {
+    if (v == null) return fallback;
+    if (v is String) return v;
+    if (v is num) return v.toString();
+    if (v is bool) return v.toString();
+    return v.toString();
+  }
+
+  List<String> _safeStringList(dynamic v, {List<String> fallback = const []}) {
+    if (v == null) return List<String>.from(fallback);
+    if (v is List) {
+      return v.whereType<String>().toList();
+    }
+    return List<String>.from(fallback);
   }
 
   void _fetchReport() async {
@@ -95,6 +173,24 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
     }
   }
 
+  void _openChatWithContext(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          initialContext: _report != null
+              ? {
+                  'recommendedCareers': _report!['recommendedCareers'] ?? [],
+                  'strengths': _report!['strengths'] ?? [],
+                  'skillDevelopment': _report!['skillDevelopment'] ?? [],
+                  'overallAnalysis': _report!['comprehensiveSummary'] ?? '',
+                }
+              : null,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,11 +200,33 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
         elevation: 0,
         title: Text(
           'Báo Cáo Hướng Nghiệp AI',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            fontSize: Responsive.font(context, 18),
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
+            icon: Icon(
+              Icons.chat_bubble_outline_rounded,
+              size: Responsive.s(context, 24),
+            ),
+            tooltip: 'Trao đổi thêm với AI',
+            onPressed: () => _openChatWithContext(context),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.picture_as_pdf_rounded,
+              size: Responsive.s(context, 24),
+            ),
+            tooltip: 'Xuất PDF',
+            onPressed: _report != null ? () => _exportPdf(context) : null,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.refresh_rounded,
+              size: Responsive.s(context, 24),
+            ),
             onPressed: _fetchReport,
           ),
         ],
@@ -117,11 +235,11 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
         children: [
           // Background subtle glows
           Positioned(
-            bottom: 10,
-            left: -100,
+            bottom: Responsive.s(context, 10),
+            left: -Responsive.s(context, 100),
             child: Container(
-              width: 300,
-              height: 300,
+              width: Responsive.s(context, 300),
+              height: Responsive.s(context, 300),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: const Color(0xFF00F2FE).withValues(alpha: 0.04),

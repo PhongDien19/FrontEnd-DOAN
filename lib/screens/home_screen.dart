@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_provider.dart';
 import '../services/api_service.dart';
+import '../utils/responsive.dart';
 import 'dynamic_survey_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
@@ -19,25 +20,15 @@ class _HomeScreenState extends State<HomeScreen> {
   final _quickQuestionController = TextEditingController();
   bool _isConsulting = false;
 
-  // State nhận diện chế độ tư vấn: 'AI' (chung), 'HOC' (trường học), 'LAM' (công ty)
   String _currentMode = 'AI';
 
-  // Lưu trữ kết quả trả về từ server
-  // - Nếu server trả về chuỗi (mode AI thường) -> _consultResponse sẽ có giá trị
-  // - Nếu server trả về object JSON (mode HOC/LAM) -> _consultStructured sẽ có giá trị
   String? _consultResponse;
   Map<String, dynamic>? _consultStructured;
 
-  // Cờ đánh dấu cuộc gọi API có lỗi hay không (dùng để không hiển thị lỗi 2 lần)
   bool _consultHasError = false;
-
-  // Thông điệp lỗi cụ thể do server trả về (vd: "AI hết quota", "Gemini API key invalid"...)
   String? _consultErrorMessage;
-
-  // Có phải lỗi do mất kết nối tới máy chủ hay không (HTTP không phản hồi)
   bool _consultIsNetworkError = false;
 
-  // Định nghĩa bảng màu Light Mode
   final Color primaryOrange = const Color(0xFFF59E0B);
   final Color bgColor = const Color(0xFFFAFAFA);
   final Color textDark = const Color(0xFF1F2937);
@@ -53,21 +44,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final query = _quickQuestionController.text.trim();
     if (query.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng nhập tên ngành nghề hoặc câu hỏi của bạn!'),
+        SnackBar(
+          content: Text(
+            'Vui lòng nhập tên ngành nghề hoặc câu hỏi của bạn!',
+            style: TextStyle(fontSize: Responsive.font(context, 14)),
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
 
-    // Yêu cầu đăng nhập trước khi sử dụng Tư vấn nhanh
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (!auth.isAuthenticated) {
       await _promptLoginBeforeConsult(mode);
-      // Sau khi quay lại từ LoginScreen, kiểm tra lại trạng thái đăng nhập.
-      // Nếu đã đăng nhập thành công thì tiếp tục tư vấn ngay (không bắt user
-      // phải bấm lại nút Gửi).
       if (!mounted) return;
       if (!auth.isAuthenticated) return;
     }
@@ -79,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _consultHasError = false;
       _consultErrorMessage = null;
       _consultIsNetworkError = false;
-      _currentMode = mode; // Lưu chế độ đang truy vấn
+      _currentMode = mode;
     });
 
     final userContext = {
@@ -87,8 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'educationLevel': auth.educationLevel,
       'age': auth.userProfile?['age'] ?? 18,
       'hobby': auth.hobby,
-      'requestType':
-          mode, // Gửi xuống API để AI/Backend biết yêu cầu Học hay Làm
+      'requestType': mode,
     };
 
     final result = await ApiService.consultCareer({
@@ -104,12 +93,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final hasAdvice = result['advice'] != null;
       final advice = result['advice'];
 
-      // Trường hợp 1: server trả về success=true và có advice (thành công)
       if (aiSuccess && hasAdvice) {
         if (advice is Map<String, dynamic>) {
           _consultStructured = advice;
-          _consultResponse =
-              (advice['summary'] is String) ? advice['summary'] as String : null;
+          _consultResponse = (advice['summary'] is String)
+              ? advice['summary'] as String
+              : null;
         } else if (advice is String) {
           _consultResponse = advice;
           _consultStructured = null;
@@ -119,30 +108,24 @@ class _HomeScreenState extends State<HomeScreen> {
           _consultHasError = true;
         }
         _consultHasError = false;
-      }
-      // Trường hợp 2: server trả về success=false (lỗi)
-      else if (aiFailed) {
+      } else if (aiFailed) {
         _consultResponse = null;
         _consultStructured = null;
         _consultHasError = true;
 
-        // Ưu tiên errorMessage từ server (vd: "Gemini hết quota"...)
-        // Nếu không có thì dùng message mặc định từ api_service
         final serverMsg = result['errorMessage'] ?? result['message'];
         _consultErrorMessage = (serverMsg is String && serverMsg.isNotEmpty)
             ? serverMsg
             : 'Dịch vụ tư vấn AI tạm thời gián đoạn. Vui lòng thử lại sau giây lát!';
 
-        // Lỗi mạng (không tới được server) thường có statusCode = null
-        // hoặc message chứa "kết nối"
         final msg = _consultErrorMessage!.toLowerCase();
         _consultIsNetworkError =
-            !msg.contains('gemini') && !msg.contains('quota') &&
-                !msg.contains('ai ') && !msg.contains('tư vấn') &&
-                !msg.contains('gián đoạn');
-      }
-      // Trường hợp 3: không có advice và cũng không có success — fallback
-      else {
+            !msg.contains('gemini') &&
+            !msg.contains('quota') &&
+            !msg.contains('ai ') &&
+            !msg.contains('tư vấn') &&
+            !msg.contains('gián đoạn');
+      } else {
         _consultResponse = null;
         _consultStructured = null;
         _consultHasError = true;
@@ -153,26 +136,31 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Hiển thị hộp thoại yêu cầu đăng nhập trước khi dùng Tư vấn nhanh.
-  // Nếu người dùng đồng ý, điều hướng sang LoginScreen.
   Future<void> _promptLoginBeforeConsult(String mode) async {
-    // Nhớ lại mode mà người dùng đã chọn (AI / HOC / LAM)
-    // để khi quay lại từ LoginScreen có thể tiếp tục đúng chế độ.
     _currentMode = mode;
 
     final shouldLogin = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Yêu cầu đăng nhập'),
-        content: const Text(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Responsive.s(context, 16)),
+        ),
+        title: Text(
+          'Yêu cầu đăng nhập',
+          style: TextStyle(fontSize: Responsive.font(context, 18)),
+        ),
+        content: Text(
           'Bạn cần đăng nhập để sử dụng tính năng Tư vấn nhanh. '
           'Đăng nhập ngay để nhận gợi ý nghề nghiệp phù hợp với bạn.',
+          style: TextStyle(fontSize: Responsive.font(context, 14)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Để sau'),
+            child: Text(
+              'Để sau',
+              style: TextStyle(fontSize: Responsive.font(context, 14)),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -180,7 +168,10 @@ class _HomeScreenState extends State<HomeScreen> {
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Đăng nhập'),
+            child: Text(
+              'Đăng nhập',
+              style: TextStyle(fontSize: Responsive.font(context, 14)),
+            ),
           ),
         ],
       ),
@@ -210,12 +201,12 @@ class _HomeScreenState extends State<HomeScreen> {
               CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(primaryOrange),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: Responsive.s(context, 20)),
               Text(
                 'Khởi động Career Pathway...',
                 style: TextStyle(
                   color: textGray,
-                  fontSize: 14,
+                  fontSize: Responsive.font(context, 14),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -228,7 +219,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final hasHolland = profile != null && profile['hollandScores'] != null;
     final hasPersonality =
         profile != null && profile['personalityScores'] != null;
-    final hasCognitive = profile != null && profile['cognitiveScores'] != null;
+    final hasCognitive =
+        profile != null && profile['cognitiveScores'] != null;
     final hasValues = profile != null && profile['valuesScores'] != null;
 
     final completedCount =
@@ -249,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'Career ',
               style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w800,
-                fontSize: 22,
+                fontSize: Responsive.font(context, 22),
                 color: textDark,
               ),
             ),
@@ -257,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'Pathway',
               style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w800,
-                fontSize: 22,
+                fontSize: Responsive.font(context, 22),
                 color: primaryOrange,
               ),
             ),
@@ -266,11 +258,17 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           auth.isAuthenticated
               ? IconButton(
-                  icon: Icon(Icons.account_circle_outlined, color: textGray),
+                  icon: Icon(
+                    Icons.account_circle_outlined,
+                    color: textGray,
+                    size: Responsive.s(context, 24),
+                  ),
                   tooltip: 'Trang cá nhân',
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileScreen(),
+                    ),
                   ),
                 )
               : TextButton(
@@ -283,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: GoogleFonts.outfit(
                       color: primaryOrange,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: Responsive.font(context, 14),
                     ),
                   ),
                 ),
@@ -291,13 +289,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
-          // Background decorations
           Positioned(
-            top: 20,
-            left: -100,
+            top: Responsive.s(context, 20),
+            left: -Responsive.s(context, 100),
             child: Container(
-              width: 300,
-              height: 300,
+              width: Responsive.s(context, 300),
+              height: Responsive.s(context, 300),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: primaryOrange.withValues(alpha: 0.03),
@@ -305,11 +302,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Positioned(
-            bottom: 50,
-            right: -100,
+            bottom: Responsive.s(context, 50),
+            right: -Responsive.s(context, 100),
             child: Container(
-              width: 300,
-              height: 300,
+              width: Responsive.s(context, 300),
+              height: Responsive.s(context, 300),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: primaryOrange.withValues(alpha: 0.03),
@@ -323,27 +320,29 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: Colors.white,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(Responsive.s(context, 20)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     children: [
                       CircleAvatar(
-                        radius: 28,
-                        backgroundColor: primaryOrange.withValues(alpha: 0.15),
+                        radius: Responsive.s(context, 28),
+                        backgroundColor: primaryOrange.withValues(
+                          alpha: 0.15,
+                        ),
                         child: Text(
                           auth.fullName.isNotEmpty
                               ? auth.fullName[0].toUpperCase()
                               : 'U',
                           style: GoogleFonts.outfit(
-                            fontSize: 22,
+                            fontSize: Responsive.font(context, 22),
                             fontWeight: FontWeight.bold,
                             color: primaryOrange,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: Responsive.s(context, 16)),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               'Xin chào,',
                               style: GoogleFonts.inter(
-                                fontSize: 14,
+                                fontSize: Responsive.font(context, 14),
                                 color: textGray,
                               ),
                             ),
@@ -360,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ? auth.fullName
                                   : 'Thành viên',
                               style: GoogleFonts.outfit(
-                                fontSize: 20,
+                                fontSize: Responsive.font(context, 20),
                                 fontWeight: FontWeight.bold,
                                 color: textDark,
                               ),
@@ -370,14 +369,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: Responsive.s(context, 24)),
 
-                  // Thẻ: Đánh Giá Toàn Diện
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(Responsive.s(context, 24)),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(
+                        Responsive.s(context, 20),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.04),
@@ -396,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Text(
                                 'Đánh Giá Toàn Diện',
                                 style: GoogleFonts.outfit(
-                                  fontSize: 20,
+                                  fontSize: Responsive.font(context, 20),
                                   fontWeight: FontWeight.bold,
                                   color: textDark,
                                 ),
@@ -404,27 +404,29 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: Responsive.s(context, 10)),
                         Text(
                           'Hoàn thành 4 trụ cột trắc nghiệm: Sở thích (Holland), Tính cách (MBTI), Năng lực và Hệ giá trị để nhận báo cáo hướng nghiệp AI chi tiết.',
                           style: GoogleFonts.inter(
-                            fontSize: 13,
+                            fontSize: Responsive.font(context, 13),
                             color: textGray,
                             height: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: Responsive.s(context, 20)),
                         LinearProgressIndicator(
                           value: completedCount / 4.0,
                           backgroundColor: const Color(0xFFF3F4F6),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             primaryOrange,
                           ),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 4),
+                          ),
+                          minHeight: Responsive.s(context, 6),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: Responsive.s(context, 20)),
 
-                        // Nút Cam chính: Chuyển sang DynamicSurveyScreen()
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -443,9 +445,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryOrange,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: EdgeInsets.symmetric(
+                              vertical: Responsive.s(context, 14),
+                            ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(
+                                Responsive.s(context, 14),
+                              ),
                             ),
                             elevation: 0,
                           ),
@@ -457,35 +463,39 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ? 'Xem Báo Cáo Chi Tiết'
                                     : 'Bắt đầu khảo sát',
                                 style: GoogleFonts.outfit(
-                                  fontSize: 15,
+                                  fontSize: Responsive.font(context, 15),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              const Icon(Icons.arrow_forward_rounded, size: 16),
+                              SizedBox(width: Responsive.s(context, 8)),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: Responsive.s(context, 16),
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: Responsive.s(context, 28)),
 
-                  // Khung chat tư vấn hướng nghiệp nhanh
                   Text(
                     'Tư Vấn Hướng Nghiệp Nhanh',
                     style: GoogleFonts.outfit(
-                      fontSize: 18,
+                      fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
                       color: textDark,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: Responsive.s(context, 12)),
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(Responsive.s(context, 16)),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(
+                        Responsive.s(context, 16),
+                      ),
                       border: Border.all(color: const Color(0xFFE5E7EB)),
                       boxShadow: [
                         BoxShadow(
@@ -498,24 +508,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // 1. Ô nhập từ khoá ngành nghề hoặc câu hỏi
                         Row(
                           children: [
                             Expanded(
                               child: TextField(
                                 controller: _quickQuestionController,
-                                style: TextStyle(color: textDark, fontSize: 14),
-                                decoration: const InputDecoration(
+                                style: TextStyle(
+                                  color: textDark,
+                                  fontSize: Responsive.font(context, 14),
+                                ),
+                                decoration: InputDecoration(
                                   hintText:
                                       'Nhập ngành nghề (VD: IT, Marketing, Logistics)...',
                                   hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF),
-                                    fontSize: 13,
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: Responsive.font(context, 13),
                                   ),
                                   border: InputBorder.none,
                                   isDense: true,
                                   contentPadding: EdgeInsets.symmetric(
-                                    vertical: 8,
+                                    vertical: Responsive.s(context, 8),
                                   ),
                                 ),
                                 onSubmitted: (_) =>
@@ -525,8 +537,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             IconButton(
                               icon: _isConsulting && _currentMode == 'AI'
                                   ? SizedBox(
-                                      width: 18,
-                                      height: 18,
+                                      width: Responsive.s(context, 18),
+                                      height: Responsive.s(context, 18),
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor:
@@ -538,6 +550,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : Icon(
                                       Icons.send_rounded,
                                       color: primaryOrange,
+                                      size: Responsive.s(context, 22),
                                     ),
                               onPressed: _isConsulting
                                   ? null
@@ -546,20 +559,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 12),
+                        SizedBox(height: Responsive.s(context, 12)),
 
-                        // 2. Hai Option Box: HỌC & LÀM
                         Row(
                           children: [
-                            // Option 1: HỌC Ở ĐÂU? (Trường học)
                             Expanded(
                               child: _buildActionOptionBox(
                                 title: 'Học ở đâu?',
                                 subtitle: 'Các trường đào tạo',
                                 icon: Icons.school_outlined,
-                                color: const Color(
-                                  0xFF3B82F6,
-                                ), // Màu xanh dương
+                                color: const Color(0xFF3B82F6),
                                 isLoading:
                                     _isConsulting && _currentMode == 'HOC',
                                 onTap: _isConsulting
@@ -567,14 +576,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     : () => _sendQuickConsult(mode: 'HOC'),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            // Option 2: LÀM Ở ĐÂU? (Việc làm, công ty)
+                            SizedBox(width: Responsive.s(context, 12)),
                             Expanded(
                               child: _buildActionOptionBox(
                                 title: 'Làm ở đâu?',
                                 subtitle: 'Công ty tuyển dụng',
                                 icon: Icons.work_outline_rounded,
-                                color: const Color(0xFF10B981), // Màu xanh lá
+                                color: const Color(0xFF10B981),
                                 isLoading:
                                     _isConsulting && _currentMode == 'LAM',
                                 onTap: _isConsulting
@@ -585,13 +593,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
 
-                        // 3. Phản hồi từ AI
                         if (_consultResponse != null ||
                             _consultStructured != null ||
                             _consultHasError) ...[
-                          const Divider(color: Color(0xFFE5E7EB), height: 24),
+                          Divider(
+                            color: const Color(0xFFE5E7EB),
+                            height: Responsive.s(context, 24),
+                          ),
 
-                          // Tiêu đề phần phản hồi
                           if (!_consultHasError)
                             Row(
                               children: [
@@ -601,10 +610,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       : (_currentMode == 'LAM'
                                             ? Icons.work
                                             : Icons.auto_awesome),
-                                  size: 16,
+                                  size: Responsive.s(context, 16),
                                   color: primaryOrange,
                                 ),
-                                const SizedBox(width: 6),
+                                SizedBox(width: Responsive.s(context, 6)),
                                 Text(
                                   _currentMode == 'HOC'
                                       ? 'Danh Sách Trường Đào Tạo:'
@@ -613,15 +622,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                             : 'AI Phản Hồi:'),
                                   style: GoogleFonts.outfit(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                    fontSize: Responsive.font(context, 14),
                                     color: primaryOrange,
                                   ),
                                 ),
                               ],
                             ),
-                          if (!_consultHasError) const SizedBox(height: 8),
+                          if (!_consultHasError)
+                            SizedBox(height: Responsive.s(context, 8)),
 
-                          // TRƯỜNG HỢP LỖI: hiển thị đúng 1 widget duy nhất
                           if (_consultHasError)
                             _buildErrorBox(
                               title: _consultIsNetworkError
@@ -631,56 +640,63 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'Không thể kết nối dịch vụ tư vấn AI. Vui lòng thử lại sau giây lát!',
                             )
                           else ...[
-                            // Hiển thị phần tóm tắt (nếu có) — chỉ với chế độ HOC/LAM
                             if (_currentMode != 'AI' &&
                                 _consultResponse != null &&
                                 _consultResponse!.isNotEmpty)
                               Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: EdgeInsets.all(
+                                  Responsive.s(context, 12),
+                                ),
+                                margin: EdgeInsets.only(
+                                  bottom: Responsive.s(context, 12),
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFFF7ED),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    Responsive.s(context, 12),
+                                  ),
                                   border: Border.all(
-                                    color: primaryOrange
-                                        .withValues(alpha: 0.25),
+                                    color: primaryOrange.withValues(
+                                      alpha: 0.25,
+                                    ),
                                   ),
                                 ),
                                 child: Text(
                                   _consultResponse!,
                                   style: GoogleFonts.inter(
-                                    fontSize: 13,
+                                    fontSize: Responsive.font(context, 13),
                                     color: textDark,
                                     height: 1.4,
                                   ),
                                 ),
                               ),
 
-                            // Hiển thị danh sách trường (chế độ HOC)
                             if (_currentMode == 'HOC' &&
                                 _consultStructured != null)
                               _buildSchoolList(_consultStructured!),
 
-                            // Hiển thị danh sách công ty (chế độ LAM)
                             if (_currentMode == 'LAM' &&
                                 _consultStructured != null)
                               _buildCompanyList(_consultStructured!),
 
-                            // Chế độ AI (chuỗi tự do)
                             if (_currentMode == 'AI' &&
                                 _consultResponse != null &&
                                 _consultStructured == null)
                               Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: EdgeInsets.all(
+                                  Responsive.s(context, 12),
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF3F4F6),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    Responsive.s(context, 12),
+                                  ),
                                 ),
                                 child: Text(
                                   _consultResponse!,
                                   style: GoogleFonts.inter(
-                                    fontSize: 13,
+                                    fontSize: Responsive.font(context, 13),
                                     color: textGray,
                                     height: 1.4,
                                   ),
@@ -691,23 +707,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: Responsive.s(context, 28)),
 
                   Text(
                     '4 Trụ Cột Hướng Nghiệp',
                     style: GoogleFonts.outfit(
-                      fontSize: 18,
+                      fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
                       color: textDark,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: Responsive.s(context, 16)),
                   GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
+                    mainAxisSpacing: Responsive.s(context, 16),
+                    crossAxisSpacing: Responsive.s(context, 16),
                     childAspectRatio: 0.85,
                     children: [
                       _buildPillarCard(
@@ -720,14 +736,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       _buildPillarCard(
                         title: 'Tính Cách (MBTI)',
-                        description: 'Xác định MBTI & Big 5 đặc trưng bản thân',
+                        description:
+                            'Xác định MBTI & Big 5 đặc trưng bản thân',
                         icon: Icons.psychology_outlined,
                         accentColor: const Color(0xFF7C4DFF),
                         isCompleted: hasPersonality,
                       ),
                       _buildPillarCard(
                         title: 'Năng Lực Nhận Thức',
-                        description: 'Đánh giá tư duy Logic, Số học & Ngôn ngữ',
+                        description:
+                            'Đánh giá tư duy Logic, Số học & Ngôn ngữ',
                         icon: Icons.lightbulb_outline_rounded,
                         accentColor: const Color(0xFF00B0FF),
                         isCompleted: hasCognitive,
@@ -742,7 +760,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: Responsive.s(context, 20)),
                 ],
               ),
             ),
@@ -752,11 +770,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- Widgets hiển thị danh sách Trường / Công ty từ phản hồi cấu trúc của AI ---
-
   Widget _buildSchoolList(Map<String, dynamic> data) {
     final raw = data['schools'];
-    final schools = (raw is List) ? raw.cast<Map<String, dynamic>>() : <Map<String, dynamic>>[];
+    final schools = (raw is List)
+        ? raw.cast<Map<String, dynamic>>()
+        : <Map<String, dynamic>>[];
 
     if (schools.isEmpty) {
       return _buildEmptyState(
@@ -779,11 +797,13 @@ class _HomeScreenState extends State<HomeScreen> {
         final admission = (s['admissionLink'] ?? '').toString();
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(14),
+          margin: EdgeInsets.only(bottom: Responsive.s(context, 12)),
+          padding: EdgeInsets.all(Responsive.s(context, 14)),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              Responsive.s(context, 14),
+            ),
             border: Border.all(color: const Color(0xFFE5E7EB)),
             boxShadow: [
               BoxShadow(
@@ -800,15 +820,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: Responsive.s(context, 40),
+                    height: Responsive.s(context, 40),
                     decoration: BoxDecoration(
                       color: blue.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(
+                        Responsive.s(context, 10),
+                      ),
                     ),
-                    child: Icon(Icons.school_rounded, color: blue, size: 22),
+                    child: Icon(
+                      Icons.school_rounded,
+                      color: blue,
+                      size: Responsive.s(context, 22),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: Responsive.s(context, 12)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -817,7 +843,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           name,
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                            fontSize: Responsive.font(context, 15),
                             color: textDark,
                           ),
                         ),
@@ -825,26 +851,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             'Ngành: $major',
                             style: GoogleFonts.inter(
-                              fontSize: 12,
+                              fontSize: Responsive.font(context, 12),
                               color: blue,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         if (loc.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(top: 2),
+                            padding: EdgeInsets.only(
+                              top: Responsive.s(context, 2),
+                            ),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.location_on_outlined,
-                                  size: 12,
-                                  color: Color(0xFF6B7280),
+                                  size: Responsive.s(context, 12),
+                                  color: const Color(0xFF6B7280),
                                 ),
-                                const SizedBox(width: 3),
+                                SizedBox(width: Responsive.s(context, 3)),
                                 Text(
                                   loc,
                                   style: GoogleFonts.inter(
-                                    fontSize: 11,
+                                    fontSize: Responsive.font(context, 11),
                                     color: const Color(0xFF6B7280),
                                   ),
                                 ),
@@ -857,37 +885,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               if (desc.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: Responsive.s(context, 8)),
                 Text(
                   desc,
                   style: GoogleFonts.inter(
-                    fontSize: 12,
+                    fontSize: Responsive.font(context, 12),
                     color: textGray,
                     height: 1.4,
                   ),
                 ),
               ],
-              const SizedBox(height: 10),
+              SizedBox(height: Responsive.s(context, 10)),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(Responsive.s(context, 10)),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 8),
+                  ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.assessment_outlined,
-                      size: 14,
+                      size: Responsive.s(context, 14),
                       color: blue,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: Responsive.s(context, 6)),
                     Expanded(
                       child: Text(
                         'Điểm chuẩn: $benchmark',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: Responsive.font(context, 11),
                           color: blue,
                           fontWeight: FontWeight.w600,
                         ),
@@ -897,9 +927,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               if (official.isNotEmpty || admission.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: Responsive.s(context, 8)),
                 Wrap(
-                  spacing: 8,
+                  spacing: Responsive.s(context, 8),
                   children: [
                     if (official.isNotEmpty)
                       _buildLinkChip(
@@ -927,7 +957,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildCompanyList(Map<String, dynamic> data) {
     final raw = data['companies'];
-    final companies = (raw is List) ? raw.cast<Map<String, dynamic>>() : <Map<String, dynamic>>[];
+    final companies = (raw is List)
+        ? raw.cast<Map<String, dynamic>>()
+        : <Map<String, dynamic>>[];
 
     if (companies.isEmpty) {
       return _buildEmptyState(
@@ -957,11 +989,13 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(14),
+          margin: EdgeInsets.only(bottom: Responsive.s(context, 12)),
+          padding: EdgeInsets.all(Responsive.s(context, 14)),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              Responsive.s(context, 14),
+            ),
             border: Border.all(color: const Color(0xFFE5E7EB)),
             boxShadow: [
               BoxShadow(
@@ -978,19 +1012,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: Responsive.s(context, 40),
+                    height: Responsive.s(context, 40),
                     decoration: BoxDecoration(
                       color: green.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(
+                        Responsive.s(context, 10),
+                      ),
                     ),
                     child: Icon(
                       Icons.business_rounded,
                       color: green,
-                      size: 22,
+                      size: Responsive.s(context, 22),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: Responsive.s(context, 12)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -999,7 +1035,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           name,
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                            fontSize: Responsive.font(context, 15),
                             color: textDark,
                           ),
                         ),
@@ -1007,27 +1043,29 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             industry,
                             style: GoogleFonts.inter(
-                              fontSize: 12,
+                              fontSize: Responsive.font(context, 12),
                               color: green,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         if (loc.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(top: 2),
+                            padding: EdgeInsets.only(
+                              top: Responsive.s(context, 2),
+                            ),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.location_on_outlined,
-                                  size: 12,
-                                  color: Color(0xFF6B7280),
+                                  size: Responsive.s(context, 12),
+                                  color: const Color(0xFF6B7280),
                                 ),
-                                const SizedBox(width: 3),
+                                SizedBox(width: Responsive.s(context, 3)),
                                 Expanded(
                                   child: Text(
                                     loc,
                                     style: GoogleFonts.inter(
-                                      fontSize: 11,
+                                      fontSize: Responsive.font(context, 11),
                                       color: const Color(0xFF6B7280),
                                     ),
                                   ),
@@ -1040,18 +1078,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   if (demand.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.s(context, 8),
+                        vertical: Responsive.s(context, 4),
                       ),
                       decoration: BoxDecoration(
                         color: demandColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 20),
+                        ),
                       ),
                       child: Text(
                         demand,
                         style: GoogleFonts.inter(
-                          fontSize: 10,
+                          fontSize: Responsive.font(context, 10),
                           color: demandColor,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1060,38 +1100,40 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               if (desc.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: Responsive.s(context, 8)),
                 Text(
                   desc,
                   style: GoogleFonts.inter(
-                    fontSize: 12,
+                    fontSize: Responsive.font(context, 12),
                     color: textGray,
                     height: 1.4,
                   ),
                 ),
               ],
-              const SizedBox(height: 10),
+              SizedBox(height: Responsive.s(context, 10)),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(Responsive.s(context, 10)),
                 decoration: BoxDecoration(
                   color: const Color(0xFFECFDF5),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 8),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.work_outline_rounded,
-                      size: 14,
+                      size: Responsive.s(context, 14),
                       color: green,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: Responsive.s(context, 6)),
                     Expanded(
                       child: Text(
                         'Vị trí: $positions',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: Responsive.font(context, 11),
                           color: green,
                           fontWeight: FontWeight.w600,
                           height: 1.4,
@@ -1102,7 +1144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               if (careerLink.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: Responsive.s(context, 8)),
                 _buildLinkChip(
                   icon: Icons.open_in_new_rounded,
                   label: 'Xem trang tuyển dụng',
@@ -1126,26 +1168,34 @@ class _HomeScreenState extends State<HomeScreen> {
     return InkWell(
       onTap: () async {
         try {
-          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+          await launchUrl(
+            Uri.parse(url),
+            mode: LaunchMode.externalApplication,
+          );
         } catch (_) {}
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: Responsive.s(context, 10),
+          vertical: Responsive.s(context, 6),
+        ),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 8),
+          ),
           border: Border.all(color: color.withValues(alpha: 0.35)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 13, color: color),
-            const SizedBox(width: 4),
+            Icon(icon, size: Responsive.s(context, 13), color: color),
+            SizedBox(width: Responsive.s(context, 4)),
             Text(
               label,
               style: GoogleFonts.inter(
-                fontSize: 11,
+                fontSize: Responsive.font(context, 11),
                 color: color,
                 fontWeight: FontWeight.w600,
               ),
@@ -1170,10 +1220,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(Responsive.s(context, 14)),
       decoration: BoxDecoration(
         color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          Responsive.s(context, 12),
+        ),
         border: Border.all(color: const Color(0xFFFCA5A5)),
       ),
       child: Column(
@@ -1182,18 +1234,21 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             children: [
               Icon(
-                isQuotaIssue ? Icons.hourglass_top_rounded : Icons.error_outline_rounded,
+                isQuotaIssue
+                    ? Icons.hourglass_top_rounded
+                    : Icons.error_outline_rounded,
                 color: const Color(0xFFDC2626),
-                size: 20,
+                size: Responsive.s(context, 20),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: Responsive.s(context, 8)),
               Expanded(
                 child: Text(
-                  title ?? (isQuotaIssue
-                      ? 'API tạm hết hạn mức miễn phí'
-                      : 'Không thể kết nối tư vấn AI'),
+                  title ??
+                      (isQuotaIssue
+                          ? 'API tạm hết hạn mức miễn phí'
+                          : 'Không thể kết nối tư vấn AI'),
                   style: GoogleFonts.inter(
-                    fontSize: 13,
+                    fontSize: Responsive.font(context, 13),
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF991B1B),
                   ),
@@ -1201,26 +1256,26 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: Responsive.s(context, 6)),
           Text(
             message,
             style: GoogleFonts.inter(
-              fontSize: 12,
+              fontSize: Responsive.font(context, 12),
               color: const Color(0xFF991B1B),
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: Responsive.s(context, 8)),
           Text(
             hint,
             style: GoogleFonts.inter(
-              fontSize: 12,
+              fontSize: Responsive.font(context, 12),
               fontStyle: FontStyle.italic,
               color: const Color(0xFF7F1D1D),
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: Responsive.s(context, 10)),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -1230,16 +1285,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     : () => _sendQuickConsult(mode: _currentMode),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF991B1B),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  minimumSize: const Size(0, 32),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Responsive.s(context, 12),
+                    vertical: Responsive.s(context, 6),
+                  ),
+                  minimumSize: Size(0, Responsive.s(context, 32)),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                icon: const Icon(Icons.refresh_rounded, size: 16),
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  size: Responsive.s(context, 16),
+                ),
                 label: Text(
                   'Thử lại',
                   style: GoogleFonts.inter(
-                    fontSize: 12,
+                    fontSize: Responsive.font(context, 12),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1254,20 +1314,26 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildEmptyState({required IconData icon, required String text}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Responsive.s(context, 20)),
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          Responsive.s(context, 12),
+        ),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 32, color: const Color(0xFF9CA3AF)),
-          const SizedBox(height: 8),
+          Icon(
+            icon,
+            size: Responsive.s(context, 32),
+            color: const Color(0xFF9CA3AF),
+          ),
+          SizedBox(height: Responsive.s(context, 8)),
           Text(
             text,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              fontSize: 12,
+              fontSize: Responsive.font(context, 12),
               color: textGray,
               height: 1.4,
             ),
@@ -1277,7 +1343,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget hỗ trợ tạo Option Box (Học / Làm)
   Widget _buildActionOptionBox({
     required String title,
     required String subtitle,
@@ -1288,34 +1353,45 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(Responsive.s(context, 12)),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: Responsive.s(context, 10),
+          vertical: Responsive.s(context, 10),
+        ),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 12),
+          ),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(Responsive.s(context, 8)),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 8),
+                ),
               ),
               child: isLoading
                   ? SizedBox(
-                      width: 18,
-                      height: 18,
+                      width: Responsive.s(context, 18),
+                      height: Responsive.s(context, 18),
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
                     )
-                  : Icon(icon, color: color, size: 18),
+                  : Icon(
+                      icon,
+                      color: color,
+                      size: Responsive.s(context, 18),
+                    ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: Responsive.s(context, 8)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1323,7 +1399,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     title,
                     style: GoogleFonts.outfit(
-                      fontSize: 13,
+                      fontSize: Responsive.font(context, 13),
                       fontWeight: FontWeight.bold,
                       color: textDark,
                     ),
@@ -1332,7 +1408,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 10, color: textGray),
+                    style: GoogleFonts.inter(
+                      fontSize: Responsive.font(context, 10),
+                      color: textGray,
+                    ),
                   ),
                 ],
               ),
@@ -1351,10 +1430,12 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool isCompleted,
   }) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(Responsive.s(context, 18)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(
+          Responsive.s(context, 20),
+        ),
         border: Border.all(
           color: isCompleted
               ? accentColor.withValues(alpha: 0.5)
@@ -1377,39 +1458,45 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(Responsive.s(context, 8)),
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 12),
+                  ),
                 ),
-                child: Icon(icon, color: accentColor, size: 24),
+                child: Icon(
+                  icon,
+                  color: accentColor,
+                  size: Responsive.s(context, 24),
+                ),
               ),
               if (isCompleted)
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
                   color: Colors.green,
-                  size: 20,
+                  size: Responsive.s(context, 20),
                 ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: Responsive.s(context, 14)),
           Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.outfit(
-              fontSize: 15,
+              fontSize: Responsive.font(context, 15),
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1F2937),
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: Responsive.s(context, 6)),
           Text(
             description,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-              fontSize: 11,
+              fontSize: Responsive.font(context, 11),
               color: const Color(0xFF6B7280),
               height: 1.3,
             ),

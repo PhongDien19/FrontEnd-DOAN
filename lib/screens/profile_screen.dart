@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
+import '../utils/responsive.dart';
 import 'test_history_screen.dart';
 import 'home_screen.dart';
 
@@ -83,15 +84,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isEditing = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cập nhật hồ sơ thành công!'),
+          SnackBar(
+            content: Text(
+              'Cập nhật hồ sơ thành công!',
+              style: TextStyle(fontSize: Responsive.font(context, 14)),
+            ),
             backgroundColor: Colors.green,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(res['message'] ?? 'Lỗi cập nhật. Vui lòng thử lại!'),
+            content: Text(
+              res['message'] ?? 'Lỗi cập nhật. Vui lòng thử lại!',
+              style: TextStyle(fontSize: Responsive.font(context, 14)),
+            ),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -106,18 +113,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(
+              Responsive.s(context, 20),
+            ),
           ),
           title: Text(
             'Đăng xuất',
             style: GoogleFonts.outfit(
               fontWeight: FontWeight.bold,
+              fontSize: Responsive.font(context, 18),
               color: const Color(0xFF1F2937),
             ),
           ),
           content: Text(
             'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng không?',
-            style: GoogleFonts.inter(color: const Color(0xFF4B5563)),
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 14),
+              color: const Color(0xFF4B5563),
+            ),
           ),
           actions: [
             TextButton(
@@ -127,6 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: GoogleFonts.inter(
                   color: const Color(0xFF6B7280),
                   fontWeight: FontWeight.w600,
+                  fontSize: Responsive.font(context, 14),
                 ),
               ),
             ),
@@ -137,6 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: GoogleFonts.inter(
                   color: const Color(0xFFEF4444),
                   fontWeight: FontWeight.bold,
+                  fontSize: Responsive.font(context, 14),
                 ),
               ),
             ),
@@ -168,11 +183,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: Stack(
         children: [
           Positioned(
-            top: -50,
-            right: -50,
+            top: -Responsive.s(context, 50),
+            right: -Responsive.s(context, 50),
             child: Container(
-              width: 250,
-              height: 250,
+              width: Responsive.s(context, 250),
+              height: Responsive.s(context, 250),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: const Color(0xFFF59E0B).withValues(alpha: 0.06),
@@ -182,97 +197,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(Responsive.s(context, 24)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      auth.isAuthenticated
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_back_rounded,
-                                    color: Color(0xFF1F2937),
-                                  ),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                                const SizedBox(width: 48),
-                              ],
-                            )
-                          : IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back_rounded,
-                                color: Color(0xFF1F2937),
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                      Text(
-                        'Hồ Sơ & Lịch Sử',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      IconButton(
+                        icon: Icon(
+                          Icons.arrow_back_rounded,
                           color: const Color(0xFF1F2937),
+                          size: Responsive.s(context, 24),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      SizedBox(width: Responsive.s(context, 8)),
+                      Expanded(
+                        child: Text(
+                          'Hồ Sơ & Lịch Sử',
+                          style: GoogleFonts.outfit(
+                            fontSize: Responsive.font(context, 18),
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1F2937),
+                          ),
                         ),
                       ),
-                      auth.isAuthenticated
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    _isEditing
-                                        ? Icons.close_rounded
-                                        : Icons.edit_rounded,
-                                    color: const Color(0xFF1F2937),
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (_isEditing) {
-                                        _initFields();
-                                      }
-                                      _isEditing = !_isEditing;
-                                    });
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.logout_rounded,
-                                    color: Color(0xFFEF4444),
-                                  ),
-                                  onPressed: _handleLogout,
-                                ),
-                              ],
-                            )
-                          : const SizedBox(width: 48),
+                      if (auth.isAuthenticated) ...[
+                        IconButton(
+                          icon: Icon(
+                            _isEditing ? Icons.close_rounded : Icons.edit_rounded,
+                            color: const Color(0xFF1F2937),
+                            size: Responsive.s(context, 24),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              if (_isEditing) {
+                                _initFields();
+                              }
+                              _isEditing = !_isEditing;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.logout_rounded,
+                            color: const Color(0xFFEF4444),
+                            size: Responsive.s(context, 24),
+                          ),
+                          onPressed: _handleLogout,
+                        ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: Responsive.s(context, 28)),
 
                   Center(
                     child: Column(
                       children: [
                         CircleAvatar(
-                          radius: 40,
+                          radius: Responsive.s(context, 40),
                           backgroundColor: const Color(
                             0xFFF59E0B,
                           ).withValues(alpha: 0.1),
-                          child: const Icon(
+                          child: Icon(
                             Icons.person_rounded,
-                            size: 40,
-                            color: Color(0xFFF59E0B),
+                            size: Responsive.s(context, 40),
+                            color: const Color(0xFFF59E0B),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: Responsive.s(context, 16)),
                         Text(
                           auth.fullName.isNotEmpty
                               ? auth.fullName
                               : 'Thành viên',
                           style: GoogleFonts.outfit(
-                            fontSize: 22,
+                            fontSize: Responsive.font(context, 22),
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF1F2937),
                           ),
@@ -280,14 +279,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text(
                           auth.currentUser?['email'] ?? '',
                           style: GoogleFonts.inter(
-                            fontSize: 13,
+                            fontSize: Responsive.font(context, 13),
                             color: const Color(0xFF6B7280),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  SizedBox(height: Responsive.s(context, 36)),
 
                   Form(
                     key: _formKey,
@@ -300,52 +299,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           enabled: _isEditing,
                           icon: Icons.person_outline_rounded,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: Responsive.s(context, 16)),
                         _buildInputField(
                           label: 'Công việc mục tiêu / Ngành mong muốn',
                           controller: _targetJobController,
                           enabled: _isEditing,
                           icon: Icons.work_outline_rounded,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: Responsive.s(context, 16)),
                         if (_isEditing)
                           DropdownButtonFormField<String>(
                             initialValue: _educationLevel,
-                            style: const TextStyle(color: Color(0xFF1F2937)),
+                            style: TextStyle(
+                              color: const Color(0xFF1F2937),
+                              fontSize: Responsive.font(context, 14),
+                            ),
                             dropdownColor: Colors.white,
                             decoration: InputDecoration(
                               labelText: 'Trình độ học vấn',
-                              labelStyle: const TextStyle(
-                                color: Color(0xFF6B7280),
-                                fontSize: 13,
+                              labelStyle: TextStyle(
+                                color: const Color(0xFF6B7280),
+                                fontSize: Responsive.font(context, 13),
                               ),
-                              prefixIcon: const Icon(
+                              prefixIcon: Icon(
                                 Icons.school_outlined,
-                                color: Color(0xFF9CA3AF),
+                                color: const Color(0xFF9CA3AF),
+                                size: Responsive.s(context, 22),
                               ),
                               filled: true,
                               fillColor: Colors.white,
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(
+                                  Responsive.s(context, 16),
+                                ),
                                 borderSide: const BorderSide(
                                   color: Color(0xFFE5E7EB),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(
+                                  Responsive.s(context, 16),
+                                ),
                                 borderSide: const BorderSide(
                                   color: Color(0xFFF59E0B),
                                 ),
                               ),
                             ),
-                            items: ['Cấp 2', 'Cấp 3', 'Đại học', 'Sau Đại học']
-                                .map(
-                                  (lvl) => DropdownMenuItem(
-                                    value: lvl,
-                                    child: Text(lvl),
+                            items: [
+                              'Cấp 2',
+                              'Cấp 3',
+                              'Đại học',
+                              'Sau Đại học',
+                            ].map(
+                              (lvl) => DropdownMenuItem(
+                                value: lvl,
+                                child: Text(
+                                  lvl,
+                                  style: TextStyle(
+                                    fontSize: Responsive.font(context, 14),
                                   ),
-                                )
-                                .toList(),
+                                ),
+                              ),
+                            ).toList(),
                             onChanged: (val) {
                               if (val != null) {
                                 setState(() => _educationLevel = val);
@@ -361,7 +376,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             enabled: false,
                             icon: Icons.school_outlined,
                           ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: Responsive.s(context, 16)),
                         _buildInputField(
                           label: 'Sở thích & Điểm mạnh',
                           controller: _hobbyController,
@@ -369,14 +384,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           icon: Icons.favorite_border_rounded,
                         ),
                         if (_isEditing) ...[
-                          const SizedBox(height: 24),
+                          SizedBox(height: Responsive.s(context, 24)),
                           ElevatedButton(
                             onPressed: _saveProfile,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFF59E0B),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.symmetric(
+                                vertical: Responsive.s(context, 16),
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(
+                                  Responsive.s(context, 16),
+                                ),
                               ),
                               elevation: 0,
                             ),
@@ -384,6 +403,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               'Lưu thay đổi',
                               style: GoogleFonts.outfit(
                                 fontWeight: FontWeight.bold,
+                                fontSize: Responsive.font(context, 16),
                                 color: Colors.white,
                               ),
                             ),
@@ -392,7 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  SizedBox(height: Responsive.s(context, 36)),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -400,7 +420,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         'Lịch Sử Làm Bài',
                         style: GoogleFonts.outfit(
-                          fontSize: 18,
+                          fontSize: Responsive.font(context, 18),
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1F2937),
                         ),
@@ -409,13 +429,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text(
                           '${_history.length} bài đã làm',
                           style: GoogleFonts.inter(
-                            fontSize: 12,
+                            fontSize: Responsive.font(context, 12),
                             color: const Color(0xFF6B7280),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: Responsive.s(context, 16)),
 
                   _buildHistoryList(),
                 ],
@@ -437,24 +457,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
       controller: controller,
       enabled: enabled,
       style: TextStyle(
-        color: enabled ? const Color(0xFF1F2937) : const Color(0xFF4B5563),
+        color: enabled
+            ? const Color(0xFF1F2937)
+            : const Color(0xFF4B5563),
+        fontSize: Responsive.font(context, 14),
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF9CA3AF)),
+        labelStyle: TextStyle(
+          color: const Color(0xFF6B7280),
+          fontSize: Responsive.font(context, 13),
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: const Color(0xFF9CA3AF),
+          size: Responsive.s(context, 22),
+        ),
         filled: true,
         fillColor: enabled ? Colors.white : const Color(0xFFF3F4F6),
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 16),
+          ),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 16),
+          ),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 16),
+          ),
           borderSide: const BorderSide(color: Color(0xFFF59E0B)),
         ),
       ),
@@ -479,10 +515,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHistoryList() {
     if (_isLoadingHistory) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24.0),
-          child: CircularProgressIndicator(
+          padding: EdgeInsets.symmetric(vertical: Responsive.s(context, 24)),
+          child: const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
           ),
         ),
@@ -491,24 +527,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (_history.isEmpty) {
       return Container(
-        padding: const EdgeInsets.symmetric(vertical: 32),
+        padding: EdgeInsets.symmetric(vertical: Responsive.s(context, 32)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(
+            Responsive.s(context, 20),
+          ),
           border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.history_toggle_off_rounded,
-              size: 40,
-              color: Color(0xFF9CA3AF),
+              size: Responsive.s(context, 40),
+              color: const Color(0xFF9CA3AF),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: Responsive.s(context, 12)),
             Text(
               'Chưa có lịch sử làm bài',
               style: GoogleFonts.outfit(
-                fontSize: 14,
+                fontSize: Responsive.font(context, 14),
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF6B7280),
               ),
@@ -550,10 +588,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : null;
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: EdgeInsets.only(
+                bottom: Responsive.s(context, 12),
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 16),
+                ),
                 border: Border.all(color: const Color(0xFFE5E7EB)),
                 boxShadow: [
                   BoxShadow(
@@ -564,46 +606,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: Responsive.s(context, 16),
+                  vertical: Responsive.s(context, 8),
                 ),
                 leading: CircleAvatar(
                   backgroundColor: const Color(
                     0xFFF59E0B,
                   ).withValues(alpha: 0.1),
-                  child: const Icon(
+                  child: Icon(
                     Icons.assessment_rounded,
-                    color: Color(0xFFF59E0B),
+                    color: const Color(0xFFF59E0B),
+                    size: Responsive.s(context, 22),
                   ),
                 ),
                 title: Text(
                   testName,
                   style: GoogleFonts.outfit(
-                    fontSize: 14,
+                    fontSize: Responsive.font(context, 14),
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF1F2937),
                   ),
                 ),
                 subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
+                  padding: EdgeInsets.only(
+                    top: Responsive.s(context, 4),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '$questionsCount câu hỏi • ${isCompleted ? 'Đã hoàn thành' : 'Chưa hoàn thành'}',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: Responsive.font(context, 11),
                           color: isCompleted
                               ? Colors.green
                               : Colors.amber.shade700,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: Responsive.s(context, 4)),
                       Text(
                         'Ngày làm: $dateStr',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: Responsive.font(context, 11),
                           color: const Color(0xFF6B7280),
                         ),
                       ),
@@ -615,22 +660,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     if (score != null) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Responsive.s(context, 8),
+                          vertical: Responsive.s(context, 4),
                         ),
                         decoration: BoxDecoration(
-                          color:
-                              (score > 3
-                                      ? const Color(0xFF10B981)
-                                      : const Color(0xFFF59E0B))
-                                  .withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
+                          color: (score > 3
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFF59E0B))
+                              .withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 8),
+                          ),
                         ),
                         child: Text(
                           score.toStringAsFixed(1),
                           style: GoogleFonts.inter(
-                            fontSize: 12,
+                            fontSize: Responsive.font(context, 12),
                             fontWeight: FontWeight.bold,
                             color: score > 3
                                 ? const Color(0xFF10B981)
@@ -638,31 +684,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: Responsive.s(context, 8)),
                     ],
-                    const Icon(
+                    Icon(
                       Icons.chevron_right_rounded,
-                      color: Color(0xFF9CA3AF),
+                      color: const Color(0xFF9CA3AF),
+                      size: Responsive.s(context, 24),
                     ),
                   ],
                 ),
-                // THAY ĐỔI: Nhấn vào item sẽ chuyển ngay sang màn hình TestHistoryScreen và mở bài test này
                 onTap: () {
                   final auth = Provider.of<AuthProvider>(
                     context,
                     listen: false,
                   );
                   if (auth.userId != null) {
-                    final edu = auth.userProfile?['educationLevel']?.toString().toLowerCase() ?? '';
-                    final isStudent = edu.contains('học sinh') || edu.contains('thpt') || edu.contains('thcs');
+                    final edu = auth
+                            .userProfile?['educationLevel']
+                            ?.toString()
+                            .toLowerCase() ??
+                        '';
+                    final isStudent =
+                        edu.contains('học sinh') ||
+                        edu.contains('thpt') ||
+                        edu.contains('thcs');
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => TestHistoryScreen(
                           userId: auth.userId!,
                           userRole: isStudent ? 'student' : 'worker',
-                          initialSessionId: session['sessionId']?.toString(),
-                          educationLevel: session['educationLevel']?.toString() ?? auth.userProfile?['educationLevel'],
+                          initialSessionId:
+                              session['sessionId']?.toString(),
+                          educationLevel: session['educationLevel']
+                                  ?.toString() ??
+                              auth.userProfile?['educationLevel'],
                         ),
                       ),
                     );
@@ -673,36 +729,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
           },
         ),
         if (_history.length > 3) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: Responsive.s(context, 8)),
           OutlinedButton(
             onPressed: () {
-                final auth = Provider.of<AuthProvider>(context, listen: false);
-                if (auth.userId != null) {
-                  final edu = auth.userProfile?['educationLevel']?.toString().toLowerCase() ?? '';
-                  final isStudent = edu.contains('học sinh') || edu.contains('thpt') || edu.contains('thcs');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => TestHistoryScreen(
-                        userId: auth.userId!,
-                        userRole: isStudent ? 'student' : 'worker',
-                        educationLevel: auth.userProfile?['educationLevel'],
-                      ),
+              final auth = Provider.of<AuthProvider>(
+                context,
+                listen: false,
+              );
+              if (auth.userId != null) {
+                final edu = auth.userProfile?['educationLevel']
+                        ?.toString()
+                        .toLowerCase() ??
+                    '';
+                final isStudent = edu.contains('học sinh') ||
+                    edu.contains('thpt') ||
+                    edu.contains('thcs');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TestHistoryScreen(
+                      userId: auth.userId!,
+                      userRole: isStudent ? 'student' : 'worker',
+                      educationLevel: auth.userProfile?['educationLevel'],
                     ),
-                  );
-                }
+                  ),
+                );
+              }
             },
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: EdgeInsets.symmetric(
+                vertical: Responsive.s(context, 14),
+              ),
               side: const BorderSide(color: Color(0xFFF59E0B)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 14),
+                ),
               ),
             ),
             child: Text(
               'Xem tất cả lịch sử',
               style: GoogleFonts.outfit(
-                fontSize: 14,
+                fontSize: Responsive.font(context, 14),
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFFF59E0B),
               ),
