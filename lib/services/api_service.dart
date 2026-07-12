@@ -83,7 +83,7 @@ class ApiService {
   /// Kiểm tra bằng lệnh: `ipconfig` (Windows) hoặc `ifconfig` (macOS/Linux).
   
   //static const String devLanIp = '192.168.137.1'; // IP chạy máy ảo
-  static const String devLanIp = '192.168.2.16'; //IP chạy máy thật
+  static const String devLanIp = '192.168.1.2'; //IP chạy máy thật
 
 
   /// Xác định base URL tuỳ theo nền tảng đang chạy:
