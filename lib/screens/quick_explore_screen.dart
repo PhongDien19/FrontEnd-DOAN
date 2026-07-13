@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_provider.dart';
 import '../services/api_service.dart';
 import '../utils/responsive.dart';
@@ -88,6 +89,94 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     'Biên phiên dịch',
     'Giáo viên / Giảng viên',
   ];
+
+  final Map<String, List<String>> _positionsByIndustry = {
+    'Công nghệ thông tin': [
+      'Lập trình viên (Developer)',
+      'Kỹ sư phần mềm',
+      'Data Analyst / Data Scientist',
+      'Quản lý dự án',
+    ],
+    'Marketing': [
+      'Chuyên viên Marketing',
+      'Content Creator',
+      'Thiết kế đồ họa',
+      'Chuyên viên kinh doanh',
+    ],
+    'Tài chính - Ngân hàng': [
+      'Kế toán viên',
+      'Data Analyst / Data Scientist',
+      'Chuyên viên kinh doanh',
+    ],
+    'Kế toán - Kiểm toán': [
+      'Kế toán viên',
+      'Chuyên viên kinh doanh',
+    ],
+    'Cơ khí - Tự động hóa': [
+      'Kỹ sư cơ khí',
+      'Kỹ sư điện',
+      'Quản lý dự án',
+    ],
+    'Điện - Điện tử': [
+      'Kỹ sư điện',
+      'Kỹ sư phần mềm',
+      'Quản lý dự án',
+    ],
+    'Xây dựng': [
+      'Quản lý dự án',
+      'Kỹ sư cơ khí',
+    ],
+    'Y tế - Dược phẩm': [
+      'Chuyên viên kinh doanh',
+      'Quản lý dự án',
+    ],
+    'Giáo dục': [
+      'Giáo viên / Giảng viên',
+      'Chuyên viên nhân sự',
+    ],
+    'Logistics': [
+      'Chuyên viên kinh doanh',
+      'Quản lý dự án',
+    ],
+    'Du lịch - Khách sạn': [
+      'Chuyên viên kinh doanh',
+      'Biên phiên dịch',
+    ],
+    'Thiết kế - Sáng tạo': [
+      'Thiết kế đồ họa',
+      'Content Creator',
+      'Chuyên viên Marketing',
+    ],
+    'Nhân sự': [
+      'Chuyên viên nhân sự',
+      'Quản lý dự án',
+    ],
+    'Kinh doanh - Bán hàng': [
+      'Chuyên viên kinh doanh',
+      'Chuyên viên Marketing',
+      'Quản lý dự án',
+    ],
+    'Truyền thông': [
+      'Content Creator',
+      'Chuyên viên Marketing',
+      'Thiết kế đồ họa',
+      'Biên phiên dịch',
+    ],
+    'Luật - Pháp lý': [
+      'Chuyên viên nhân sự',
+      'Quản lý dự án',
+    ],
+  };
+
+  List<String> get _filteredSchoolPositions {
+    if (_selectedIndustry == null) return _positions;
+    return _positionsByIndustry[_selectedIndustry!] ?? _positions;
+  }
+
+  List<String> get _filteredJobPositions {
+    if (_selectedJobIndustry == null) return _positions;
+    return _positionsByIndustry[_selectedJobIndustry!] ?? _positions;
+  }
 
   final List<String> _locations = [
     'Hà Nội',
@@ -318,7 +407,10 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             icon: Icons.category_outlined,
             value: _selectedIndustry,
             items: _industries,
-            onChanged: (v) => setState(() => _selectedIndustry = v),
+            onChanged: (v) => setState(() {
+              _selectedIndustry = v;
+              _selectedPosition = null;
+            }),
           ),
           SizedBox(height: Responsive.s(context, 14)),
           _buildDropdownField(
@@ -333,7 +425,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             label: 'Vị trí công việc mong muốn',
             icon: Icons.work_outline_rounded,
             value: _selectedPosition,
-            items: _positions,
+            items: _filteredSchoolPositions,
             onChanged: (v) => setState(() => _selectedPosition = v),
           ),
           SizedBox(height: Responsive.s(context, 24)),
@@ -376,14 +468,17 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             icon: Icons.category_outlined,
             value: _selectedJobIndustry,
             items: _industries,
-            onChanged: (v) => setState(() => _selectedJobIndustry = v),
+            onChanged: (v) => setState(() {
+              _selectedJobIndustry = v;
+              _selectedJobPosition = null;
+            }),
           ),
           SizedBox(height: Responsive.s(context, 14)),
           _buildDropdownField(
             label: 'Vị trí công việc',
             icon: Icons.work_outline_rounded,
             value: _selectedJobPosition,
-            items: _positions,
+            items: _filteredJobPositions,
             onChanged: (v) => setState(() => _selectedJobPosition = v),
           ),
           SizedBox(height: Responsive.s(context, 14)),
@@ -1042,36 +1137,632 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           if (_structured != null) ...[
             if (_structured!['schools'] != null && _structured!['schools'] is List)
               ...(_structured!['schools'] as List).map((s) {
-                final m = s is Map<String, dynamic> ? s : {};
-                return Padding(
-                  padding: EdgeInsets.only(top: Responsive.s(context, 8)),
-                  child: Text(
-                    '• ${m['schoolName'] ?? m['name'] ?? ''}',
-                    style: GoogleFonts.inter(
-                      fontSize: Responsive.font(context, 13),
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                );
+                final m = (s is Map<String, dynamic>)
+                    ? s
+                    : (s is Map) ? Map<String, dynamic>.from(s) : <String, dynamic>{};
+                return _buildSchoolCard(m, color);
               }),
             if (_structured!['companies'] != null &&
                 _structured!['companies'] is List)
               ...(_structured!['companies'] as List).map((c) {
-                final m = c is Map<String, dynamic> ? c : {};
-                return Padding(
-                  padding: EdgeInsets.only(top: Responsive.s(context, 8)),
-                  child: Text(
-                    '• ${m['companyName'] ?? m['name'] ?? ''}',
-                    style: GoogleFonts.inter(
-                      fontSize: Responsive.font(context, 13),
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                );
+                final m = (c is Map<String, dynamic>)
+                    ? c
+                    : (c is Map) ? Map<String, dynamic>.from(c) : <String, dynamic>{};
+                return _buildCompanyCard(m, color);
               }),
           ],
         ],
       ),
     );
   }
+
+  Widget _buildSchoolCard(Map<String, dynamic> m, Color accent) {
+    final name = (m['schoolName'] ?? m['name'] ?? 'Trường').toString();
+    final majors = (m['majors'] ?? m['specializations'] ?? m['nganh'])
+            is List
+        ? List<String>.from(m['majors'] ?? m['specializations'] ?? m['nganh'])
+        : <String>[];
+    final reason = m['reason'] ?? m['lyDo'] ?? m['note'];
+    final link = (m['website'] ?? m['url'] ?? m['link'])?.toString();
+    final location = m['location'] ?? m['diaDiem'];
+
+    final benchmark = _extractBenchmarkScores(m);
+    final hasBenchmark = benchmark.isNotEmpty;
+
+    return Container(
+      margin: EdgeInsets.only(top: Responsive.s(context, 10)),
+      padding: EdgeInsets.all(Responsive.s(context, 14)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, accent.withValues(alpha: 0.04)],
+        ),
+        borderRadius: BorderRadius.circular(Responsive.s(context, 14)),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: Responsive.s(context, 44),
+                height: Responsive.s(context, 44),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [accent, accent.withValues(alpha: 0.7)],
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 12),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    name.isNotEmpty ? name.characters.first.toUpperCase() : 'T',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.font(context, 18),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: Responsive.s(context, 12)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.outfit(
+                        fontSize: Responsive.font(context, 15),
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    if (location != null &&
+                        location.toString().isNotEmpty) ...[
+                      SizedBox(height: Responsive.s(context, 2)),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: Responsive.s(context, 13),
+                            color: const Color(0xFF6B7280),
+                          ),
+                          SizedBox(width: Responsive.s(context, 3)),
+                          Expanded(
+                            child: Text(
+                              location.toString(),
+                              style: GoogleFonts.inter(
+                                fontSize: Responsive.font(context, 12),
+                                color: const Color(0xFF6B7280),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (hasBenchmark) ...[
+            SizedBox(height: Responsive.s(context, 12)),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.s(context, 12),
+                vertical: Responsive.s(context, 10),
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F9FF),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 10),
+                ),
+                border: Border.all(color: const Color(0xFFBAE6FD)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.bar_chart_rounded,
+                        size: Responsive.s(context, 14),
+                        color: const Color(0xFF0369A1),
+                      ),
+                      SizedBox(width: Responsive.s(context, 6)),
+                      Text(
+                        'Điểm chuẩn 2 năm gần nhất',
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 12),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0369A1),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: Responsive.s(context, 8)),
+                  Row(
+                    children: benchmark.map((entry) {
+                      return Expanded(
+                        child: _buildBenchmarkCell(
+                          year: entry.year,
+                          score: entry.score,
+                          major: entry.major,
+                          accent: accent,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (majors.isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 10)),
+            Wrap(
+              spacing: Responsive.s(context, 6),
+              runSpacing: Responsive.s(context, 6),
+              children: majors
+                  .take(4)
+                  .map(
+                    (m) => Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.s(context, 10),
+                        vertical: Responsive.s(context, 4),
+                      ),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 8),
+                        ),
+                      ),
+                      child: Text(
+                        m,
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 11),
+                          fontWeight: FontWeight.w600,
+                          color: accent,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          if (reason != null && reason.toString().isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 8)),
+            Text(
+              reason.toString(),
+              style: GoogleFonts.inter(
+                fontSize: Responsive.font(context, 12),
+                color: const Color(0xFF4B5563),
+                height: 1.4,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (link != null && link.isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 10)),
+            InkWell(
+              onTap: () async {
+                final uri = Uri.tryParse(link);
+                if (uri != null && await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              borderRadius: BorderRadius.circular(
+                Responsive.s(context, 8),
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Responsive.s(context, 10),
+                  vertical: Responsive.s(context, 6),
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 8),
+                  ),
+                  border: Border.all(color: accent.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.school_rounded,
+                      size: Responsive.s(context, 14),
+                      color: accent,
+                    ),
+                    SizedBox(width: Responsive.s(context, 4)),
+                    Flexible(
+                      child: Text(
+                        'Mở trang trường: ${link.replaceFirst(RegExp(r'^https?://'), '')}',
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 11),
+                          color: accent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBenchmarkCell({
+    required String year,
+    required String score,
+    String? major,
+    required Color accent,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: Responsive.s(context, 3)),
+      padding: EdgeInsets.symmetric(
+        horizontal: Responsive.s(context, 10),
+        vertical: Responsive.s(context, 8),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+        border: Border.all(
+          color: accent.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Năm $year',
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 10),
+              color: const Color(0xFF6B7280),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: Responsive.s(context, 2)),
+          Text(
+            score,
+            style: GoogleFonts.outfit(
+              fontSize: Responsive.font(context, 16),
+              fontWeight: FontWeight.bold,
+              color: accent,
+            ),
+          ),
+          if (major != null && major.isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 2)),
+            Text(
+              major,
+              style: GoogleFonts.inter(
+                fontSize: Responsive.font(context, 9),
+                color: const Color(0xFF6B7280),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<_BenchmarkEntry> _extractBenchmarkScores(Map<String, dynamic> m) {
+    final dynamic raw =
+        m['benchmarkScores'] ?? m['diemChuan'] ?? m['cutoffScores'];
+
+    if (raw is Map) {
+      final entries = <_BenchmarkEntry>[];
+      final keys = raw.keys.toList();
+      final values = raw.values.toList();
+      for (int i = 0; i < keys.length && i < 2; i++) {
+        final dynamic v = values[i];
+        if (v is num) {
+          entries.add(
+            _BenchmarkEntry(
+              year: keys[i].toString(),
+              score: _formatScore(v.toDouble()),
+            ),
+          );
+        } else if (v is String) {
+          entries.add(
+            _BenchmarkEntry(year: keys[i].toString(), score: v),
+          );
+        } else if (v is Map) {
+          entries.add(
+            _BenchmarkEntry(
+              year: (v['year'] ?? keys[i]).toString(),
+              score: v['score']?.toString() ?? '',
+              major: v['major']?.toString(),
+            ),
+          );
+        }
+      }
+      return entries;
+    }
+
+    if (raw is List) {
+      return raw
+          .take(2)
+          .map((e) {
+            if (e is Map) {
+              return _BenchmarkEntry(
+                year: (e['year'] ?? e['nam'] ?? '').toString(),
+                score: (e['score'] ?? e['diem'] ?? '').toString(),
+                major: (e['major'] ?? e['nganh'])?.toString(),
+              );
+            }
+            if (e is String) return _BenchmarkEntry(year: '', score: e);
+            return null;
+          })
+          .whereType<_BenchmarkEntry>()
+          .where((e) => e.score.isNotEmpty)
+          .toList();
+    }
+
+    return <_BenchmarkEntry>[];
+  }
+
+  String _formatScore(double v) {
+    if (v == v.truncate()) return v.toInt().toString();
+    return v.toStringAsFixed(2);
+  }
+
+  Widget _buildCompanyCard(Map<String, dynamic> m, Color accent) {
+    final name = (m['companyName'] ?? m['name'] ?? 'Công ty').toString();
+    final positions =
+        (m['positions'] ?? m['jobs'] ?? m['viTri']) is List
+            ? List<String>.from(m['positions'] ?? m['jobs'] ?? m['viTri'])
+            : <String>[];
+    final reason = m['reason'] ?? m['lyDo'] ?? m['note'];
+    final link = m['website'] ?? m['url'] ?? m['link'];
+    final location = m['location'] ?? m['diaDiem'];
+    final salary = m['salary'] ?? m['luong'];
+
+    return Container(
+      margin: EdgeInsets.only(top: Responsive.s(context, 10)),
+      padding: EdgeInsets.all(Responsive.s(context, 14)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, accent.withValues(alpha: 0.04)],
+        ),
+        borderRadius: BorderRadius.circular(Responsive.s(context, 14)),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: Responsive.s(context, 44),
+                height: Responsive.s(context, 44),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [accent, accent.withValues(alpha: 0.7)],
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 12),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    name.isNotEmpty ? name.characters.first.toUpperCase() : 'C',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.font(context, 18),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: Responsive.s(context, 12)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.outfit(
+                        fontSize: Responsive.font(context, 15),
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    if (location != null &&
+                        location.toString().isNotEmpty) ...[
+                      SizedBox(height: Responsive.s(context, 2)),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: Responsive.s(context, 13),
+                            color: const Color(0xFF6B7280),
+                          ),
+                          SizedBox(width: Responsive.s(context, 3)),
+                          Expanded(
+                            child: Text(
+                              location.toString(),
+                              style: GoogleFonts.inter(
+                                fontSize: Responsive.font(context, 12),
+                                color: const Color(0xFF6B7280),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (positions.isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 10)),
+            Wrap(
+              spacing: Responsive.s(context, 6),
+              runSpacing: Responsive.s(context, 6),
+              children: positions
+                  .take(4)
+                  .map(
+                    (p) => Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.s(context, 10),
+                        vertical: Responsive.s(context, 4),
+                      ),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 8),
+                        ),
+                      ),
+                      child: Text(
+                        p,
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 11),
+                          fontWeight: FontWeight.w600,
+                          color: accent,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          if (salary != null && salary.toString().isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 8)),
+            Row(
+              children: [
+                Icon(
+                  Icons.payments_outlined,
+                  size: Responsive.s(context, 14),
+                  color: const Color(0xFF059669),
+                ),
+                SizedBox(width: Responsive.s(context, 4)),
+                Text(
+                  salary.toString(),
+                  style: GoogleFonts.inter(
+                    fontSize: Responsive.font(context, 12),
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF059669),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (reason != null && reason.toString().isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 8)),
+            Text(
+              reason.toString(),
+              style: GoogleFonts.inter(
+                fontSize: Responsive.font(context, 12),
+                color: const Color(0xFF4B5563),
+                height: 1.4,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (link != null && link.toString().isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 10)),
+            InkWell(
+              onTap: () async {
+                final uri = Uri.tryParse(link.toString());
+                if (uri != null && await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              borderRadius: BorderRadius.circular(
+                Responsive.s(context, 8),
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Responsive.s(context, 10),
+                  vertical: Responsive.s(context, 6),
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 8),
+                  ),
+                  border: Border.all(color: accent.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.open_in_new_rounded,
+                      size: Responsive.s(context, 14),
+                      color: accent,
+                    ),
+                    SizedBox(width: Responsive.s(context, 4)),
+                    Flexible(
+                      child: Text(
+                        link.toString().replaceFirst(RegExp(r'^https?://'), ''),
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 11),
+                          color: accent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BenchmarkEntry {
+  final String year;
+  final String score;
+  final String? major;
+
+  const _BenchmarkEntry({
+    required this.year,
+    required this.score,
+    this.major,
+  });
 }
