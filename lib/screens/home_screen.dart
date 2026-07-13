@@ -8,6 +8,7 @@ import '../utils/responsive.dart';
 import 'dynamic_survey_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
+import 'quick_explore_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,17 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _quickQuestionController = TextEditingController();
-  bool _isConsulting = false;
-
   String _currentMode = 'AI';
-
-  String? _consultResponse;
-  Map<String, dynamic>? _consultStructured;
-
-  bool _consultHasError = false;
-  String? _consultErrorMessage;
-  bool _consultIsNetworkError = false;
 
   final Color primaryOrange = const Color(0xFFF59E0B);
   final Color bgColor = const Color(0xFFFAFAFA);
@@ -36,104 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _quickQuestionController.dispose();
     super.dispose();
-  }
-
-  void _sendQuickConsult({String mode = 'AI'}) async {
-    final query = _quickQuestionController.text.trim();
-    if (query.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Vui lòng nhập tên ngành nghề hoặc câu hỏi của bạn!',
-            style: TextStyle(fontSize: Responsive.font(context, 14)),
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    if (!auth.isAuthenticated) {
-      await _promptLoginBeforeConsult(mode);
-      if (!mounted) return;
-      if (!auth.isAuthenticated) return;
-    }
-
-    setState(() {
-      _isConsulting = true;
-      _consultResponse = null;
-      _consultStructured = null;
-      _consultHasError = false;
-      _consultErrorMessage = null;
-      _consultIsNetworkError = false;
-      _currentMode = mode;
-    });
-
-    final userContext = {
-      'targetJob': auth.targetJob,
-      'educationLevel': auth.educationLevel,
-      'age': auth.userProfile?['age'] ?? 18,
-      'hobby': auth.hobby,
-      'requestType': mode,
-    };
-
-    final result = await ApiService.consultCareer({
-      'question': query,
-      'userContext': userContext,
-    });
-
-    setState(() {
-      _isConsulting = false;
-
-      final aiSuccess = result['success'] == true;
-      final aiFailed = result['success'] == false;
-      final hasAdvice = result['advice'] != null;
-      final advice = result['advice'];
-
-      if (aiSuccess && hasAdvice) {
-        if (advice is Map<String, dynamic>) {
-          _consultStructured = advice;
-          _consultResponse = (advice['summary'] is String)
-              ? advice['summary'] as String
-              : null;
-        } else if (advice is String) {
-          _consultResponse = advice;
-          _consultStructured = null;
-        } else {
-          _consultResponse = null;
-          _consultStructured = null;
-          _consultHasError = true;
-        }
-        _consultHasError = false;
-      } else if (aiFailed) {
-        _consultResponse = null;
-        _consultStructured = null;
-        _consultHasError = true;
-
-        final serverMsg = result['errorMessage'] ?? result['message'];
-        _consultErrorMessage = (serverMsg is String && serverMsg.isNotEmpty)
-            ? serverMsg
-            : 'Dịch vụ tư vấn AI tạm thời gián đoạn. Vui lòng thử lại sau giây lát!';
-
-        final msg = _consultErrorMessage!.toLowerCase();
-        _consultIsNetworkError =
-            !msg.contains('gemini') &&
-            !msg.contains('quota') &&
-            !msg.contains('ai ') &&
-            !msg.contains('tư vấn') &&
-            !msg.contains('gián đoạn');
-      } else {
-        _consultResponse = null;
-        _consultStructured = null;
-        _consultHasError = true;
-        _consultErrorMessage =
-            'Phản hồi từ máy chủ không hợp lệ. Vui lòng thử lại!';
-        _consultIsNetworkError = false;
-      }
-    });
   }
 
   Future<void> _promptLoginBeforeConsult(String mode) async {
@@ -480,232 +374,131 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: Responsive.s(context, 28)),
 
-                  Text(
-                    'Tìm Hiểu Hướng Nghiệp Nhanh',
-                    style: GoogleFonts.outfit(
-                      fontSize: Responsive.font(context, 18),
-                      fontWeight: FontWeight.bold,
-                      color: textDark,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.s(context, 12)),
                   Container(
-                    padding: EdgeInsets.all(Responsive.s(context, 16)),
+                    padding: EdgeInsets.all(Responsive.s(context, 24)),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(
-                        Responsive.s(context, 16),
+                        Responsive.s(context, 20),
                       ),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _quickQuestionController,
-                                style: TextStyle(
-                                  color: textDark,
-                                  fontSize: Responsive.font(context, 14),
-                                ),
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'Nhập ngành nghề (VD: IT, Marketing, Logistics)...',
-                                  hintStyle: TextStyle(
-                                    color: const Color(0xFF9CA3AF),
-                                    fontSize: Responsive.font(context, 13),
-                                  ),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    vertical: Responsive.s(context, 8),
-                                  ),
-                                ),
-                                onSubmitted: (_) =>
-                                    _sendQuickConsult(mode: 'AI'),
-                              ),
-                            ),
-                            IconButton(
-                              icon: _isConsulting && _currentMode == 'AI'
-                                  ? SizedBox(
-                                      width: Responsive.s(context, 18),
-                                      height: Responsive.s(context, 18),
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              primaryOrange,
-                                            ),
-                                      ),
-                                    )
-                                  : Icon(
-                                      Icons.send_rounded,
-                                      color: primaryOrange,
-                                      size: Responsive.s(context, 22),
-                                    ),
-                              onPressed: _isConsulting
-                                  ? null
-                                  : () => _sendQuickConsult(mode: 'AI'),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: Responsive.s(context, 12)),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildActionOptionBox(
-                                title: 'Học ở đâu?',
-                                subtitle: 'Các trường đào tạo',
-                                icon: Icons.school_outlined,
-                                color: const Color(0xFF3B82F6),
-                                isLoading:
-                                    _isConsulting && _currentMode == 'HOC',
-                                onTap: _isConsulting
-                                    ? null
-                                    : () => _sendQuickConsult(mode: 'HOC'),
-                              ),
-                            ),
-                            SizedBox(width: Responsive.s(context, 12)),
-                            Expanded(
-                              child: _buildActionOptionBox(
-                                title: 'Làm ở đâu?',
-                                subtitle: 'Công ty tuyển dụng',
-                                icon: Icons.work_outline_rounded,
-                                color: const Color(0xFF10B981),
-                                isLoading:
-                                    _isConsulting && _currentMode == 'LAM',
-                                onTap: _isConsulting
-                                    ? null
-                                    : () => _sendQuickConsult(mode: 'LAM'),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        if (_consultResponse != null ||
-                            _consultStructured != null ||
-                            _consultHasError) ...[
-                          Divider(
-                            color: const Color(0xFFE5E7EB),
-                            height: Responsive.s(context, 24),
+                        Text(
+                          'Tìm hiểu nhanh',
+                          style: GoogleFonts.outfit(
+                            fontSize: Responsive.font(context, 20),
+                            fontWeight: FontWeight.bold,
+                            color: textDark,
                           ),
-
-                          if (!_consultHasError)
-                            Row(
-                              children: [
-                                Icon(
-                                  _currentMode == 'HOC'
-                                      ? Icons.school
-                                      : (_currentMode == 'LAM'
-                                            ? Icons.work
-                                            : Icons.auto_awesome),
-                                  size: Responsive.s(context, 16),
-                                  color: primaryOrange,
-                                ),
-                                SizedBox(width: Responsive.s(context, 6)),
-                                Text(
-                                  _currentMode == 'HOC'
-                                      ? 'Danh Sách Trường Đào Tạo:'
-                                      : (_currentMode == 'LAM'
-                                            ? 'Công Ty & Nhu Cầu Tuyển Dụng:'
-                                            : 'AI Phản Hồi:'),
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.font(context, 14),
-                                    color: primaryOrange,
-                                  ),
-                                ),
-                              ],
+                        ),
+                        SizedBox(height: Responsive.s(context, 10)),
+                        Text(
+                          'Tra cứu nhanh thông tin ngành nghề, trường đào tạo và công ty tuyển dụng qua AI.',
+                          style: GoogleFonts.inter(
+                            fontSize: Responsive.font(context, 13),
+                            color: textGray,
+                            height: 1.4,
+                          ),
+                        ),
+                        SizedBox(height: Responsive.s(context, 16)),
+                        Container(
+                          padding: EdgeInsets.all(Responsive.s(context, 16)),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(
+                              Responsive.s(context, 16),
                             ),
-                          if (!_consultHasError)
-                            SizedBox(height: Responsive.s(context, 8)),
-
-                          if (_consultHasError)
-                            _buildErrorBox(
-                              title: _consultIsNetworkError
-                                  ? 'Mất kết nối tới máy chủ'
-                                  : 'Dịch vụ tư vấn AI tạm thời gián đoạn',
-                              message: _consultErrorMessage ??
-                                  'Không thể kết nối dịch vụ tư vấn AI. Vui lòng thử lại sau giây lát!',
-                            )
-                          else ...[
-                            if (_currentMode != 'AI' &&
-                                _consultResponse != null &&
-                                _consultResponse!.isNotEmpty)
-                              Container(
+                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'Bạn đang tìm hiểu trường đại học?',
+                                style: GoogleFonts.inter(
+                                  fontSize: Responsive.font(context, 13),
+                                  color: textDark,
+                                  height: 1.5,
+                                ),
+                              ),
+                              SizedBox(height: Responsive.s(context, 10)),
+                              Text(
+                                'Bạn đang muốn tìm ngành nghề phù hợp với bản thân?',
+                                style: GoogleFonts.inter(
+                                  fontSize: Responsive.font(context, 13),
+                                  color: textDark,
+                                  height: 1.5,
+                                ),
+                              ),
+                              SizedBox(height: Responsive.s(context, 10)),
+                              Text(
+                                'Bạn đang tìm kiếm công ty?',
+                                style: GoogleFonts.inter(
+                                  fontSize: Responsive.font(context, 13),
+                                  color: textDark,
+                                  height: 1.5,
+                                ),
+                              ),
+                              SizedBox(height: Responsive.s(context, 16)),
+                              SizedBox(
                                 width: double.infinity,
-                                padding: EdgeInsets.all(
-                                  Responsive.s(context, 12),
-                                ),
-                                margin: EdgeInsets.only(
-                                  bottom: Responsive.s(context, 12),
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFF7ED),
-                                  borderRadius: BorderRadius.circular(
-                                    Responsive.s(context, 12),
-                                  ),
-                                  border: Border.all(
-                                    color: primaryOrange.withValues(
-                                      alpha: 0.25,
+                                child: ElevatedButton(
+                                  onPressed: () => _openQuickExplore('AI'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: primaryOrange,
+                                    foregroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: Responsive.s(context, 14),
                                     ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        Responsive.s(context, 12),
+                                      ),
+                                    ),
+                                    elevation: 0,
                                   ),
-                                ),
-                                child: Text(
-                                  _consultResponse!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: Responsive.font(context, 13),
-                                    color: textDark,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ),
-
-                            if (_currentMode == 'HOC' &&
-                                _consultStructured != null)
-                              _buildSchoolList(_consultStructured!),
-
-                            if (_currentMode == 'LAM' &&
-                                _consultStructured != null)
-                              _buildCompanyList(_consultStructured!),
-
-                            if (_currentMode == 'AI' &&
-                                _consultResponse != null &&
-                                _consultStructured == null)
-                              Container(
-                                padding: EdgeInsets.all(
-                                  Responsive.s(context, 12),
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF3F4F6),
-                                  borderRadius: BorderRadius.circular(
-                                    Responsive.s(context, 12),
-                                  ),
-                                ),
-                                child: Text(
-                                  _consultResponse!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: Responsive.font(context, 13),
-                                    color: textGray,
-                                    height: 1.4,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Tìm hiểu',
+                                        style: GoogleFonts.outfit(
+                                          fontSize:
+                                              Responsive.font(context, 15),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width: Responsive.s(context, 8)),
+                                      Icon(
+                                        Icons.arrow_forward_rounded,
+                                        size: Responsive.s(context, 16),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                          ],
-                        ],
-                      ],
+                            ],
+                          ),
                     ),
+                  ],
+                  ),
                   ),
                   SizedBox(height: Responsive.s(context, 28)),
 
@@ -766,6 +559,23 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _openQuickExplore(String topic) async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (!auth.isAuthenticated) {
+      await _promptLoginBeforeConsult(topic);
+      if (!mounted) return;
+      if (!auth.isAuthenticated) return;
+    }
+
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => QuickExploreScreen(topic: topic),
       ),
     );
   }
@@ -1280,9 +1090,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton.icon(
-                onPressed: _isConsulting
-                    ? null
-                    : () => _sendQuickConsult(mode: _currentMode),
+                onPressed: null,
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF991B1B),
                   padding: EdgeInsets.symmetric(
