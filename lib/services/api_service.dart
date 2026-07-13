@@ -77,7 +77,7 @@ class ApiService {
   //
   // ⚠️ Khi test trên điện thoại thật: BẬT useAndroidEmulatorAlias = false
   //                                    và đảm bảo IP LAN bên dưới đúng với máy của bạn.
-  static const bool useAndroidEmulatorAlias = false;
+  static const bool useAndroidEmulatorAlias = true;
 
   /// IP LAN của máy chạy server Node.js (đổi nếu máy dev có IP khác).
   /// Kiểm tra bằng lệnh: `ipconfig` (Windows) hoặc `ifconfig` (macOS/Linux).
