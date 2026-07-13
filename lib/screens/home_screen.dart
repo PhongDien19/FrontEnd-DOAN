@@ -481,7 +481,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: Responsive.s(context, 28)),
 
                   Text(
-                    'Tư Vấn Hướng Nghiệp Nhanh',
+                    'Tìm Hiểu Hướng Nghiệp Nhanh',
                     style: GoogleFonts.outfit(
                       fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
