@@ -64,7 +64,7 @@ class MainApp extends StatelessWidget {
         final mq = MediaQuery.of(context);
         // Clamp text scaling for better IME compatibility (especially Vietnamese input),
         // while still respecting the user's preferred system text size.
-        final TextScaler? effectiveScaler =
+        final TextScaler effectiveScaler =
             mq.textScaler.clamp(minScaleFactor: 0.85, maxScaleFactor: 1.3);
         return MediaQuery(
           data: mq.copyWith(textScaler: effectiveScaler),

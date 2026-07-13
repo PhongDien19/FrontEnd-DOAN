@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_provider.dart';
-import '../services/api_service.dart';
 import '../utils/responsive.dart';
 import 'dynamic_survey_screen.dart';
 import 'login_screen.dart';
@@ -18,8 +17,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _currentMode = 'AI';
-
   final Color primaryOrange = const Color(0xFFF59E0B);
   final Color bgColor = const Color(0xFFFAFAFA);
   final Color textDark = const Color(0xFF1F2937);
@@ -31,8 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _promptLoginBeforeConsult(String mode) async {
-    _currentMode = mode;
-
+    // ignore: unused_local_variable
+    final _ = mode;
     final shouldLogin = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -580,6 +577,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSchoolList(Map<String, dynamic> data) {
     final raw = data['schools'];
     final schools = (raw is List)
@@ -765,6 +763,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildCompanyList(Map<String, dynamic> data) {
     final raw = data['companies'];
     final companies = (raw is List)
@@ -1016,6 +1015,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildErrorBox({required String message, String? title}) {
     final lowerMsg = message.toLowerCase();
     final isQuotaIssue = lowerMsg.contains('quota') ||
@@ -1151,6 +1151,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildActionOptionBox({
     required String title,
     required String subtitle,
