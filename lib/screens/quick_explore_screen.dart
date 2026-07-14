@@ -101,37 +101,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       if (!auth.isAuthenticated) return;
     }
 
-    String question;
-    String mode;
-    if (_tabController.index == 0) {
-      mode = 'HOC';
-      final parts = <String>[];
-      if (_industryController.text.trim().isNotEmpty) {
-        parts.add('ngành ${_industryController.text.trim()}');
-      }
-      if (_schoolController.text.trim().isNotEmpty) {
-        parts.add('trường ${_schoolController.text.trim()}');
-      }
-      if (_positionController.text.trim().isNotEmpty) {
-        parts.add('vị trí ${_positionController.text.trim()}');
-      }
-      question =
-          'Tư vấn cho tôi về ${parts.join(", ")}. Gợi ý các trường đào tạo phù hợp.';
-    } else {
-      mode = 'LAM';
-      final parts = <String>[];
-      if (_jobIndustryController.text.trim().isNotEmpty) {
-        parts.add('ngành ${_jobIndustryController.text.trim()}');
-      }
-      if (_jobPositionController.text.trim().isNotEmpty) {
-        parts.add('vị trí ${_jobPositionController.text.trim()}');
-      }
-      if (_locationController.text.trim().isNotEmpty) {
-        parts.add('khu vực ${_locationController.text.trim()}');
-      }
-      question =
-          'Tư vấn thị trường việc làm cho ${parts.join(", ")}. Gợi ý các công ty đang tuyển dụng.';
-    }
+    final mode = _tabController.index == 0 ? 'HOC' : 'LAM';
 
     setState(() {
       _isLoading = true;
