@@ -44,7 +44,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     'Du học Nhật Bản',
     'Du học Hàn Quốc',
   ];
-  List<String> _selectedProvinces = [];
+  final List<String> _selectedProvinces = [];
 
   bool _isLoading = false;
   String? _response;
@@ -1415,6 +1415,8 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
         ],
       ),
     );
+  }
+
   Widget _buildMajorCard(Map<String, dynamic> m, String schoolName, Color accent) {
     final majorName = (m['majorName'] ?? m['name'] ?? 'Ngành').toString();
     
