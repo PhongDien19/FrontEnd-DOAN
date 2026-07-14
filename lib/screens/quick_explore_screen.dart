@@ -23,11 +23,28 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   // Controllers for TextFields
   final TextEditingController _industryController = TextEditingController();
   final TextEditingController _schoolController = TextEditingController();
-  final TextEditingController _positionController = TextEditingController();
 
   final TextEditingController _jobIndustryController = TextEditingController();
   final TextEditingController _jobPositionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
+
+  // Khu vực cho tab Tìm trường & ngành (tương tự dynamic_survey_screen)
+  final List<String> _provinceOptions = [
+    'Hà Nội',
+    'TP. Hồ Chí Minh',
+    'Đà Nẵng',
+    'Hải Phòng',
+    'Cần Thơ',
+    'Bình Dương',
+    'Đồng Nai',
+    'Quảng Ninh',
+    'Thừa Thiên Huế',
+    'Du học Mỹ',
+    'Du học Úc',
+    'Du học Nhật Bản',
+    'Du học Hàn Quốc',
+  ];
+  List<String> _selectedProvinces = [];
 
   bool _isLoading = false;
   String? _response;
@@ -58,7 +75,6 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     _tabController.dispose();
     _industryController.dispose();
     _schoolController.dispose();
-    _positionController.dispose();
     _jobIndustryController.dispose();
     _jobPositionController.dispose();
     _locationController.dispose();
@@ -69,7 +85,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     if (_tabController.index == 0) {
       return _industryController.text.trim().isNotEmpty ||
           _schoolController.text.trim().isNotEmpty ||
-          _positionController.text.trim().isNotEmpty;
+          _selectedProvinces.isNotEmpty;
     } else {
       return _jobIndustryController.text.trim().isNotEmpty ||
           _jobPositionController.text.trim().isNotEmpty ||
@@ -115,8 +131,10 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       'mode': mode,
       'industry': _tabController.index == 0 ? _industryController.text.trim() : _jobIndustryController.text.trim(),
       'school': _tabController.index == 0 ? _schoolController.text.trim() : '',
-      'position': _tabController.index == 0 ? _positionController.text.trim() : _jobPositionController.text.trim(),
-      'location': _tabController.index == 0 ? '' : _locationController.text.trim(),
+      'position': _tabController.index == 0 ? '' : _jobPositionController.text.trim(),
+      'location': _tabController.index == 0 
+          ? (_selectedProvinces.isNotEmpty ? _selectedProvinces.join(', ') : '') 
+          : _locationController.text.trim(),
       'age': auth.userProfile?['age'] ?? 18,
     });
 
@@ -236,12 +254,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             hint: 'Nhập tên trường (ví dụ: Đại học Bách Khoa)',
           ),
           SizedBox(height: Responsive.s(context, 14)),
-          _buildInputField(
-            label: 'Vị trí công việc mong muốn',
-            icon: Icons.work_outline_rounded,
-            controller: _positionController,
-            hint: 'Nhập vị trí công việc (ví dụ: Lập trình viên)',
-          ),
+          _buildProvinceFilter(),
           SizedBox(height: Responsive.s(context, 24)),
           _buildSubmitButton(
             color: const Color(0xFF3B82F6),
@@ -376,6 +389,142 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildProvinceFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: Responsive.s(context, 4)),
+          child: Text(
+            'Khu vực mong muốn',
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 12),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF4B5563),
+            ),
+          ),
+        ),
+        SizedBox(height: Responsive.s(context, 8)),
+        Autocomplete<String>(
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            if (textEditingValue.text.isEmpty) {
+              return const Iterable<String>.empty();
+            }
+            return _provinceOptions.where((String option) {
+              final matchesSearch = option.toLowerCase().contains(
+                textEditingValue.text.toLowerCase(),
+              );
+              final notSelectedYet = !_selectedProvinces.contains(option);
+              return matchesSearch && notSelectedYet;
+            });
+          },
+          onSelected: (String selection) {
+            setState(() {
+              _selectedProvinces.add(selection);
+            });
+          },
+          fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+            return TextField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              style: GoogleFonts.inter(
+                fontSize: Responsive.font(context, 14),
+                color: const Color(0xFF1F2937),
+              ),
+              decoration: InputDecoration(
+                hintText: 'Chọn hoặc nhập khu vực',
+                hintStyle: GoogleFonts.inter(
+                  fontSize: Responsive.font(context, 14),
+                  color: const Color(0xFF9CA3AF),
+                ),
+                prefixIcon: Icon(
+                  Icons.location_on_outlined,
+                  size: Responsive.s(context, 18),
+                  color: _selectedProvinces.isNotEmpty
+                      ? const Color(0xFFF59E0B)
+                      : const Color(0xFF9CA3AF),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Responsive.s(context, 12)),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Responsive.s(context, 12)),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Responsive.s(context, 12)),
+                  borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: Responsive.s(context, 14),
+                  vertical: Responsive.s(context, 14),
+                ),
+              ),
+              onChanged: (text) {
+                setState(() {});
+              },
+            );
+          },
+        ),
+        if (_selectedProvinces.isNotEmpty) ...[
+          SizedBox(height: Responsive.s(context, 10)),
+          Wrap(
+            spacing: Responsive.s(context, 8),
+            runSpacing: Responsive.s(context, 8),
+            children: _selectedProvinces.map((province) {
+              return Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Responsive.s(context, 12),
+                  vertical: Responsive.s(context, 6),
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(Responsive.s(context, 20)),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: Responsive.s(context, 14),
+                      color: const Color(0xFFF59E0B),
+                    ),
+                    SizedBox(width: Responsive.s(context, 4)),
+                    Text(
+                      province,
+                      style: GoogleFonts.inter(
+                        fontSize: Responsive.font(context, 12),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFF59E0B),
+                      ),
+                    ),
+                    SizedBox(width: Responsive.s(context, 4)),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedProvinces.remove(province);
+                        });
+                      },
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: Responsive.s(context, 14),
+                        color: const Color(0xFFF59E0B),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ],
     );
   }
 
@@ -612,6 +761,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               ),
             ),
           if (_structured != null) ...[
+            if (_structured!['topMajors'] != null && _structured!['topMajors'] is List)
+              ...(_structured!['topMajors'] as List).map((major) {
+                final m = (major is Map<String, dynamic>)
+                    ? major
+                    : (major is Map) ? Map<String, dynamic>.from(major) : <String, dynamic>{};
+                return _buildMajorCard(m, _structured!['schoolName']?.toString() ?? '', color);
+              }),
             if (_structured!['schools'] != null && _structured!['schools'] is List)
               ...(_structured!['schools'] as List).map((s) {
                 final m = (s is Map<String, dynamic>)
@@ -947,8 +1103,23 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   }
 
   List<_BenchmarkEntry> _extractBenchmarkScores(Map<String, dynamic> m) {
-    final dynamic raw =
-        m['benchmarkScores'] ?? m['diemChuan'] ?? m['cutoffScores'];
+    // Kiểm tra format mới với benchmark2025, benchmark2024, benchmark2023
+    if (m['benchmark2025'] != null || m['benchmark2024'] != null || m['benchmark2023'] != null) {
+      final entries = <_BenchmarkEntry>[];
+      if (m['benchmark2025'] != null) {
+        entries.add(_BenchmarkEntry(year: '2025', score: m['benchmark2025'].toString()));
+      }
+      if (m['benchmark2024'] != null) {
+        entries.add(_BenchmarkEntry(year: '2024', score: m['benchmark2024'].toString()));
+      }
+      if (m['benchmark2023'] != null) {
+        entries.add(_BenchmarkEntry(year: '2023', score: m['benchmark2023'].toString()));
+      }
+      if (entries.isNotEmpty) return entries;
+    }
+
+    // Format cũ
+    final dynamic raw = m['benchmarkScores'] ?? m['diemChuan'] ?? m['cutoffScores'];
 
     if (raw is String) {
       final entries = <_BenchmarkEntry>[];
@@ -1238,6 +1409,174 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                     ),
                   ],
                 ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  Widget _buildMajorCard(Map<String, dynamic> m, String schoolName, Color accent) {
+    final majorName = (m['majorName'] ?? m['name'] ?? 'Ngành').toString();
+    
+    // Trích xuất điểm chuẩn
+    final benchmark2025 = m['benchmark2025']?.toString();
+    final benchmark2024 = m['benchmark2024']?.toString();
+    final benchmark2023 = m['benchmark2023']?.toString();
+    
+    return Container(
+      margin: EdgeInsets.only(top: Responsive.s(context, 10)),
+      padding: EdgeInsets.all(Responsive.s(context, 14)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, accent.withValues(alpha: 0.04)],
+        ),
+        borderRadius: BorderRadius.circular(Responsive.s(context, 14)),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: Responsive.s(context, 44),
+                height: Responsive.s(context, 44),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [accent, accent.withValues(alpha: 0.7)],
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 12),
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.school_outlined,
+                    color: Colors.white,
+                    size: Responsive.s(context, 22),
+                  ),
+                ),
+              ),
+              SizedBox(width: Responsive.s(context, 12)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      majorName,
+                      style: GoogleFonts.outfit(
+                        fontSize: Responsive.font(context, 15),
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    if (schoolName.isNotEmpty) ...[
+                      SizedBox(height: Responsive.s(context, 2)),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.account_balance_outlined,
+                            size: Responsive.s(context, 13),
+                            color: const Color(0xFF6B7280),
+                          ),
+                          SizedBox(width: Responsive.s(context, 3)),
+                          Expanded(
+                            child: Text(
+                              schoolName,
+                              style: GoogleFonts.inter(
+                                fontSize: Responsive.font(context, 12),
+                                color: const Color(0xFF6B7280),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (benchmark2025 != null || benchmark2024 != null || benchmark2023 != null) ...[
+            SizedBox(height: Responsive.s(context, 12)),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.s(context, 12),
+                vertical: Responsive.s(context, 10),
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F9FF),
+                borderRadius: BorderRadius.circular(
+                  Responsive.s(context, 10),
+                ),
+                border: Border.all(color: const Color(0xFFBAE6FD)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.bar_chart_rounded,
+                        size: Responsive.s(context, 14),
+                        color: const Color(0xFF0369A1),
+                      ),
+                      SizedBox(width: Responsive.s(context, 6)),
+                      Text(
+                        'Điểm chuẩn 3 năm gần nhất',
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 12),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0369A1),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: Responsive.s(context, 8)),
+                  Row(
+                    children: [
+                      if (benchmark2025 != null)
+                        Expanded(
+                          child: _buildBenchmarkCell(
+                            year: '2025',
+                            score: benchmark2025,
+                            accent: accent,
+                          ),
+                        ),
+                      if (benchmark2024 != null)
+                        Expanded(
+                          child: _buildBenchmarkCell(
+                            year: '2024',
+                            score: benchmark2024,
+                            accent: accent,
+                          ),
+                        ),
+                      if (benchmark2023 != null)
+                        Expanded(
+                          child: _buildBenchmarkCell(
+                            year: '2023',
+                            score: benchmark2023,
+                            accent: accent,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
