@@ -20,178 +20,20 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Tab 1: Tìm trường & ngành
-  String? _selectedIndustry;
-  String? _selectedSchool;
-  String? _selectedPosition;
+  // Controllers for TextFields
+  final TextEditingController _industryController = TextEditingController();
+  final TextEditingController _schoolController = TextEditingController();
+  final TextEditingController _positionController = TextEditingController();
 
-  // Tab 2: Thị trường việc làm
-  String? _selectedJobIndustry;
-  String? _selectedJobPosition;
-  String? _selectedLocation;
+  final TextEditingController _jobIndustryController = TextEditingController();
+  final TextEditingController _jobPositionController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   bool _isLoading = false;
   String? _response;
   Map<String, dynamic>? _structured;
   bool _hasError = false;
   String? _errorMessage;
-
-  // Mock data
-  final List<String> _industries = [
-    'Công nghệ thông tin',
-    'Marketing',
-    'Tài chính - Ngân hàng',
-    'Kế toán - Kiểm toán',
-    'Cơ khí - Tự động hóa',
-    'Điện - Điện tử',
-    'Xây dựng',
-    'Y tế - Dược phẩm',
-    'Giáo dục',
-    'Logistics',
-    'Du lịch - Khách sạn',
-    'Thiết kế - Sáng tạo',
-    'Nhân sự',
-    'Kinh doanh - Bán hàng',
-    'Truyền thông',
-    'Luật - Pháp lý',
-  ];
-
-  final List<String> _schools = [
-    'ĐH Bách Khoa Hà Nội',
-    'ĐH Quốc gia Hà Nội',
-    'ĐH Quốc gia TP.HCM',
-    'ĐH Kinh tế Quốc dân',
-    'ĐH Ngoại thương',
-    'ĐH FPT',
-    'ĐH Bách Khoa TP.HCM',
-    'ĐH Công nghệ - ĐHQG HN',
-    'ĐH Sư phạm Kỹ thuật HCM',
-    'ĐH Khoa học Tự nhiên',
-    'HV Bưu chính Viễn thông',
-    'ĐH Kinh tế TP.HCM (UEH)',
-    'ĐH Tôn Đức Thắng',
-    'ĐH RMIT Việt Nam',
-  ];
-
-  final List<String> _positions = [
-    'Lập trình viên (Developer)',
-    'Kỹ sư phần mềm',
-    'Data Analyst / Data Scientist',
-    'Chuyên viên Marketing',
-    'Quản lý dự án',
-    'Kế toán viên',
-    'Chuyên viên nhân sự',
-    'Thiết kế đồ họa',
-    'Kỹ sư cơ khí',
-    'Kỹ sư điện',
-    'Chuyên viên kinh doanh',
-    'Content Creator',
-    'Biên phiên dịch',
-    'Giáo viên / Giảng viên',
-  ];
-
-  final Map<String, List<String>> _positionsByIndustry = {
-    'Công nghệ thông tin': [
-      'Lập trình viên (Developer)',
-      'Kỹ sư phần mềm',
-      'Data Analyst / Data Scientist',
-      'Quản lý dự án',
-    ],
-    'Marketing': [
-      'Chuyên viên Marketing',
-      'Content Creator',
-      'Thiết kế đồ họa',
-      'Chuyên viên kinh doanh',
-    ],
-    'Tài chính - Ngân hàng': [
-      'Kế toán viên',
-      'Data Analyst / Data Scientist',
-      'Chuyên viên kinh doanh',
-    ],
-    'Kế toán - Kiểm toán': [
-      'Kế toán viên',
-      'Chuyên viên kinh doanh',
-    ],
-    'Cơ khí - Tự động hóa': [
-      'Kỹ sư cơ khí',
-      'Kỹ sư điện',
-      'Quản lý dự án',
-    ],
-    'Điện - Điện tử': [
-      'Kỹ sư điện',
-      'Kỹ sư phần mềm',
-      'Quản lý dự án',
-    ],
-    'Xây dựng': [
-      'Quản lý dự án',
-      'Kỹ sư cơ khí',
-    ],
-    'Y tế - Dược phẩm': [
-      'Chuyên viên kinh doanh',
-      'Quản lý dự án',
-    ],
-    'Giáo dục': [
-      'Giáo viên / Giảng viên',
-      'Chuyên viên nhân sự',
-    ],
-    'Logistics': [
-      'Chuyên viên kinh doanh',
-      'Quản lý dự án',
-    ],
-    'Du lịch - Khách sạn': [
-      'Chuyên viên kinh doanh',
-      'Biên phiên dịch',
-    ],
-    'Thiết kế - Sáng tạo': [
-      'Thiết kế đồ họa',
-      'Content Creator',
-      'Chuyên viên Marketing',
-    ],
-    'Nhân sự': [
-      'Chuyên viên nhân sự',
-      'Quản lý dự án',
-    ],
-    'Kinh doanh - Bán hàng': [
-      'Chuyên viên kinh doanh',
-      'Chuyên viên Marketing',
-      'Quản lý dự án',
-    ],
-    'Truyền thông': [
-      'Content Creator',
-      'Chuyên viên Marketing',
-      'Thiết kế đồ họa',
-      'Biên phiên dịch',
-    ],
-    'Luật - Pháp lý': [
-      'Chuyên viên nhân sự',
-      'Quản lý dự án',
-    ],
-  };
-
-  List<String> get _filteredSchoolPositions {
-    if (_selectedIndustry == null) return _positions;
-    return _positionsByIndustry[_selectedIndustry!] ?? _positions;
-  }
-
-  List<String> get _filteredJobPositions {
-    if (_selectedJobIndustry == null) return _positions;
-    return _positionsByIndustry[_selectedJobIndustry!] ?? _positions;
-  }
-
-  final List<String> _locations = [
-    'Hà Nội',
-    'TP. Hồ Chí Minh',
-    'Đà Nẵng',
-    'Hải Phòng',
-    'Cần Thơ',
-    'Bình Dương',
-    'Đồng Nai',
-    'Long An',
-    'Bắc Ninh',
-    'Thái Nguyên',
-    'Quảng Ninh',
-    'Khác (toàn quốc)',
-  ];
 
   @override
   void initState() {
@@ -214,18 +56,24 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   void dispose() {
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
+    _industryController.dispose();
+    _schoolController.dispose();
+    _positionController.dispose();
+    _jobIndustryController.dispose();
+    _jobPositionController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
   bool get _canSubmit {
     if (_tabController.index == 0) {
-      return _selectedIndustry != null ||
-          _selectedSchool != null ||
-          _selectedPosition != null;
+      return _industryController.text.trim().isNotEmpty ||
+          _schoolController.text.trim().isNotEmpty ||
+          _positionController.text.trim().isNotEmpty;
     } else {
-      return _selectedJobIndustry != null ||
-          _selectedJobPosition != null ||
-          _selectedLocation != null;
+      return _jobIndustryController.text.trim().isNotEmpty ||
+          _jobPositionController.text.trim().isNotEmpty ||
+          _locationController.text.trim().isNotEmpty;
     }
   }
 
@@ -234,7 +82,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Vui lòng chọn ít nhất 1 tiêu chí để tìm hiểu!',
+            'Vui lòng nhập ít nhất 1 tiêu chí để tìm hiểu!',
             style: TextStyle(fontSize: Responsive.font(context, 14)),
           ),
           behavior: SnackBarBehavior.floating,
@@ -258,22 +106,28 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     if (_tabController.index == 0) {
       mode = 'HOC';
       final parts = <String>[];
-      if (_selectedIndustry != null) parts.add('ngành $_selectedIndustry');
-      if (_selectedSchool != null) parts.add('trường $_selectedSchool');
-      if (_selectedPosition != null) parts.add('vị trí $_selectedPosition');
+      if (_industryController.text.trim().isNotEmpty) {
+        parts.add('ngành ${_industryController.text.trim()}');
+      }
+      if (_schoolController.text.trim().isNotEmpty) {
+        parts.add('trường ${_schoolController.text.trim()}');
+      }
+      if (_positionController.text.trim().isNotEmpty) {
+        parts.add('vị trí ${_positionController.text.trim()}');
+      }
       question =
           'Tư vấn cho tôi về ${parts.join(", ")}. Gợi ý các trường đào tạo phù hợp.';
     } else {
       mode = 'LAM';
       final parts = <String>[];
-      if (_selectedJobIndustry != null) {
-        parts.add('ngành $_selectedJobIndustry');
+      if (_jobIndustryController.text.trim().isNotEmpty) {
+        parts.add('ngành ${_jobIndustryController.text.trim()}');
       }
-      if (_selectedJobPosition != null) {
-        parts.add('vị trí $_selectedJobPosition');
+      if (_jobPositionController.text.trim().isNotEmpty) {
+        parts.add('vị trí ${_jobPositionController.text.trim()}');
       }
-      if (_selectedLocation != null) {
-        parts.add('khu vực $_selectedLocation');
+      if (_locationController.text.trim().isNotEmpty) {
+        parts.add('khu vực ${_locationController.text.trim()}');
       }
       question =
           'Tư vấn thị trường việc làm cho ${parts.join(", ")}. Gợi ý các công ty đang tuyển dụng.';
@@ -287,17 +141,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       _structured = null;
     });
 
-    final userContext = {
-      'targetJob': auth.targetJob,
-      'educationLevel': auth.educationLevel,
+    final result = await ApiService.searchCareer({
+      'mode': mode,
+      'industry': _tabController.index == 0 ? _industryController.text.trim() : _jobIndustryController.text.trim(),
+      'school': _tabController.index == 0 ? _schoolController.text.trim() : '',
+      'position': _tabController.index == 0 ? _positionController.text.trim() : _jobPositionController.text.trim(),
+      'location': _tabController.index == 0 ? '' : _locationController.text.trim(),
       'age': auth.userProfile?['age'] ?? 18,
-      'hobby': auth.hobby,
-      'requestType': mode,
-    };
-
-    final result = await ApiService.consultCareer({
-      'question': question,
-      'userContext': userContext,
     });
 
     if (!mounted) return;
@@ -399,34 +249,28 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             color: const Color(0xFF3B82F6),
             title: 'Tìm trường & ngành phù hợp',
             subtitle:
-                'Chọn các tiêu chí bên dưới để AI gợi ý trường và ngành đào tạo phù hợp với bạn.',
+                'Nhập các tiêu chí bên dưới để AI gợi ý trường và ngành đào tạo phù hợp với bạn.',
           ),
           SizedBox(height: Responsive.s(context, 20)),
-          _buildDropdownField(
+          _buildInputField(
             label: 'Ngành học quan tâm',
             icon: Icons.category_outlined,
-            value: _selectedIndustry,
-            items: _industries,
-            onChanged: (v) => setState(() {
-              _selectedIndustry = v;
-              _selectedPosition = null;
-            }),
+            controller: _industryController,
+            hint: 'Nhập ngành học (ví dụ: Công nghệ thông tin)',
           ),
           SizedBox(height: Responsive.s(context, 14)),
-          _buildDropdownField(
+          _buildInputField(
             label: 'Trường',
             icon: Icons.account_balance_outlined,
-            value: _selectedSchool,
-            items: _schools,
-            onChanged: (v) => setState(() => _selectedSchool = v),
+            controller: _schoolController,
+            hint: 'Nhập tên trường (ví dụ: Đại học Bách Khoa)',
           ),
           SizedBox(height: Responsive.s(context, 14)),
-          _buildDropdownField(
+          _buildInputField(
             label: 'Vị trí công việc mong muốn',
             icon: Icons.work_outline_rounded,
-            value: _selectedPosition,
-            items: _filteredSchoolPositions,
-            onChanged: (v) => setState(() => _selectedPosition = v),
+            controller: _positionController,
+            hint: 'Nhập vị trí công việc (ví dụ: Lập trình viên)',
           ),
           SizedBox(height: Responsive.s(context, 24)),
           _buildSubmitButton(
@@ -460,34 +304,28 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             color: const Color(0xFF10B981),
             title: 'Khám phá thị trường việc làm',
             subtitle:
-                'Chọn các tiêu chí bên dưới để AI gợi ý công ty và vị trí đang tuyển dụng.',
+                'Nhập các tiêu chí bên dưới để AI gợi ý công ty và vị trí đang tuyển dụng.',
           ),
           SizedBox(height: Responsive.s(context, 20)),
-          _buildDropdownField(
+          _buildInputField(
             label: 'Chọn ngành nghề',
             icon: Icons.category_outlined,
-            value: _selectedJobIndustry,
-            items: _industries,
-            onChanged: (v) => setState(() {
-              _selectedJobIndustry = v;
-              _selectedJobPosition = null;
-            }),
+            controller: _jobIndustryController,
+            hint: 'Nhập ngành nghề (ví dụ: Thiết kế đồ họa)',
           ),
           SizedBox(height: Responsive.s(context, 14)),
-          _buildDropdownField(
+          _buildInputField(
             label: 'Vị trí công việc',
             icon: Icons.work_outline_rounded,
-            value: _selectedJobPosition,
-            items: _filteredJobPositions,
-            onChanged: (v) => setState(() => _selectedJobPosition = v),
+            controller: _jobPositionController,
+            hint: 'Nhập vị trí công việc (ví dụ: UI/UX Designer)',
           ),
           SizedBox(height: Responsive.s(context, 14)),
-          _buildDropdownField(
+          _buildInputField(
             label: 'Địa điểm/Khu vực',
             icon: Icons.location_on_outlined,
-            value: _selectedLocation,
-            items: _locations,
-            onChanged: (v) => setState(() => _selectedLocation = v),
+            controller: _locationController,
+            hint: 'Nhập tỉnh/thành phố (ví dụ: TP. Hồ Chí Minh)',
           ),
           SizedBox(height: Responsive.s(context, 24)),
           _buildSubmitButton(
@@ -571,12 +409,12 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     );
   }
 
-  Widget _buildDropdownField({
+  Widget _buildInputField({
     required String label,
     required IconData icon,
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
+    required TextEditingController controller,
+    required String hint,
+    Color activeIconColor = const Color(0xFFF59E0B),
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,383 +431,52 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           ),
         ),
         SizedBox(height: Responsive.s(context, 6)),
-        Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(
-            Responsive.s(context, 12),
-          ),
-          child: InkWell(
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.circular(
               Responsive.s(context, 12),
             ),
-            onTap: () => _showPickerSheet(
-              label: label,
-              icon: icon,
-              items: items,
-              selectedValue: value,
-              onSelected: onChanged,
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(
-                  Responsive.s(context, 12),
-                ),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-              padding: EdgeInsets.symmetric(
+            ],
+          ),
+          child: TextField(
+            controller: controller,
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 14),
+              color: const Color(0xFF1F2937),
+            ),
+            onChanged: (text) {
+              setState(() {}); // Trigger rebuild to update _canSubmit button state
+            },
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.inter(
+                fontSize: Responsive.font(context, 14),
+                color: const Color(0xFF9CA3AF),
+              ),
+              prefixIcon: Icon(
+                icon,
+                size: Responsive.s(context, 18),
+                color: controller.text.isNotEmpty
+                    ? activeIconColor
+                    : const Color(0xFF9CA3AF),
+              ),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
                 horizontal: Responsive.s(context, 14),
                 vertical: Responsive.s(context, 14),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    icon,
-                    size: Responsive.s(context, 18),
-                    color: value != null
-                        ? const Color(0xFFF59E0B)
-                        : const Color(0xFF9CA3AF),
-                  ),
-                  SizedBox(width: Responsive.s(context, 10)),
-                  Expanded(
-                    child: Text(
-                      value ?? '-- Chọn --',
-                      style: GoogleFonts.inter(
-                        fontSize: Responsive.font(context, 14),
-                        color: value != null
-                            ? const Color(0xFF1F2937)
-                            : const Color(0xFF9CA3AF),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: const Color(0xFF6B7280),
-                    size: Responsive.s(context, 20),
-                  ),
-                ],
               ),
             ),
           ),
         ),
       ],
-    );
-  }
-
-  void _showPickerSheet({
-    required String label,
-    required IconData icon,
-    required List<String> items,
-    required String? selectedValue,
-    required ValueChanged<String?> onSelected,
-  }) {
-    String query = '';
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(Responsive.s(context, 20)),
-        ),
-      ),
-      builder: (sheetContext) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.75,
-          minChildSize: 0.4,
-          maxChildSize: 0.95,
-          expand: false,
-          builder: (_, scrollController) {
-            return StatefulBuilder(
-              builder: (ctx, setSheetState) {
-                final lowerQuery = query.trim().toLowerCase();
-                final filtered = lowerQuery.isEmpty
-                    ? items
-                    : items
-                        .where(
-                          (i) => i.toLowerCase().contains(lowerQuery),
-                        )
-                        .toList();
-
-                return Column(
-                  children: [
-                    Container(
-                      margin:
-                          EdgeInsets.only(top: Responsive.s(context, 12)),
-                      width: Responsive.s(context, 40),
-                      height: Responsive.s(context, 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
-                        borderRadius: BorderRadius.circular(
-                          Responsive.s(context, 2),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        Responsive.s(context, 20),
-                        Responsive.s(context, 16),
-                        Responsive.s(context, 20),
-                        Responsive.s(context, 8),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(
-                              Responsive.s(context, 8),
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF59E0B).withValues(
-                                alpha: 0.15,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                Responsive.s(context, 10),
-                              ),
-                            ),
-                            child: Icon(
-                              icon,
-                              color: const Color(0xFFF59E0B),
-                              size: Responsive.s(context, 18),
-                            ),
-                          ),
-                          SizedBox(width: Responsive.s(context, 12)),
-                          Expanded(
-                            child: Text(
-                              label,
-                              style: GoogleFonts.outfit(
-                                fontSize: Responsive.font(context, 16),
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1F2937),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Responsive.s(context, 20),
-                        vertical: Responsive.s(context, 4),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(
-                            Responsive.s(context, 12),
-                          ),
-                          border: Border.all(
-                            color: const Color(0xFFE5E7EB),
-                          ),
-                        ),
-                        child: TextField(
-                          autofocus: false,
-                          textInputAction: TextInputAction.search,
-                          onChanged: (v) =>
-                              setSheetState(() => query = v),
-                          style: GoogleFonts.inter(
-                            fontSize: Responsive.font(context, 14),
-                            color: const Color(0xFF1F2937),
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Nhập để tìm kiếm...',
-                            hintStyle: GoogleFonts.inter(
-                              fontSize: Responsive.font(context, 13),
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search_rounded,
-                              color: const Color(0xFF6B7280),
-                              size: Responsive.s(context, 20),
-                            ),
-                            suffixIcon: query.isNotEmpty
-                                ? IconButton(
-                                    icon: Icon(
-                                      Icons.close_rounded,
-                                      color: const Color(0xFF6B7280),
-                                      size: Responsive.s(context, 18),
-                                    ),
-                                    onPressed: () =>
-                                        setSheetState(() => query = ''),
-                                  )
-                                : null,
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: Responsive.s(context, 12),
-                              vertical: Responsive.s(context, 12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: Responsive.s(context, 8)),
-                    Divider(
-                      color: const Color(0xFFE5E7EB),
-                      height: Responsive.s(context, 1),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Responsive.s(context, 20),
-                        vertical: Responsive.s(context, 8),
-                      ),
-                      child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${filtered.length} kết quả',
-                            style: GoogleFonts.inter(
-                              fontSize:
-                                  Responsive.font(context, 12),
-                              color: const Color(0xFF6B7280),
-                            ),
-                          ),
-                          if (selectedValue != null)
-                            TextButton.icon(
-                              onPressed: () {
-                                onSelected(null);
-                                Navigator.pop(sheetContext);
-                              },
-                              icon: Icon(
-                                Icons.clear_all_rounded,
-                                size: Responsive.s(context, 14),
-                                color: const Color(0xFFDC2626),
-                              ),
-                              label: Text(
-                                'Bỏ chọn',
-                                style: GoogleFonts.inter(
-                                  fontSize:
-                                      Responsive.font(context, 12),
-                                  color: const Color(0xFFDC2626),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.search_off_rounded,
-                                    size: Responsive.s(context, 48),
-                                    color: const Color(0xFFD1D5DB),
-                                  ),
-                                  SizedBox(
-                                    height:
-                                        Responsive.s(context, 8),
-                                  ),
-                                  Text(
-                                    'Không tìm thấy kết quả',
-                                    style: GoogleFonts.inter(
-                                      fontSize: Responsive.font(
-                                        context,
-                                        13,
-                                      ),
-                                      color:
-                                          const Color(0xFF6B7280),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              controller: scrollController,
-                              padding: EdgeInsets.only(
-                                bottom: Responsive.s(context, 20),
-                              ),
-                              itemCount: filtered.length,
-                              itemBuilder: (_, index) {
-                                final item = filtered[index];
-                                final isSelected =
-                                    item == selectedValue;
-                                return InkWell(
-                                  onTap: () {
-                                    onSelected(item);
-                                    Navigator.pop(sheetContext);
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: Responsive.s(
-                                        context,
-                                        20,
-                                      ),
-                                      vertical: Responsive.s(
-                                        context,
-                                        14,
-                                      ),
-                                    ),
-                                    color: isSelected
-                                        ? const Color(0xFFFFF7ED)
-                                        : Colors.transparent,
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            item,
-                                            style:
-                                                GoogleFonts.inter(
-                                              fontSize:
-                                                  Responsive.font(
-                                                context,
-                                                14,
-                                              ),
-                                              color: isSelected
-                                                  ? const Color(
-                                                      0xFFF59E0B,
-                                                    )
-                                                  : const Color(
-                                                      0xFF1F2937,
-                                                    ),
-                                              fontWeight:
-                                                  isSelected
-                                                      ? FontWeight
-                                                          .w600
-                                                      : FontWeight
-                                                          .w400,
-                                            ),
-                                          ),
-                                        ),
-                                        if (isSelected)
-                                          Icon(
-                                            Icons.check_rounded,
-                                            color: const Color(
-                                              0xFFF59E0B,
-                                            ),
-                                            size: Responsive.s(
-                                              context,
-                                              20,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        );
-      },
     );
   }
 
@@ -1288,7 +795,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       ),
                       SizedBox(width: Responsive.s(context, 6)),
                       Text(
-                        'Điểm chuẩn 2 năm gần nhất',
+                        'Điểm chuẩn 3 năm gần nhất',
                         style: GoogleFonts.inter(
                           fontSize: Responsive.font(context, 12),
                           fontWeight: FontWeight.w700,
@@ -1473,11 +980,26 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     final dynamic raw =
         m['benchmarkScores'] ?? m['diemChuan'] ?? m['cutoffScores'];
 
+    if (raw is String) {
+      final entries = <_BenchmarkEntry>[];
+      final regExp = RegExp(r'(\d{4})\s*[:\-]\s*(\d+(?:\.\d+)?)');
+      final matches = regExp.allMatches(raw);
+      for (final match in matches.take(3)) {
+        entries.add(
+          _BenchmarkEntry(
+            year: match.group(1)!,
+            score: match.group(2)!,
+          ),
+        );
+      }
+      if (entries.isNotEmpty) return entries;
+    }
+
     if (raw is Map) {
       final entries = <_BenchmarkEntry>[];
       final keys = raw.keys.toList();
       final values = raw.values.toList();
-      for (int i = 0; i < keys.length && i < 2; i++) {
+      for (int i = 0; i < keys.length && i < 3; i++) {
         final dynamic v = values[i];
         if (v is num) {
           entries.add(
@@ -1505,7 +1027,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
 
     if (raw is List) {
       return raw
-          .take(2)
+          .take(3)
           .map((e) {
             if (e is Map) {
               return _BenchmarkEntry(

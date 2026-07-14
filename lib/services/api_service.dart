@@ -129,11 +129,11 @@ class ApiService {
   /// Timeout dài hơn cho các endpoint AI (consult, chat, generate-test, evaluate).
   /// Gemini thường phản hồi trong 15-25 giây cho prompt dài — nếu dùng
   /// `_defaultTimeout` (8s) sẽ bị TimeoutException dù server vẫn đang xử lý.
-  static const Duration _aiTimeout = Duration(seconds: 60);
+  static const Duration _aiTimeout = Duration(seconds: 120);
 
   // Header cơ bản có kèm userId nếu đã đăng nhập
   static Map<String, String> get _headers {
-    final headers = {'Content-Type': 'application/json'};
+    final headers = {'Content-Type': 'application/json; charset=utf-8'};
     if (currentUserId != null) {
       headers['x-user-id'] = currentUserId!;
     }
@@ -182,7 +182,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
         body: jsonEncode({'email': email, 'password': password}),
       ).timeout(_defaultTimeout);
 
@@ -207,7 +207,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -300,6 +300,22 @@ class ApiService {
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi kết nối tư vấn: $e'};
+    }
+  }
+
+  // Tìm kiếm/tìm hiểu nhanh về ngành nghề (màn hình Quick Explore)
+  static Future<Map<String, dynamic>> searchCareer(
+    Map<String, dynamic> info,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/search/career'),
+        headers: _headers,
+        body: jsonEncode(info),
+      ).timeout(_aiTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Lỗi kết nối tìm kiếm: $e'};
     }
   }
 
