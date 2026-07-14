@@ -217,7 +217,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     tabs: [
                       const Tab(text: 'Câu hỏi'),
                       const Tab(text: 'Đánh giá'),
-                      const Tab(text: 'Ngành nghề phù hợp'),
+                      const Tab(text: 'Lộ trình'),
                       Tab(
                         text: isStudent
                             ? 'Trường phù hợp'
@@ -354,6 +354,11 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         session['conclusionReason'] ??
         'Hệ thống AI đã tổng hợp các tham số từ câu trả lời của bạn.';
 
+    final strengths = session['strengths'] as List<dynamic>? ?? [];
+    final weaknesses = session['weaknesses'] as List<dynamic>? ?? [];
+    final summary = session['summary'] ?? '';
+    final advice = session['advice'] ?? '';
+
     return ListView(
       controller: controller,
       padding: EdgeInsets.all(Responsive.s(context, 20)),
@@ -414,6 +419,130 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
             ],
           ),
         ),
+        if (summary.toString().isNotEmpty) ...[
+          SizedBox(height: Responsive.s(context, 16)),
+          Text(
+            'TÓM TẮT ĐÁNH GIÁ',
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 11),
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+          SizedBox(height: Responsive.s(context, 8)),
+          Text(
+            summary.toString(),
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 13),
+              color: Colors.black87,
+              height: 1.4,
+            ),
+          ),
+        ],
+        if (strengths.isNotEmpty || weaknesses.isNotEmpty) ...[
+          SizedBox(height: Responsive.s(context, 20)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (strengths.isNotEmpty)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ĐIỂM MẠNH',
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 11),
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF059669),
+                        ),
+                      ),
+                      SizedBox(height: Responsive.s(context, 8)),
+                      ...strengths.map((item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.check_circle_outline_rounded,
+                                    color: const Color(0xFF059669), size: Responsive.s(context, 14)),
+                                SizedBox(width: Responsive.s(context, 6)),
+                                Expanded(
+                                  child: Text(
+                                    item.toString(),
+                                    style: GoogleFonts.inter(
+                                      fontSize: Responsive.font(context, 12),
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              if (strengths.isNotEmpty && weaknesses.isNotEmpty)
+                SizedBox(width: Responsive.s(context, 16)),
+              if (weaknesses.isNotEmpty)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CẦN CẢI THIỆN',
+                        style: GoogleFonts.inter(
+                          fontSize: Responsive.font(context, 11),
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFDC2626),
+                        ),
+                      ),
+                      SizedBox(height: Responsive.s(context, 8)),
+                      ...weaknesses.map((item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.error_outline_rounded,
+                                    color: const Color(0xFFDC2626), size: Responsive.s(context, 14)),
+                                SizedBox(width: Responsive.s(context, 6)),
+                                Expanded(
+                                  child: Text(
+                                    item.toString(),
+                                    style: GoogleFonts.inter(
+                                      fontSize: Responsive.font(context, 12),
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+        if (advice.toString().isNotEmpty) ...[
+          SizedBox(height: Responsive.s(context, 20)),
+          Text(
+            'LỜI KHUYÊN HƯỚNG NGHIỆP',
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 11),
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFFD97706),
+            ),
+          ),
+          SizedBox(height: Responsive.s(context, 8)),
+          Text(
+            advice.toString(),
+            style: GoogleFonts.inter(
+              fontSize: Responsive.font(context, 13),
+              color: Colors.black87,
+              height: 1.4,
+            ),
+          ),
+        ],
       ],
     );
   }

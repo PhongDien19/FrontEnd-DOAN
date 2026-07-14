@@ -24,8 +24,8 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   final TextEditingController _industryController = TextEditingController();
   final TextEditingController _schoolController = TextEditingController();
 
+  // Form tìm công việc: chỉ dùng 2 ô - Ngành nghề & Khu vực
   final TextEditingController _jobIndustryController = TextEditingController();
-  final TextEditingController _jobPositionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
 
   // Khu vực cho tab Tìm trường & ngành (tương tự dynamic_survey_screen)
@@ -76,7 +76,6 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     _industryController.dispose();
     _schoolController.dispose();
     _jobIndustryController.dispose();
-    _jobPositionController.dispose();
     _locationController.dispose();
     super.dispose();
   }
@@ -87,8 +86,8 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           _schoolController.text.trim().isNotEmpty ||
           _selectedProvinces.isNotEmpty;
     } else {
+      // Chỉ cần ngành nghề hoặc khu vực để tìm công việc
       return _jobIndustryController.text.trim().isNotEmpty ||
-          _jobPositionController.text.trim().isNotEmpty ||
           _locationController.text.trim().isNotEmpty;
     }
   }
@@ -131,7 +130,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       'mode': mode,
       'industry': _tabController.index == 0 ? _industryController.text.trim() : _jobIndustryController.text.trim(),
       'school': _tabController.index == 0 ? _schoolController.text.trim() : '',
-      'position': _tabController.index == 0 ? '' : _jobPositionController.text.trim(),
+      'position': '', // đã bỏ ô nhập vị trí công việc
       'location': _tabController.index == 0 
           ? (_selectedProvinces.isNotEmpty ? _selectedProvinces.join(', ') : '') 
           : _locationController.text.trim(),
@@ -287,25 +286,19 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             color: const Color(0xFF10B981),
             title: 'Khám phá thị trường việc làm',
             subtitle:
-                'Nhập các tiêu chí bên dưới để AI gợi ý công ty và vị trí đang tuyển dụng.',
+                'Nhập ngành nghề và khu vực bạn quan tâm, AI sẽ gợi ý các công ty đang tuyển dụng.',
           ),
           SizedBox(height: Responsive.s(context, 20)),
+          // Form tìm công việc - chỉ 2 ô: Ngành nghề & Khu vực
           _buildInputField(
-            label: 'Chọn ngành nghề',
+            label: 'Ngành nghề quan tâm',
             icon: Icons.category_outlined,
             controller: _jobIndustryController,
             hint: 'Nhập ngành nghề (ví dụ: Thiết kế đồ họa)',
           ),
           SizedBox(height: Responsive.s(context, 14)),
           _buildInputField(
-            label: 'Vị trí công việc',
-            icon: Icons.work_outline_rounded,
-            controller: _jobPositionController,
-            hint: 'Nhập vị trí công việc (ví dụ: UI/UX Designer)',
-          ),
-          SizedBox(height: Responsive.s(context, 14)),
-          _buildInputField(
-            label: 'Địa điểm/Khu vực',
+            label: 'Khu vực',
             icon: Icons.location_on_outlined,
             controller: _locationController,
             hint: 'Nhập tỉnh/thành phố (ví dụ: TP. Hồ Chí Minh)',
@@ -802,6 +795,10 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     final benchmark = _extractBenchmarkScores(m);
     final hasBenchmark = benchmark.isNotEmpty;
 
+    // Cờ xác minh từ backend
+    final bool schoolVerified = m['schoolVerified'] == true;
+    final bool benchmarkVerified = m['benchmarkVerified'] == true;
+
     return Container(
       margin: EdgeInsets.only(top: Responsive.s(context, 10)),
       padding: EdgeInsets.all(Responsive.s(context, 14)),
@@ -864,6 +861,37 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                         color: const Color(0xFF111827),
                       ),
                     ),
+                    if (schoolVerified) ...[
+                      SizedBox(height: Responsive.s(context, 4)),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.verified_outlined,
+                            size: Responsive.s(context, 12),
+                            color: benchmarkVerified
+                                ? const Color(0xFF059669)
+                                : const Color(0xFFB45309),
+                          ),
+                          SizedBox(width: Responsive.s(context, 3)),
+                          Expanded(
+                            child: Text(
+                              benchmarkVerified
+                                  ? 'Trường & điểm đã xác minh'
+                                  : 'Trường đã xác minh',
+                              style: GoogleFonts.inter(
+                                fontSize: Responsive.font(context, 10),
+                                fontWeight: FontWeight.w600,
+                                color: benchmarkVerified
+                                    ? const Color(0xFF059669)
+                                    : const Color(0xFFB45309),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     if (location != null &&
                         location.toString().isNotEmpty) ...[
                       SizedBox(height: Responsive.s(context, 2)),
@@ -1102,18 +1130,65 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     );
   }
 
+  /// Chuẩn hoá chuỗi điểm chuẩn về số thực và đảm bảo nằm trong thang 30 (15-30).
+  /// Trả về null nếu không phải số hoặc nằm ngoài thang 30.
+  double? _parseBenchmark30(String? raw) {
+    if (raw == null) return null;
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty || trimmed == 'N/A' || trimmed == 'null') return null;
+    final cleaned = trimmed.replaceAll(',', '.');
+    final value = double.tryParse(cleaned);
+    if (value == null) return null;
+    if (value < 15.0 || value > 30.0) return null;
+    return value;
+  }
+
   List<_BenchmarkEntry> _extractBenchmarkScores(Map<String, dynamic> m) {
-    // Kiểm tra format mới với benchmark2025, benchmark2024, benchmark2023
-    if (m['benchmark2025'] != null || m['benchmark2024'] != null || m['benchmark2023'] != null) {
+    // Khoảng hợp lệ cho điểm chuẩn thang 30 (THPT Quốc gia).
+    const double minScore30 = 15.0;
+    const double maxScore30 = 30.0;
+
+    double? parseScore(dynamic raw) {
+      if (raw == null) return null;
+      final str = raw.toString().trim();
+      if (str.isEmpty || str == 'N/A' || str == 'null') return null;
+      final cleaned = str.replaceAll(',', '.');
+      final value = double.tryParse(cleaned);
+      if (value == null) return null;
+      if (value < minScore30 || value > maxScore30) return null;
+      return value;
+    }
+
+    String formatScore(double v) =>
+        v == v.truncate() ? v.toInt().toString() : v.toStringAsFixed(2);
+
+    bool isInRange30(dynamic raw) => parseScore(raw) != null;
+
+    // Format MỚI: chỉ 1 năm gần nhất (benchmark + benchmarkYear)
+    final dynamic newBenchmark = m['benchmark'];
+    final dynamic newYear = m['benchmarkYear'];
+    if (newBenchmark != null && newBenchmark.toString().isNotEmpty) {
+      final parsed = parseScore(newBenchmark);
+      if (parsed != null) {
+        return [
+          _BenchmarkEntry(
+            year: newYear?.toString() ?? 'Năm gần nhất',
+            score: formatScore(parsed),
+          ),
+        ];
+      }
+      // Giá trị nằm ngoài thang 30: không hiển thị
+      return <_BenchmarkEntry>[];
+    }
+
+    // Format cũ: benchmark2025 (chỉ hiển thị 2025 theo yêu cầu người dùng)
+    if (m['benchmark2025'] != null) {
       final entries = <_BenchmarkEntry>[];
-      if (m['benchmark2025'] != null) {
-        entries.add(_BenchmarkEntry(year: '2025', score: m['benchmark2025'].toString()));
-      }
-      if (m['benchmark2024'] != null) {
-        entries.add(_BenchmarkEntry(year: '2024', score: m['benchmark2024'].toString()));
-      }
-      if (m['benchmark2023'] != null) {
-        entries.add(_BenchmarkEntry(year: '2023', score: m['benchmark2023'].toString()));
+      if (isInRange30(m['benchmark2025'])) {
+        entries.add(_BenchmarkEntry(
+          year: '2025',
+          score: formatScore(parseScore(m['benchmark2025'])!),
+        ));
       }
       if (entries.isNotEmpty) return entries;
     }
@@ -1125,13 +1200,17 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       final entries = <_BenchmarkEntry>[];
       final regExp = RegExp(r'(\d{4})\s*[:\-]\s*(\d+(?:\.\d+)?)');
       final matches = regExp.allMatches(raw);
-      for (final match in matches.take(3)) {
-        entries.add(
-          _BenchmarkEntry(
-            year: match.group(1)!,
-            score: match.group(2)!,
-          ),
-        );
+      for (final match in matches) {
+        if (match.group(1) == '2025') {
+          final parsed = parseScore(match.group(2));
+          if (parsed == null) continue;
+          entries.add(
+            _BenchmarkEntry(
+              year: '2025',
+              score: formatScore(parsed),
+            ),
+          );
+        }
       }
       if (entries.isNotEmpty) return entries;
     }
@@ -1140,27 +1219,36 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       final entries = <_BenchmarkEntry>[];
       final keys = raw.keys.toList();
       final values = raw.values.toList();
-      for (int i = 0; i < keys.length && i < 3; i++) {
-        final dynamic v = values[i];
-        if (v is num) {
-          entries.add(
-            _BenchmarkEntry(
-              year: keys[i].toString(),
-              score: _formatScore(v.toDouble()),
-            ),
-          );
-        } else if (v is String) {
-          entries.add(
-            _BenchmarkEntry(year: keys[i].toString(), score: v),
-          );
-        } else if (v is Map) {
-          entries.add(
-            _BenchmarkEntry(
-              year: (v['year'] ?? keys[i]).toString(),
-              score: v['score']?.toString() ?? '',
-              major: v['major']?.toString(),
-            ),
-          );
+      for (int i = 0; i < keys.length; i++) {
+        final keyStr = keys[i].toString();
+        if (keyStr.contains('2025')) {
+          final dynamic v = values[i];
+          if (v is num) {
+            final parsed = parseScore(v);
+            if (parsed == null) continue;
+            entries.add(
+              _BenchmarkEntry(
+                year: '2025',
+                score: formatScore(parsed),
+              ),
+            );
+          } else if (v is String) {
+            final parsed = parseScore(v);
+            if (parsed == null) continue;
+            entries.add(
+              _BenchmarkEntry(year: '2025', score: formatScore(parsed)),
+            );
+          } else if (v is Map) {
+            final parsed = parseScore(v['score']);
+            if (parsed == null) continue;
+            entries.add(
+              _BenchmarkEntry(
+                year: '2025',
+                score: formatScore(parsed),
+                major: v['major']?.toString(),
+              ),
+            );
+          }
         }
       }
       return entries;
@@ -1168,16 +1256,24 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
 
     if (raw is List) {
       return raw
-          .take(3)
           .map((e) {
             if (e is Map) {
-              return _BenchmarkEntry(
-                year: (e['year'] ?? e['nam'] ?? '').toString(),
-                score: (e['score'] ?? e['diem'] ?? '').toString(),
-                major: (e['major'] ?? e['nganh'])?.toString(),
-              );
+              final yearStr = (e['year'] ?? e['nam'] ?? '').toString();
+              if (yearStr == '2025') {
+                final parsed = parseScore(e['score'] ?? e['diem']);
+                if (parsed == null) return null;
+                return _BenchmarkEntry(
+                  year: '2025',
+                  score: formatScore(parsed),
+                  major: (e['major'] ?? e['nganh'])?.toString(),
+                );
+              }
             }
-            if (e is String) return _BenchmarkEntry(year: '', score: e);
+            if (e is String) {
+              final parsed = parseScore(e);
+              if (parsed == null) return null;
+              return _BenchmarkEntry(year: '2025', score: formatScore(parsed));
+            }
             return null;
           })
           .whereType<_BenchmarkEntry>()
@@ -1188,11 +1284,6 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     return <_BenchmarkEntry>[];
   }
 
-  String _formatScore(double v) {
-    if (v == v.truncate()) return v.toInt().toString();
-    return v.toStringAsFixed(2);
-  }
-
   Widget _buildCompanyCard(Map<String, dynamic> m, Color accent) {
     final name = (m['companyName'] ?? m['name'] ?? 'Công ty').toString();
     final positions =
@@ -1200,7 +1291,9 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             ? List<String>.from(m['positions'] ?? m['jobs'] ?? m['viTri'])
             : <String>[];
     final reason = m['reason'] ?? m['lyDo'] ?? m['note'];
-    final link = m['website'] ?? m['url'] ?? m['link'];
+    final description = m['description'] ?? m['moTa'];
+    final website = m['website'] ?? m['url'] ?? m['link'];
+    final careerLink = m['careerLink'] ?? m['linkTuyenDung'];
     final location = m['location'] ?? m['diaDiem'];
     final salary = m['salary'] ?? m['luong'];
 
@@ -1362,54 +1455,42 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          if (link != null && link.toString().isNotEmpty) ...[
+          if (description != null && description.toString().isNotEmpty) ...[
+            SizedBox(height: Responsive.s(context, 8)),
+            Text(
+              description.toString(),
+              style: GoogleFonts.inter(
+                fontSize: Responsive.font(context, 12),
+                color: const Color(0xFF4B5563),
+                height: 1.4,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          // Hiển thị các link: trang chủ + trang tuyển dụng
+          if ((website != null && website.toString().isNotEmpty) ||
+              (careerLink != null && careerLink.toString().isNotEmpty)) ...[
             SizedBox(height: Responsive.s(context, 10)),
-            InkWell(
-              onTap: () async {
-                final uri = Uri.tryParse(link.toString());
-                if (uri != null && await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
-              borderRadius: BorderRadius.circular(
-                Responsive.s(context, 8),
-              ),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: Responsive.s(context, 10),
-                  vertical: Responsive.s(context, 6),
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(
-                    Responsive.s(context, 8),
+            Wrap(
+              spacing: Responsive.s(context, 8),
+              runSpacing: Responsive.s(context, 8),
+              children: [
+                if (website != null && website.toString().isNotEmpty)
+                  _buildCompanyLinkButton(
+                    url: website.toString(),
+                    icon: Icons.home_rounded,
+                    label: 'Trang chủ',
+                    accent: accent,
                   ),
-                  border: Border.all(color: accent.withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.open_in_new_rounded,
-                      size: Responsive.s(context, 14),
-                      color: accent,
-                    ),
-                    SizedBox(width: Responsive.s(context, 4)),
-                    Flexible(
-                      child: Text(
-                        link.toString().replaceFirst(RegExp(r'^https?://'), ''),
-                        style: GoogleFonts.inter(
-                          fontSize: Responsive.font(context, 11),
-                          color: accent,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                if (careerLink != null && careerLink.toString().isNotEmpty)
+                  _buildCompanyLinkButton(
+                    url: careerLink.toString(),
+                    icon: Icons.work_rounded,
+                    label: 'Tuyển dụng',
+                    accent: accent,
+                  ),
+              ],
             ),
           ],
         ],
@@ -1417,13 +1498,74 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     );
   }
 
+  Widget _buildCompanyLinkButton({
+    required String url,
+    required IconData icon,
+    required String label,
+    required Color accent,
+  }) {
+    return InkWell(
+      onTap: () async {
+        final uri = Uri.tryParse(url);
+        if (uri != null && await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: Responsive.s(context, 10),
+          vertical: Responsive.s(context, 6),
+        ),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+          border: Border.all(color: accent.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: Responsive.s(context, 14), color: accent),
+            SizedBox(width: Responsive.s(context, 4)),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: Responsive.font(context, 11),
+                color: accent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: Responsive.s(context, 4)),
+            Icon(
+              Icons.open_in_new_rounded,
+              size: Responsive.s(context, 12),
+              color: accent,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildMajorCard(Map<String, dynamic> m, String schoolName, Color accent) {
     final majorName = (m['majorName'] ?? m['name'] ?? 'Ngành').toString();
-    
-    // Trích xuất điểm chuẩn
-    final benchmark2025 = m['benchmark2025']?.toString();
-    final benchmark2024 = m['benchmark2024']?.toString();
-    final benchmark2023 = m['benchmark2023']?.toString();
+
+    // Trích xuất điểm chuẩn - chỉ hiển thị nếu nằm trong thang 30 (15-30)
+    final benchmark = m['benchmark']?.toString();
+    final benchmarkYear = m['benchmarkYear']?.toString() ?? 'Năm gần nhất';
+    final double? parsedBenchmark = _parseBenchmark30(benchmark);
+    final String benchmarkDisplay = parsedBenchmark == null
+        ? ''
+        : (parsedBenchmark == parsedBenchmark.truncate()
+            ? parsedBenchmark.toInt().toString()
+            : parsedBenchmark.toString());
+
+    // Cờ độ tin cậy từ backend
+    final bool benchmarkVerified = m['benchmarkVerified'] == true;
+    final String benchmarkSource = m['benchmarkSource']?.toString() ?? '';
+    final String sourceLabel = benchmarkSource == 'crawler'
+        ? 'Đã xác minh'
+        : '';
     
     return Container(
       margin: EdgeInsets.only(top: Responsive.s(context, 10)),
@@ -1513,7 +1655,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               ),
             ],
           ),
-          if (benchmark2025 != null || benchmark2024 != null || benchmark2023 != null) ...[
+          if (benchmark != null && benchmarkDisplay.isNotEmpty) ...[
             SizedBox(height: Responsive.s(context, 12)),
             Container(
               width: double.infinity,
@@ -1540,44 +1682,65 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       ),
                       SizedBox(width: Responsive.s(context, 6)),
                       Text(
-                        'Điểm chuẩn 3 năm gần nhất',
+                        'Điểm chuẩn $benchmarkYear',
                         style: GoogleFonts.inter(
                           fontSize: Responsive.font(context, 12),
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0369A1),
                         ),
                       ),
+                      const Spacer(),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Responsive.s(context, 12),
+                          vertical: Responsive.s(context, 4),
+                        ),
+                        decoration: BoxDecoration(
+                          color: accent,
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 8),
+                          ),
+                        ),
+                        child: Text(
+                          benchmarkDisplay,
+                          style: GoogleFonts.inter(
+                            fontSize: Responsive.font(context, 14),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                  SizedBox(height: Responsive.s(context, 8)),
-                  Row(
-                    children: [
-                      if (benchmark2025 != null)
+                  if (sourceLabel.isNotEmpty) ...[
+                    SizedBox(height: Responsive.s(context, 6)),
+                    Row(
+                      children: [
+                        Icon(
+                          benchmarkVerified
+                              ? Icons.verified_outlined
+                              : Icons.info_outline,
+                          size: Responsive.s(context, 12),
+                          color: benchmarkVerified
+                              ? const Color(0xFF059669)
+                              : const Color(0xFFB45309),
+                        ),
+                        SizedBox(width: Responsive.s(context, 3)),
                         Expanded(
-                          child: _buildBenchmarkCell(
-                            year: '2025',
-                            score: benchmark2025,
-                            accent: accent,
+                          child: Text(
+                            sourceLabel,
+                            style: GoogleFonts.inter(
+                              fontSize: Responsive.font(context, 10),
+                              fontWeight: FontWeight.w600,
+                              color: benchmarkVerified
+                                  ? const Color(0xFF059669)
+                                  : const Color(0xFFB45309),
+                            ),
                           ),
                         ),
-                      if (benchmark2024 != null)
-                        Expanded(
-                          child: _buildBenchmarkCell(
-                            year: '2024',
-                            score: benchmark2024,
-                            accent: accent,
-                          ),
-                        ),
-                      if (benchmark2023 != null)
-                        Expanded(
-                          child: _buildBenchmarkCell(
-                            year: '2023',
-                            score: benchmark2023,
-                            accent: accent,
-                          ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

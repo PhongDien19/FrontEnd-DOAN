@@ -92,6 +92,44 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     return null;
   }
 
+  /// Khoảng điểm chuẩn hợp lệ cho thang 30 (THPT Quốc gia truyền thống).
+  static const double _minBenchmark30 = 15.0;
+  static const double _maxBenchmark30 = 30.0;
+
+  /// Chuẩn hoá chuỗi điểm chuẩn về số thực (hỗ trợ dấu phẩy).
+  /// Trả về null nếu không phải số hoặc ngoài thang 30.
+  static double? _parseBenchmark30(String? raw) {
+    if (raw == null) return null;
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty || trimmed == 'N/A' || trimmed == 'null') return null;
+    final cleaned = trimmed.replaceAll(',', '.');
+    final value = double.tryParse(cleaned);
+    if (value == null) return null;
+    if (value < _minBenchmark30 || value > _maxBenchmark30) return null;
+    return value;
+  }
+
+  /// Chuỗi hiển thị: giữ nguyên nếu nằm trong thang 30, ngược lại trả về null
+  /// để caller thay bằng 'N/A'.
+  static String? _benchmarkLabel30(String? raw) {
+    final value = _parseBenchmark30(raw);
+    if (value == null) return null;
+    return value == value.truncate()
+        ? value.toInt().toString()
+        : value.toString();
+  }
+
+  /// Trả về cặp (giá trị hiển thị, giá trị số) cho 1 năm. Nếu ngoài thang 30
+  /// thì giá trị hiển thị là 'N/A' và giá trị số là null.
+  static ({String label, double? value}) _benchmarkForYear(String? raw) {
+    final parsed = _parseBenchmark30(raw);
+    if (parsed == null) return (label: 'N/A', value: null);
+    final label = parsed == parsed.truncate()
+        ? parsed.toInt().toString()
+        : parsed.toString();
+    return (label: label, value: parsed);
+  }
+
   void _openChatWithContext(BuildContext context) {
     Navigator.push(
       context,
@@ -188,12 +226,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
               for (final sch in schList) {
                 if (sch is! Map) continue;
                 final sName = _safeString(sch['schoolName'] ?? sch['name']);
-                final benchmark2024 = sch['benchmark2024']?.toString();
-                final benchmark2023 = sch['benchmark2023']?.toString();
-                buffer.write('    - $sName');
-                if (benchmark2024 != null || benchmark2023 != null) {
-                  buffer.write(' (Điểm chuẩn: 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"})');
-                }
+                final b2025 = _benchmarkLabel30(sch['benchmark2025']?.toString());
+                buffer.write(
+                  '    - $sName (Điểm chuẩn 2025: ${b2025 ?? "N/A"})',
+                );
                 buffer.writeln();
               }
             }
@@ -224,12 +260,8 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
           for (final sch in trainingInstitutions) {
             if (sch is! Map) continue;
             final sName = _safeString(sch['schoolName'] ?? sch['name']);
-            final benchmark2024 = sch['benchmark2024']?.toString();
-            final benchmark2023 = sch['benchmark2023']?.toString();
-            buffer.write('  - $sName');
-            if (benchmark2024 != null || benchmark2023 != null) {
-              buffer.write(' (Điểm chuẩn: 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"})');
-            }
+            final b2025 = _benchmarkLabel30(sch['benchmark2025']?.toString());
+            buffer.write('  - $sName (Điểm chuẩn 2025: ${b2025 ?? "N/A"})');
             buffer.writeln();
           }
         }
@@ -1589,18 +1621,12 @@ const SizedBox(height: 20),
     final schoolName = (rawName is String && rawName.trim().isNotEmpty)
         ? rawName
         : 'Tên trường';
-    final benchmark2025 = school['benchmark2025']?.toString();
-    final benchmark2024 = school['benchmark2024']?.toString();
-    final benchmark2023 = school['benchmark2023']?.toString();
-    final benchmark2022 = school['benchmark2022']?.toString();
+    final b2025 = _benchmarkForYear(school['benchmark2025']?.toString());
     final officialLink = (rawOfficial is String) ? rawOfficial : '';
     final admissionLink = (rawAdmission is String) ? rawAdmission : '';
     final scoreEvaluation = (rawEval is String) ? rawEval : '';
 
-    final bool has2025 = benchmark2025 != null && benchmark2025.isNotEmpty && benchmark2025 != 'N/A';
-    final String benchmarkText = has2025
-        ? '2025: $benchmark2025 • 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"}'
-        : '2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"} • 2022: ${benchmark2022 ?? "N/A"}';
+    final String benchmarkText = 'Điểm chuẩn 2025: ${b2025.label} (thang 30)';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
