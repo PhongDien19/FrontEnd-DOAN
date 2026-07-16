@@ -546,4 +546,36 @@ class ApiService {
       return {'success': false, 'message': 'Lỗi xóa điểm số: $e'};
     }
   }
+
+  // --- 8. BENCHMARK LIST ENDPOINTS ---
+
+  // Lấy danh sách trường và ngành cho dropdown
+  // @param school - Lọc ngành theo trường cụ thể (tùy chọn)
+  // @param major - Lọc trường theo ngành cụ thể (tùy chọn)
+  static Future<Map<String, dynamic>> getBenchmarkList({
+    String? school,
+    String? major,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (school != null && school.isNotEmpty) {
+        queryParams['school'] = school;
+      }
+      if (major != null && major.isNotEmpty) {
+        queryParams['major'] = major;
+      }
+
+      final uri = Uri.parse('$baseUrl/search/benchmark/list').replace(
+        queryParameters: queryParams.isEmpty ? null : queryParams,
+      );
+
+      final response = await http.get(
+        uri,
+        headers: _headers,
+      ).timeout(_defaultTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Lỗi lấy danh sách benchmark: $e'};
+    }
+  }
 }

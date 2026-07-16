@@ -92,44 +92,6 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     return null;
   }
 
-  /// Khoảng điểm chuẩn hợp lệ cho thang 30 (THPT Quốc gia truyền thống).
-  static const double _minBenchmark30 = 15.0;
-  static const double _maxBenchmark30 = 30.0;
-
-  /// Chuẩn hoá chuỗi điểm chuẩn về số thực (hỗ trợ dấu phẩy).
-  /// Trả về null nếu không phải số hoặc ngoài thang 30.
-  static double? _parseBenchmark30(String? raw) {
-    if (raw == null) return null;
-    final trimmed = raw.trim();
-    if (trimmed.isEmpty || trimmed == 'N/A' || trimmed == 'null') return null;
-    final cleaned = trimmed.replaceAll(',', '.');
-    final value = double.tryParse(cleaned);
-    if (value == null) return null;
-    if (value < _minBenchmark30 || value > _maxBenchmark30) return null;
-    return value;
-  }
-
-  /// Chuỗi hiển thị: giữ nguyên nếu nằm trong thang 30, ngược lại trả về null
-  /// để caller thay bằng 'N/A'.
-  static String? _benchmarkLabel30(String? raw) {
-    final value = _parseBenchmark30(raw);
-    if (value == null) return null;
-    return value == value.truncate()
-        ? value.toInt().toString()
-        : value.toString();
-  }
-
-  /// Trả về cặp (giá trị hiển thị, giá trị số) cho 1 năm. Nếu ngoài thang 30
-  /// thì giá trị hiển thị là 'N/A' và giá trị số là null.
-  static ({String label, double? value}) _benchmarkForYear(String? raw) {
-    final parsed = _parseBenchmark30(raw);
-    if (parsed == null) return (label: 'N/A', value: null);
-    final label = parsed == parsed.truncate()
-        ? parsed.toInt().toString()
-        : parsed.toString();
-    return (label: label, value: parsed);
-  }
-
   void _openChatWithContext(BuildContext context) {
     Navigator.push(
       context,
@@ -226,10 +188,12 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
               for (final sch in schList) {
                 if (sch is! Map) continue;
                 final sName = _safeString(sch['schoolName'] ?? sch['name']);
-                final b2025 = _benchmarkLabel30(sch['benchmark2025']?.toString());
-                buffer.write(
-                  '    - $sName (Điểm chuẩn 2025: ${b2025 ?? "N/A"})',
-                );
+                final benchmark2024 = sch['benchmark2024']?.toString();
+                final benchmark2023 = sch['benchmark2023']?.toString();
+                buffer.write('    - $sName');
+                if (benchmark2024 != null || benchmark2023 != null) {
+                  buffer.write(' (Điểm chuẩn: 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"})');
+                }
                 buffer.writeln();
               }
             }
@@ -260,8 +224,12 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
           for (final sch in trainingInstitutions) {
             if (sch is! Map) continue;
             final sName = _safeString(sch['schoolName'] ?? sch['name']);
-            final b2025 = _benchmarkLabel30(sch['benchmark2025']?.toString());
-            buffer.write('  - $sName (Điểm chuẩn 2025: ${b2025 ?? "N/A"})');
+            final benchmark2024 = sch['benchmark2024']?.toString();
+            final benchmark2023 = sch['benchmark2023']?.toString();
+            buffer.write('  - $sName');
+            if (benchmark2024 != null || benchmark2023 != null) {
+              buffer.write(' (Điểm chuẩn: 2024: ${benchmark2024 ?? "N/A"} • 2023: ${benchmark2023 ?? "N/A"})');
+            }
             buffer.writeln();
           }
         }
@@ -1214,8 +1182,69 @@ const SizedBox(height: 20),
                     ),
                   ],
                 ] else ...[
-                  if (item['companyDetails'] != null &&
-                      (item['companyDetails'] as List).isNotEmpty) ...[
+                  // 1. Lộ trình phát triển nghề nghiệp
+                  if (item['careerRoadmap'] != null && item['careerRoadmap'] is List && (item['careerRoadmap'] as List).isNotEmpty) ...[
+                    Text(
+                      '📈 Lộ trình phát triển nghề nghiệp:',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF065F46),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    ...(item['careerRoadmap'] as List).map((step) => Padding(
+                      padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• ', style: TextStyle(color: Color(0xFF065F46), fontWeight: FontWeight.bold)),
+                          Expanded(
+                            child: Text(
+                              step.toString(),
+                              style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF374151)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                    const SizedBox(height: 10),
+                  ],
+
+                  // 2. Chứng chỉ nghề nghiệp cần có
+                  if (item['requiredCertificates'] != null && item['requiredCertificates'] is List && (item['requiredCertificates'] as List).isNotEmpty) ...[
+                    Text(
+                      '🎓 Chứng chỉ nghề nghiệp khuyên có:',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF065F46),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: (item['requiredCertificates'] as List).map((cert) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFECFDF5),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                          ),
+                          child: Text(
+                            cert.toString(),
+                            style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF047857), fontWeight: FontWeight.w600),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+
+                  // 3. Cơ hội việc làm nổi bật (nếu có)
+                  if (item['companyDetails'] != null && (item['companyDetails'] as List).isNotEmpty) ...[
                     Text(
                       '🏢 Cơ hội việc làm nổi bật:',
                       style: GoogleFonts.outfit(
@@ -1230,7 +1259,7 @@ const SizedBox(height: 20),
                         .map((comp) => _buildCompanyItem(comp, themeColor)),
                   ] else ...[
                     Text(
-                      '🏢 Công ty & Tập đoàn đang tuyển dụng:',
+                      '🏢 Công ty & Tập đoàn tuyển dụng tiêu biểu:',
                       style: GoogleFonts.outfit(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -1243,36 +1272,32 @@ const SizedBox(height: 20),
                       runSpacing: 6,
                       children: hiringCompanies.map((company) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                            border: Border.all(color: const Color(0xFFD1FAE5)),
                           ),
                           child: Text(
                             company,
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF047857),
-                            ),
+                            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF047857)),
                           ),
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '🔥 Thị trường: $marketDemand',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontStyle: FontStyle.italic,
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
                   ],
+
+                  // 4. Thị trường tuyển dụng (Luôn hiển thị)
+                  const SizedBox(height: 10),
+                  Text(
+                    '🔥 Thị trường: $marketDemand',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                      color: const Color(0xFF4B5563),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -1621,12 +1646,51 @@ const SizedBox(height: 20),
     final schoolName = (rawName is String && rawName.trim().isNotEmpty)
         ? rawName
         : 'Tên trường';
-    final b2025 = _benchmarkForYear(school['benchmark2025']?.toString());
+    
+    // Lấy benchmark từ nhiều nguồn (ưu tiên field benchmark trước)
+    final benchmarkField = school['benchmark'];
+    
+    // Parse benchmark values để kiểm tra tính hợp lệ
+    double? parseScore(dynamic val) {
+      if (val == null) return null;
+      if (val is num) return val.toDouble();
+      if (val is String) {
+        final parsed = double.tryParse(val);
+        return parsed;
+      }
+      return null;
+    }
+    
+    final score2025 = parseScore(benchmarkField ?? school['benchmark2025']);
+    final score2024 = parseScore(school['benchmark2024']);
+    final score2023 = parseScore(school['benchmark2023']);
+    final score2022 = parseScore(school['benchmark2022']);
+    
+    // LỌC NULL: Chỉ hiển thị điểm hợp lệ (> 0 và <= 30)
+    String? benchmarkText;
+    int? benchmarkYear;
+    
+    if (score2025 != null && score2025 > 0 && score2025 <= 30) {
+      benchmarkText = score2025.toStringAsFixed(1);
+      benchmarkYear = 2025;
+    } else if (score2024 != null && score2024 > 0 && score2024 <= 30) {
+      benchmarkText = score2024.toStringAsFixed(1);
+      benchmarkYear = 2024;
+    } else if (score2023 != null && score2023 > 0 && score2023 <= 30) {
+      benchmarkText = score2023.toStringAsFixed(1);
+      benchmarkYear = 2023;
+    } else if (score2022 != null && score2022 > 0 && score2022 <= 30) {
+      benchmarkText = score2022.toStringAsFixed(1);
+      benchmarkYear = 2022;
+    }
+    // Nếu không có benchmark hợp lệ -> KHÔNG hiển thị gì (ẩn hẳn phần điểm)
+    
     final officialLink = (rawOfficial is String) ? rawOfficial : '';
     final admissionLink = (rawAdmission is String) ? rawAdmission : '';
     final scoreEvaluation = (rawEval is String) ? rawEval : '';
-
-    final String benchmarkText = 'Điểm chuẩn 2025: ${b2025.label} (thang 30)';
+    
+    // Lấy benchmarkNote từ backend nếu có
+    final benchmarkNote = school['benchmarkNote']?.toString();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1647,29 +1711,46 @@ const SizedBox(height: 20),
               color: const Color(0xFF1F2937),
             ),
           ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Text(
-                'Điểm chuẩn: ',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  benchmarkText,
-                  style: GoogleFonts.outfit(
+          
+          // Chỉ hiển thị benchmark NẾU CÓ giá trị hợp lệ
+          if (benchmarkText != null && benchmarkYear != null) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Text(
+                  'Điểm chuẩn: ',
+                  style: GoogleFonts.inter(
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: themeColor,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6B7280),
                   ),
                 ),
+                Expanded(
+                  child: Text(
+                    '$benchmarkYear: $benchmarkText',
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: themeColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else if (benchmarkNote != null) ...[
+            // Hiển thị ghi chú nếu không có điểm
+            const SizedBox(height: 6),
+            Text(
+              benchmarkNote,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontStyle: FontStyle.italic,
+                color: const Color(0xFF9CA3AF),
               ),
-            ],
-          ),
+            ),
+          ],
+          
+          // Hiển thị đường link nếu có
           if (officialLink.isNotEmpty || admissionLink.isNotEmpty) ...[
             const SizedBox(height: 8),
             Row(
