@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../utils/responsive.dart';
@@ -83,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final isLoading = Provider.of<AuthProvider>(context).isLoading;
     final isWide = Responsive.isWideScreen(context);
 
@@ -162,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'CAREER PATHWAY',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 32),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 2,
@@ -173,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Hệ Thống Tư Vấn Hướng Nghiệp AI',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 15),
                         color: const Color(0xFF6B7280),
                         fontWeight: FontWeight.w400,
@@ -220,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         children: [
                                           Text(
                                             'Đăng Nhập',
-                                            style: GoogleFonts.outfit(
+                                            style: TextStyle(
                                               fontSize: Responsive.font(
                                                 context,
                                                 18,
@@ -260,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         children: [
                                           Text(
                                             'Đăng Ký',
-                                            style: GoogleFonts.outfit(
+                                            style: TextStyle(
                                               fontSize: Responsive.font(
                                                 context,
                                                 18,
@@ -298,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               if (!_isLoginMode) ...[
                                 TextFormField(
                                   controller: _fullNameController,
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     color: const Color(0xFF1F2937),
                                     fontSize: Responsive.font(context, 14),
                                   ),
@@ -356,7 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
                                   color: const Color(0xFF1F2937),
                                   fontSize: Responsive.font(context, 14),
                                 ),
@@ -418,13 +417,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
                                   color: const Color(0xFF1F2937),
                                   fontSize: Responsive.font(context, 14),
                                 ),
                                 autovalidateMode: AutovalidateMode.onUserInteraction,
                                 inputFormatters: [
-                                  TelexTextInputFormatter(),
+                                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
                                 ],
                                 decoration: InputDecoration(
                                   labelText: 'Mật khẩu',
@@ -534,7 +533,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           _isLoginMode
                                               ? 'Đăng Nhập'
                                               : 'Tạo Tài Khoản',
-                                          style: GoogleFonts.outfit(
+                                          style: TextStyle(
                                             fontSize: Responsive.font(
                                               context,
                                               16,
@@ -557,112 +556,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class TelexTextInputFormatter extends TextInputFormatter {
-  static const Map<String, List<String>> _vietnameseMap = {
-    // Lowercase d
-    'đ': ['dd', ''],
-
-    // Lowercase a
-    'á': ['a', 's'], 'à': ['a', 'f'], 'ả': ['a', 'r'], 'ã': ['a', 'x'], 'ạ': ['a', 'j'],
-    'â': ['aa', ''], 'ấ': ['aa', 's'], 'ầ': ['aa', 'f'], 'ẩ': ['aa', 'r'], 'ẫ': ['aa', 'x'], 'ậ': ['aa', 'j'],
-    'ă': ['aw', ''], 'ắ': ['aw', 's'], 'ằ': ['aw', 'f'], 'ẳ': ['aw', 'r'], 'ẵ': ['aw', 'x'], 'ặ': ['aw', 'j'],
-
-    // Lowercase e
-    'é': ['e', 's'], 'è': ['e', 'f'], 'ẻ': ['e', 'r'], 'ẽ': ['e', 'x'], 'ẹ': ['e', 'j'],
-    'ê': ['ee', ''], 'ế': ['ee', 's'], 'ề': ['ee', 'f'], 'ể': ['ee', 'r'], 'ễ': ['ee', 'x'], 'ệ': ['ee', 'j'],
-
-    // Lowercase i
-    'í': ['i', 's'], 'ì': ['i', 'f'], 'ỉ': ['i', 'r'], 'ĩ': ['i', 'x'], 'ị': ['i', 'j'],
-
-    // Lowercase o
-    'ó': ['o', 's'], 'ò': ['o', 'f'], 'ỏ': ['o', 'r'], 'õ': ['o', 'x'], 'ọ': ['o', 'j'],
-    'ô': ['oo', ''], 'ố': ['oo', 's'], 'ồ': ['oo', 'f'], 'ổ': ['oo', 'r'], 'ỗ': ['oo', 'x'], 'ộ': ['oo', 'j'],
-    'ơ': ['ow', ''], 'ớ': ['ow', 's'], 'ờ': ['ow', 'f'], 'ở': ['ow', 'r'], 'ỡ': ['ow', 'x'], 'ợ': ['ow', 'j'],
-
-    // Lowercase u
-    'ú': ['u', 's'], 'ù': ['u', 'f'], 'ủ': ['u', 'r'], 'ũ': ['u', 'x'], 'ụ': ['u', 'j'],
-    'ư': ['uw', ''], 'ứ': ['uw', 's'], 'ừ': ['uw', 'f'], 'ử': ['uw', 'r'], 'ữ': ['uw', 'x'], 'ự': ['uw', 'j'],
-
-    // Lowercase y
-    'ý': ['y', 's'], 'ỳ': ['y', 'f'], 'ỷ': ['y', 'r'], 'ỹ': ['y', 'x'], 'ỵ': ['y', 'j'],
-
-    // Uppercase D
-    'Đ': ['DD', ''],
-
-    // Uppercase A
-    'Á': ['A', 'S'], 'À': ['A', 'F'], 'Ả': ['A', 'R'], 'Ã': ['A', 'X'], 'Ạ': ['A', 'J'],
-    'Â': ['AA', ''], 'Ấ': ['AA', 'S'], 'Ầ': ['AA', 'F'], 'Ẩ': ['AA', 'R'], 'Ẫ': ['AA', 'X'], 'Ậ': ['AA', 'J'],
-    'Ă': ['AW', ''], 'Ắ': ['AW', 'S'], 'Ằ': ['AW', 'F'], 'Ẳ': ['AW', 'R'], 'Ẵ': ['AW', 'X'], 'Ặ': ['AW', 'J'],
-
-    // Uppercase E
-    'É': ['E', 'S'], 'È': ['E', 'F'], 'Ẻ': ['E', 'R'], 'Ẽ': ['E', 'X'], 'Ẹ': ['E', 'J'],
-    'Ê': ['EE', ''], 'Ế': ['EE', 'S'], 'Ề': ['EE', 'F'], 'Ể': ['EE', 'R'], 'Ễ': ['EE', 'X'], 'Ệ': ['EE', 'J'],
-
-    // Uppercase I
-    'Í': ['I', 'S'], 'Ì': ['I', 'F'], 'Ỉ': ['I', 'R'], 'Ĩ': ['I', 'X'], 'Ị': ['I', 'J'],
-
-    // Uppercase O
-    'Ó': ['O', 'S'], 'Ò': ['O', 'F'], 'Ỏ': ['O', 'R'], 'Õ': ['O', 'X'], 'Ọ': ['O', 'J'],
-    'Ô': ['OO', ''], 'Ố': ['OO', 'S'], 'Ồ': ['OO', 'F'], 'Ổ': ['OO', 'R'], 'Ỗ': ['OO', 'X'], 'Ộ': ['OO', 'J'],
-    'Ơ': ['OW', ''], 'Ớ': ['OW', 'S'], 'Ờ': ['OW', 'F'], 'Ở': ['OW', 'R'], 'Ỡ': ['OW', 'X'], 'Ợ': ['OW', 'J'],
-
-    // Uppercase U
-    'Ú': ['U', 'S'], 'Ù': ['U', 'F'], 'Ủ': ['U', 'R'], 'Ũ': ['U', 'X'], 'Ụ': ['U', 'J'],
-    'Ư': ['UW', ''], 'Ứ': ['UW', 'S'], 'Ừ': ['UW', 'F'], 'Ử': ['UW', 'R'], 'Ữ': ['UW', 'X'], 'Ự': ['UW', 'J'],
-
-    // Uppercase Y
-    'Ý': ['Y', 'S'], 'Ỳ': ['Y', 'F'], 'Ỷ': ['Y', 'R'], 'Ỹ': ['Y', 'X'], 'Ỵ': ['Y', 'J'],
-  };
-
-  static String convertVietnameseToTelex(String input) {
-    final RegExp wordRegex = RegExp(
-      r'([a-zA-ZÀÁẢÃẠÂẦẤẨẪẬĂẰẮẲẴẶÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐa-zàáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]+)'
-    );
-
-    return input.replaceAllMapped(wordRegex, (match) {
-      final word = match.group(0)!;
-      String resultWord = '';
-      String toneKey = '';
-
-      for (int i = 0; i < word.length; i++) {
-        final char = word[i];
-        if (_vietnameseMap.containsKey(char)) {
-          final mapping = _vietnameseMap[char]!;
-          resultWord += mapping[0];
-          if (mapping[1].isNotEmpty) {
-            toneKey = mapping[1].toLowerCase();
-          }
-        } else {
-          resultWord += char;
-        }
-      }
-      return resultWord + toneKey;
-    });
-  }
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final String newText = newValue.text;
-    final String convertedText = convertVietnameseToTelex(newText);
-
-    if (newText == convertedText) {
-      return newValue;
-    }
-
-    final int selectionIndex = newValue.selection.end + (convertedText.length - newText.length);
-
-    return TextEditingValue(
-      text: convertedText,
-      selection: TextSelection.collapsed(
-        offset: selectionIndex.clamp(0, convertedText.length),
       ),
     );
   }

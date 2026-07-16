@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
@@ -119,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           title: Text(
             'Đăng xuất',
-            style: GoogleFonts.outfit(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: Responsive.font(context, 18),
               color: const Color(0xFF1F2937),
@@ -127,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           content: Text(
             'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng không?',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 14),
               color: const Color(0xFF4B5563),
             ),
@@ -137,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () => Navigator.pop(context, false),
               child: Text(
                 'Hủy',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   color: const Color(0xFF6B7280),
                   fontWeight: FontWeight.w600,
                   fontSize: Responsive.font(context, 14),
@@ -148,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () => Navigator.pop(context, true),
               child: Text(
                 'Đăng xuất',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   color: const Color(0xFFEF4444),
                   fontWeight: FontWeight.bold,
                   fontSize: Responsive.font(context, 14),
@@ -215,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         child: Text(
                           'Hồ Sơ & Lịch Sử',
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
                             fontSize: Responsive.font(context, 18),
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF1F2937),
@@ -270,15 +269,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           auth.fullName.isNotEmpty
                               ? auth.fullName
                               : 'Thành viên',
-                          style: GoogleFonts.outfit(
-                            fontSize: Responsive.font(context, 22),
+                          style: TextStyle(
+                            fontSize: Responsive.font(context, 18),
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF1F2937),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           auth.currentUser?['email'] ?? '',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: Responsive.font(context, 13),
                             color: const Color(0xFF6B7280),
                           ),
@@ -401,7 +402,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: Text(
                               'Lưu thay đổi',
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: Responsive.font(context, 16),
                                 color: Colors.white,
@@ -419,7 +420,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         'Lịch Sử Làm Bài',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 18),
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1F2937),
@@ -428,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if (!_isLoadingHistory)
                         Text(
                           '${_history.length} bài đã làm',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: Responsive.font(context, 12),
                             color: const Color(0xFF6B7280),
                           ),
@@ -545,7 +546,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: Responsive.s(context, 12)),
             Text(
               'Chưa có lịch sử làm bài',
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 fontSize: Responsive.font(context, 14),
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF6B7280),
@@ -622,7 +623,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 title: Text(
                   testName,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 14),
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF1F2937),
@@ -637,7 +638,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         '$questionsCount câu hỏi • ${isCompleted ? 'Đã hoàn thành' : 'Chưa hoàn thành'}',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 11),
                           color: isCompleted
                               ? Colors.green
@@ -647,7 +648,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: Responsive.s(context, 4)),
                       Text(
                         'Ngày làm: $dateStr',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 11),
                           color: const Color(0xFF6B7280),
                         ),
@@ -675,7 +676,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: Text(
                           score.toStringAsFixed(1),
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: Responsive.font(context, 12),
                             fontWeight: FontWeight.bold,
                             color: score > 3
@@ -769,7 +770,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Text(
               'Xem tất cả lịch sử',
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 fontSize: Responsive.font(context, 14),
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFFF59E0B),

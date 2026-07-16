@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
+import '../utils/clickable_url_text.dart';
 import '../utils/pdf_export_service.dart';
 import '../utils/responsive.dart';
 import 'chat_screen.dart';
@@ -200,7 +200,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
         elevation: 0,
         title: Text(
           'Báo Cáo Hướng Nghiệp AI',
-          style: GoogleFonts.outfit(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: Responsive.font(context, 18),
           ),
@@ -265,7 +265,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             const SizedBox(height: 20),
             Text(
               'AI đang phân tích và tổng hợp dữ liệu...',
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: const Color(0xFF888B9B),
                 fontSize: 14,
               ),
@@ -290,7 +290,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               const SizedBox(height: 20),
               Text(
                 'Chưa Sẵn Sàng',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -300,7 +300,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 14,
                   color: const Color(0xFF888B9B),
                   height: 1.5,
@@ -321,7 +321,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                 ),
                 child: Text(
                   'Quay lại trang chủ',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -377,7 +377,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               children: [
                 Text(
                   'Độ Phù Hợp Nghề Nghiệp',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 16,
                     color: const Color(0xFF888B9B),
                     fontWeight: FontWeight.bold,
@@ -411,7 +411,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                           children: [
                             Text(
                               '$overall%',
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
@@ -429,7 +429,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                               ),
                               child: Text(
                                 zone,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: zoneColor,
@@ -446,7 +446,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                 Text(
                   summary,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 13,
                     color: const Color(0xFFC3C5E0),
                     height: 1.4,
@@ -470,7 +470,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               children: [
                 Text(
                   'Điểm Số Theo Trụ Cột',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -509,7 +509,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
                                   label,
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     color: const Color(0xFF888B9B),
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
@@ -603,7 +603,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                       Expanded(
                         child: Text(
                           job,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -637,10 +637,10 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                       ),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text(
-                          skill,
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFFC3C5E0),
+                        child: ClickableUrlText(
+                          text: skill,
+                          style: const TextStyle(
+                            color: Color(0xFFC3C5E0),
                             fontSize: 13,
                           ),
                         ),
@@ -658,10 +658,10 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             title: 'Môi Trường Làm Việc Phù Hợp',
             icon: Icons.business_rounded,
             iconColor: const Color(0xFFE040FB),
-            child: Text(
-              environment,
-              style: GoogleFonts.inter(
-                color: const Color(0xFFC3C5E0),
+            child: ClickableUrlText(
+              text: environment,
+              style: const TextStyle(
+                color: Color(0xFFC3C5E0),
                 fontSize: 13,
                 height: 1.4,
               ),
@@ -673,10 +673,10 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             title: 'Lời Khuyên Sự Nghiệp',
             icon: Icons.lightbulb_outline_rounded,
             iconColor: const Color(0xFF00F5A0),
-            child: Text(
-              advice,
-              style: GoogleFonts.inter(
-                color: const Color(0xFFC3C5E0),
+            child: ClickableUrlText(
+              text: advice,
+              style: const TextStyle(
+                color: Color(0xFFC3C5E0),
                 fontSize: 13,
                 height: 1.4,
               ),
@@ -730,7 +730,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -743,11 +743,11 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
           ...items.map(
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 6.0),
-              child: Text(
-                '• $item',
-                style: GoogleFonts.inter(
+              child: ClickableUrlText(
+                text: '• $item',
+                style: const TextStyle(
                   fontSize: 11,
-                  color: const Color(0xFF888B9B),
+                  color: Color(0xFF888B9B),
                   height: 1.3,
                 ),
               ),
@@ -788,7 +788,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,

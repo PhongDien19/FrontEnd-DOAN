@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'services/auth_provider.dart';
 import 'screens/home_screen.dart';
@@ -15,26 +14,27 @@ void main() {
   );
 }
 
-/// Áp dụng font "Roboto" cho toàn bộ TextTheme
-/// — Roboto là font mặc định của Material Design, hỗ trợ tiếng Việt tốt.
+/// Áp dụng Roboto làm font mặc định (Material Design standard font)
+/// Font này hỗ trợ tiếng Việt tốt và các weight (bold, regular) luôn hoạt động đúng
 TextTheme _buildTextTheme(TextTheme base) {
-  return GoogleFonts.robotoTextTheme(base).copyWith(
-    // Đảm bảo các style cụ thể cũng dùng Roboto
-    displayLarge: GoogleFonts.roboto(textStyle: base.displayLarge),
-    displayMedium: GoogleFonts.roboto(textStyle: base.displayMedium),
-    displaySmall: GoogleFonts.roboto(textStyle: base.displaySmall),
-    headlineLarge: GoogleFonts.roboto(textStyle: base.headlineLarge),
-    headlineMedium: GoogleFonts.roboto(textStyle: base.headlineMedium),
-    headlineSmall: GoogleFonts.roboto(textStyle: base.headlineSmall),
-    titleLarge: GoogleFonts.roboto(textStyle: base.titleLarge),
-    titleMedium: GoogleFonts.roboto(textStyle: base.titleMedium),
-    titleSmall: GoogleFonts.roboto(textStyle: base.titleSmall),
-    bodyLarge: GoogleFonts.roboto(textStyle: base.bodyLarge),
-    bodyMedium: GoogleFonts.roboto(textStyle: base.bodyMedium),
-    bodySmall: GoogleFonts.roboto(textStyle: base.bodySmall),
-    labelLarge: GoogleFonts.roboto(textStyle: base.labelLarge),
-    labelMedium: GoogleFonts.roboto(textStyle: base.labelMedium),
-    labelSmall: GoogleFonts.roboto(textStyle: base.labelSmall),
+  const String fontFamily = 'Roboto';
+  
+  return base.copyWith(
+    displayLarge: base.displayLarge?.copyWith(fontFamily: fontFamily),
+    displayMedium: base.displayMedium?.copyWith(fontFamily: fontFamily),
+    displaySmall: base.displaySmall?.copyWith(fontFamily: fontFamily),
+    headlineLarge: base.headlineLarge?.copyWith(fontFamily: fontFamily),
+    headlineMedium: base.headlineMedium?.copyWith(fontFamily: fontFamily),
+    headlineSmall: base.headlineSmall?.copyWith(fontFamily: fontFamily),
+    titleLarge: base.titleLarge?.copyWith(fontFamily: fontFamily),
+    titleMedium: base.titleMedium?.copyWith(fontFamily: fontFamily),
+    titleSmall: base.titleSmall?.copyWith(fontFamily: fontFamily),
+    bodyLarge: base.bodyLarge?.copyWith(fontFamily: fontFamily),
+    bodyMedium: base.bodyMedium?.copyWith(fontFamily: fontFamily),
+    bodySmall: base.bodySmall?.copyWith(fontFamily: fontFamily),
+    labelLarge: base.labelLarge?.copyWith(fontFamily: fontFamily),
+    labelMedium: base.labelMedium?.copyWith(fontFamily: fontFamily),
+    labelSmall: base.labelSmall?.copyWith(fontFamily: fontFamily),
   );
 }
 
@@ -62,8 +62,6 @@ class MainApp extends StatelessWidget {
       ),
       builder: (context, child) {
         final mq = MediaQuery.of(context);
-        // Clamp text scaling for better IME compatibility (especially Vietnamese input),
-        // while still respecting the user's preferred system text size.
         final TextScaler effectiveScaler =
             mq.textScaler.clamp(minScaleFactor: 0.85, maxScaleFactor: 1.3);
         return MediaQuery(

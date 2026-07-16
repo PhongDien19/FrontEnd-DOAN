@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_provider.dart';
@@ -24,33 +23,72 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   // Controllers for TextFields
   final TextEditingController _industryController = TextEditingController();
   final TextEditingController _schoolController = TextEditingController();
-  final TextEditingController _positionController = TextEditingController();
 
   final TextEditingController _jobIndustryController = TextEditingController();
   final TextEditingController _jobPositionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
 
-  bool _isLoading = false;
-  String? _response;
-  Map<String, dynamic>? _structured;
-  bool _hasError = false;
-  String? _errorMessage;
+  static final Map<String, _QuickExploreCache> _cacheMap = {};
+
+  bool _isLoadingSchool = false;
+  String? _responseSchool;
+  Map<String, dynamic>? _structuredSchool;
+  bool _hasErrorSchool = false;
+  String? _errorMessageSchool;
+
+  bool _isLoadingJob = false;
+  String? _responseJob;
+  Map<String, dynamic>? _structuredJob;
+  bool _hasErrorJob = false;
+  String? _errorMessageJob;
+  bool get _isLoading => _isLoadingSchool || _isLoadingJob;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    final cache = _cacheMap[widget.topic] ??= _QuickExploreCache();
+
+    // Restore text inputs
+    _industryController.text = cache.industryText;
+    _schoolController.text = cache.schoolText;
+    _jobIndustryController.text = cache.jobIndustryText;
+    _jobPositionController.text = cache.jobPositionText;
+    _locationController.text = cache.locationText;
+
+    // Restore active tab
+    _tabController.index = cache.tabIndex;
+
+    // Restore results
+    _isLoadingSchool = cache.isLoadingSchool;
+    _responseSchool = cache.responseSchool;
+    _structuredSchool = cache.structuredSchool;
+    _hasErrorSchool = cache.hasErrorSchool;
+    _errorMessageSchool = cache.errorMessageSchool;
+
+    _isLoadingJob = cache.isLoadingJob;
+    _responseJob = cache.responseJob;
+    _structuredJob = cache.structuredJob;
+    _hasErrorJob = cache.hasErrorJob;
+    _errorMessageJob = cache.errorMessageJob;
+
     _tabController.addListener(_onTabChanged);
+
+    // Save inputs to cache instantly on changes
+    _industryController.addListener(() => cache.industryText = _industryController.text);
+    _schoolController.addListener(() => cache.schoolText = _schoolController.text);
+    _jobIndustryController.addListener(() => cache.jobIndustryText = _jobIndustryController.text);
+    _jobPositionController.addListener(() => cache.jobPositionText = _jobPositionController.text);
+    _locationController.addListener(() => cache.locationText = _locationController.text);
   }
 
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
-    setState(() {
-      _response = null;
-      _structured = null;
-      _hasError = false;
-      _errorMessage = null;
-    });
+    final cache = _cacheMap[widget.topic];
+    if (cache != null) {
+      cache.tabIndex = _tabController.index;
+    }
   }
 
   @override
@@ -59,27 +97,22 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     _tabController.dispose();
     _industryController.dispose();
     _schoolController.dispose();
-    _positionController.dispose();
     _jobIndustryController.dispose();
     _jobPositionController.dispose();
     _locationController.dispose();
     super.dispose();
   }
 
-  bool get _canSubmit {
-    if (_tabController.index == 0) {
-      return _schoolController.text.trim().isNotEmpty ||
-          _industryController.text.trim().isNotEmpty ||
-          _positionController.text.trim().isNotEmpty;
-    } else {
-      return _jobIndustryController.text.trim().isNotEmpty ||
-          _jobPositionController.text.trim().isNotEmpty ||
-          _locationController.text.trim().isNotEmpty;
-    }
-  }
-
   Future<void> _ask() async {
-    if (!_canSubmit) {
+    // Validate: at least one field must have content
+    final hasText = _tabController.index == 0
+        ? (_schoolController.text.trim().isNotEmpty ||
+              _industryController.text.trim().isNotEmpty)
+        : (_jobIndustryController.text.trim().isNotEmpty ||
+              _jobPositionController.text.trim().isNotEmpty ||
+              _locationController.text.trim().isNotEmpty);
+
+    if (!hasText) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -103,53 +136,117 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     }
 
     final mode = _tabController.index == 0 ? 'HOC' : 'LAM';
+    final cache = _cacheMap[widget.topic];
 
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-      _errorMessage = null;
-      _response = null;
-      _structured = null;
-    });
+    if (mode == 'HOC') {
+      setState(() {
+        _isLoadingSchool = true;
+        _hasErrorSchool = false;
+        _errorMessageSchool = null;
+        _responseSchool = null;
+        _structuredSchool = null;
+      });
+      if (cache != null) {
+        cache.isLoadingSchool = true;
+        cache.hasErrorSchool = false;
+        cache.errorMessageSchool = null;
+        cache.responseSchool = null;
+        cache.structuredSchool = null;
+      }
+    } else {
+      setState(() {
+        _isLoadingJob = true;
+        _hasErrorJob = false;
+        _errorMessageJob = null;
+        _responseJob = null;
+        _structuredJob = null;
+      });
+      if (cache != null) {
+        cache.isLoadingJob = true;
+        cache.hasErrorJob = false;
+        cache.errorMessageJob = null;
+        cache.responseJob = null;
+        cache.structuredJob = null;
+      }
+    }
 
     final result = await ApiService.searchCareer({
       'mode': mode,
-      'industry': _tabController.index == 0 ? _industryController.text.trim() : _jobIndustryController.text.trim(),
+      'industry': _tabController.index == 0
+          ? _industryController.text.trim()
+          : _jobIndustryController.text.trim(),
       'school': _tabController.index == 0 ? _schoolController.text.trim() : '',
-      'position': _tabController.index == 0 ? _positionController.text.trim() : _jobPositionController.text.trim(),
-      'location': _tabController.index == 0 ? '' : _locationController.text.trim(),
+      'position': _tabController.index == 0
+          ? ''
+          : _jobPositionController.text.trim(),
+      'location': _tabController.index == 0
+          ? ''
+          : _locationController.text.trim(),
       'age': auth.userProfile?['age'] ?? 18,
       'academicData': auth.userProfile?['studentScores'],
     });
 
     if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
+    final aiSuccess = result['success'] == true;
+    final dynamic advice = result['advice'] ?? result['data'];
 
-      final aiSuccess = result['success'] == true;
-      final dynamic advice = result['advice'] ?? result['data'];
+    String? response;
+    Map<String, dynamic>? structured;
+    bool hasError = false;
+    String? errorMessage;
 
-      if (aiSuccess && advice != null) {
-        if (advice is Map) {
-          final parsedAdvice = Map<String, dynamic>.from(advice);
-          _structured = parsedAdvice;
-          _response = parsedAdvice['summary']?.toString();
-        } else if (advice is String && advice.trim().isNotEmpty) {
-          final decoded = _decodeJsonMap(advice);
-          if (decoded != null) {
-            _structured = decoded;
-            _response = decoded['summary']?.toString();
-          } else {
-            _response = advice;
-          }
+    if (aiSuccess && advice != null) {
+      if (advice is Map) {
+        final parsedAdvice = Map<String, dynamic>.from(advice);
+        structured = parsedAdvice;
+        response = parsedAdvice['summary']?.toString();
+      } else if (advice is String && advice.trim().isNotEmpty) {
+        final decoded = _decodeJsonMap(advice);
+        if (decoded != null) {
+          structured = decoded;
+          response = decoded['summary']?.toString();
+        } else {
+          response = advice;
         }
       }
+    }
 
-      if (_response == null && _structured == null) {
-        _hasError = true;
-        _errorMessage = result['message']?.toString() ??
-            'Máy chủ không trả về dữ liệu hiển thị.';
+    if (response == null && structured == null) {
+      hasError = true;
+      errorMessage = result['message']?.toString() ??
+          'Máy chủ không trả về dữ liệu hiển thị.';
+    }
+
+    setState(() {
+      if (mode == 'HOC') {
+        _isLoadingSchool = false;
+        _responseSchool = response;
+        _structuredSchool = structured;
+        _hasErrorSchool = hasError;
+        _errorMessageSchool = errorMessage;
+
+        if (cache != null) {
+          cache.isLoadingSchool = false;
+          cache.responseSchool = response;
+          cache.structuredSchool = structured;
+          cache.hasErrorSchool = hasError;
+          cache.errorMessageSchool = errorMessage;
+        }
+      } else {
+        _isLoadingJob = false;
+        _responseJob = response;
+        _structuredJob = structured;
+        _hasErrorJob = hasError;
+        _errorMessageJob = errorMessage;
+
+        if (cache != null) {
+          cache.isLoadingJob = false;
+          cache.responseJob = response;
+          cache.structuredJob = structured;
+          cache.hasErrorJob = hasError;
+          cache.errorMessageJob = errorMessage;
+        }
       }
     });
   }
@@ -177,7 +274,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
         ),
         title: Text(
           'Tư Vấn Nhanh Hướng Nghiệp',
-          style: GoogleFonts.outfit(
+          style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
             color: const Color(0xFF1F2937),
@@ -196,19 +293,19 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               controller: _tabController,
               labelColor: const Color(0xFFF59E0B),
               unselectedLabelColor: const Color(0xFF6B7280),
-              labelStyle: GoogleFonts.outfit(
+              labelStyle: TextStyle(
                 fontSize: Responsive.font(context, 13),
                 fontWeight: FontWeight.bold,
               ),
-              unselectedLabelStyle: GoogleFonts.outfit(
+              unselectedLabelStyle: TextStyle(
                 fontSize: Responsive.font(context, 13),
                 fontWeight: FontWeight.w500,
               ),
               indicatorColor: const Color(0xFFF59E0B),
               indicatorWeight: 3,
               tabs: const [
-                Tab(text: 'TÌM TRƯỜNG & NGÀNH'),
-                Tab(text: 'THỊ TRƯỜNG VIỆC LÀM'),
+                Tab(text: 'TRƯỜNG & NGÀNH'),
+                Tab(text: 'VIỆC LÀM'),
               ],
             ),
           ),
@@ -218,8 +315,8 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
         child: TabBarView(
           controller: _tabController,
           children: [
-            _buildSchoolTab(),
-            _buildJobMarketTab(),
+            KeepAliveWrapper(child: _buildSchoolTab()),
+            KeepAliveWrapper(child: _buildJobMarketTab()),
           ],
         ),
       ),
@@ -255,14 +352,6 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             hint: 'Nhập tên trường (ví dụ: Đại học Bách Khoa)',
             activeIconColor: const Color(0xFF3B82F6),
           ),
-          SizedBox(height: Responsive.s(context, 14)),
-          _buildInputField(
-            label: 'Vị trí công việc mong muốn',
-            icon: Icons.work_outline_rounded,
-            controller: _positionController,
-            hint: 'Nhập vị trí công việc (ví dụ: Lập trình viên)',
-            activeIconColor: const Color(0xFF3B82F6),
-          ),
           SizedBox(height: Responsive.s(context, 24)),
           _buildSubmitButton(
             color: const Color(0xFF3B82F6),
@@ -270,14 +359,17 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             icon: Icons.search_rounded,
           ),
           SizedBox(height: Responsive.s(context, 24)),
-          if (_isLoading) _buildLoadingBox(const Color(0xFF3B82F6))
-          else if (_hasError)
-            _buildErrorBox()
-          else if (_response != null || _structured != null)
+          if (_isLoadingSchool)
+            _buildLoadingBox(const Color(0xFF3B82F6))
+          else if (_hasErrorSchool)
+            _buildErrorBox(_errorMessageSchool)
+          else if (_responseSchool != null || _structuredSchool != null)
             _buildAnswerBox(
               color: const Color(0xFF3B82F6),
               icon: Icons.school_rounded,
               title: 'Trường & ngành phù hợp',
+              response: _responseSchool,
+              structured: _structuredSchool,
             ),
         ],
       ),
@@ -325,14 +417,17 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             icon: Icons.search_rounded,
           ),
           SizedBox(height: Responsive.s(context, 24)),
-          if (_isLoading) _buildLoadingBox(const Color(0xFF10B981))
-          else if (_hasError)
-            _buildErrorBox()
-          else if (_response != null || _structured != null)
+          if (_isLoadingJob)
+            _buildLoadingBox(const Color(0xFF10B981))
+          else if (_hasErrorJob)
+            _buildErrorBox(_errorMessageJob)
+          else if (_responseJob != null || _structuredJob != null)
             _buildAnswerBox(
               color: const Color(0xFF10B981),
               icon: Icons.work_rounded,
               title: 'Công ty & cơ hội việc làm',
+              response: _responseJob,
+              structured: _structuredJob,
             ),
         ],
       ),
@@ -360,15 +455,9 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             padding: EdgeInsets.all(Responsive.s(context, 10)),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(
-                Responsive.s(context, 12),
-              ),
+              borderRadius: BorderRadius.circular(Responsive.s(context, 12)),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: Responsive.s(context, 22),
-            ),
+            child: Icon(icon, color: color, size: Responsive.s(context, 22)),
           ),
           SizedBox(width: Responsive.s(context, 12)),
           Expanded(
@@ -377,16 +466,16 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 14),
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF1F2937),
                   ),
                 ),
                 SizedBox(height: Responsive.s(context, 4)),
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 12),
                     color: const Color(0xFF6B7280),
                     height: 1.4,
@@ -399,8 +488,6 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       ),
     );
   }
-
-
 
   Widget _buildInputField({
     required String label,
@@ -416,7 +503,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           padding: EdgeInsets.only(left: Responsive.s(context, 4)),
           child: Text(
             label,
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 12),
               fontWeight: FontWeight.w600,
               color: const Color(0xFF4B5563),
@@ -427,9 +514,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(
-              Responsive.s(context, 12),
-            ),
+            borderRadius: BorderRadius.circular(Responsive.s(context, 12)),
             border: Border.all(color: const Color(0xFFE5E7EB)),
             boxShadow: [
               BoxShadow(
@@ -441,16 +526,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           ),
           child: TextField(
             controller: controller,
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 14),
               color: const Color(0xFF1F2937),
             ),
-            onChanged: (text) {
-              setState(() {}); // Trigger rebuild to update _canSubmit button state
-            },
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: GoogleFonts.inter(
+              hintStyle: TextStyle(
                 fontSize: Responsive.font(context, 14),
                 color: const Color(0xFF9CA3AF),
               ),
@@ -485,13 +567,9 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(
-            vertical: Responsive.s(context, 14),
-          ),
+          padding: EdgeInsets.symmetric(vertical: Responsive.s(context, 14)),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              Responsive.s(context, 12),
-            ),
+            borderRadius: BorderRadius.circular(Responsive.s(context, 12)),
           ),
           elevation: 0,
         ),
@@ -511,7 +589,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                   SizedBox(width: Responsive.s(context, 8)),
                   Text(
                     label,
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 15),
                       fontWeight: FontWeight.bold,
                     ),
@@ -544,7 +622,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           SizedBox(height: Responsive.s(context, 12)),
           Text(
             'AI đang phân tích câu hỏi của bạn...',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 13),
               color: const Color(0xFF6B7280),
             ),
@@ -554,7 +632,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     );
   }
 
-  Widget _buildErrorBox() {
+  Widget _buildErrorBox(String? errorMessage) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(Responsive.s(context, 16)),
@@ -574,8 +652,8 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           SizedBox(width: Responsive.s(context, 12)),
           Expanded(
             child: Text(
-              _errorMessage ?? 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
-              style: GoogleFonts.inter(
+              errorMessage ?? 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
+              style: TextStyle(
                 fontSize: Responsive.font(context, 13),
                 color: const Color(0xFF991B1B),
                 height: 1.4,
@@ -591,6 +669,8 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     required Color color,
     required IconData icon,
     required String title,
+    required String? response,
+    required Map<String, dynamic>? structured,
   }) {
     return Container(
       width: double.infinity,
@@ -616,63 +696,73 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               SizedBox(width: Responsive.s(context, 8)),
               Text(
                 title,
-                style: GoogleFonts.outfit(
-                  fontWeight: FontWeight.bold,
-                  fontSize: Responsive.font(context, 15),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: Responsive.font(context, 14),
                   color: color,
                 ),
               ),
             ],
           ),
           SizedBox(height: Responsive.s(context, 12)),
-          if (_response != null && _response!.isNotEmpty)
+          if (response != null && response.isNotEmpty)
             Text(
-              _response!,
-              style: GoogleFonts.inter(
+              response,
+              style: TextStyle(
                 fontSize: Responsive.font(context, 13),
                 color: const Color(0xFF1F2937),
                 height: 1.5,
               ),
             ),
-          if (_structured != null) ...[
-            if (_structured!['officialLink'] != null) ...[
+          if (structured != null) ...[
+            if (structured['officialLink'] != null) ...[
               SizedBox(height: Responsive.s(context, 10)),
-              _buildSchoolOfficialLinkButton(_structured!['officialLink'], color),
+              _buildSchoolOfficialLinkButton(
+                structured['officialLink'],
+                color,
+              ),
             ],
             // CASE 1: server trả về topMajors[] (chỉ có tên trường)
-            if (_structured!['topMajors'] != null &&
-                _structured!['topMajors'] is List)
-              ...(_structured!['topMajors'] as List).map((m) {
+            if (structured['topMajors'] != null &&
+                structured['topMajors'] is List)
+              ...(structured['topMajors'] as List).map((m) {
                 final raw = (m is Map<String, dynamic>)
                     ? m
-                    : (m is Map) ? Map<String, dynamic>.from(m) : <String, dynamic>{};
+                    : (m is Map)
+                    ? Map<String, dynamic>.from(m)
+                    : <String, dynamic>{};
                 return _buildTopMajorCard(raw, color);
               }),
             // CASE 1: mô tả trường + website (schoolDescription, schoolWebsite)
-            if (_structured!['schoolDescription'] != null &&
-                _structured!['schoolDescription'].toString().isNotEmpty)
-              _buildSchoolInfoBlock(color),
+            if (structured['schoolDescription'] != null &&
+                structured['schoolDescription'].toString().isNotEmpty)
+              _buildSchoolInfoBlock(color, structured),
             // CASE 2: server trả về schools[] (chỉ có tên ngành)
-            if (_structured!['schools'] != null && _structured!['schools'] is List)
-              ...(_structured!['schools'] as List).map((s) {
+            if (structured['schools'] != null &&
+                structured['schools'] is List)
+              ...(structured['schools'] as List).map((s) {
                 final m = (s is Map<String, dynamic>)
                     ? s
-                    : (s is Map) ? Map<String, dynamic>.from(s) : <String, dynamic>{};
+                    : (s is Map)
+                    ? Map<String, dynamic>.from(s)
+                    : <String, dynamic>{};
                 return _buildSchoolCard(m, color);
               }),
             // CASE 3: server trả về majorInfo (có cả trường + ngành)
-            if (_structured!['majorInfo'] is Map)
+            if (structured['majorInfo'] is Map)
               _buildMajorInfoCard(
-                Map<String, dynamic>.from(_structured!['majorInfo'] as Map),
+                Map<String, dynamic>.from(structured['majorInfo'] as Map),
                 color,
               ),
             // MODE 'LAM': server trả về companies[]
-            if (_structured!['companies'] != null &&
-                _structured!['companies'] is List)
-              ...(_structured!['companies'] as List).map((c) {
+            if (structured['companies'] != null &&
+                structured['companies'] is List)
+              ...(structured['companies'] as List).map((c) {
                 final m = (c is Map<String, dynamic>)
                     ? c
-                    : (c is Map) ? Map<String, dynamic>.from(c) : <String, dynamic>{};
+                    : (c is Map)
+                    ? Map<String, dynamic>.from(c)
+                    : <String, dynamic>{};
                 return _buildCompanyCard(m, color);
               }),
           ],
@@ -723,7 +813,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 13),
                   fontWeight: FontWeight.bold,
                   color: accent,
@@ -795,7 +885,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 14),
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF111827),
@@ -814,12 +904,10 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   }
 
   // CASE 1: Khối hiển thị mô tả + website của trường (schoolDescription + schoolWebsite).
-  Widget _buildSchoolInfoBlock(Color accent) {
-    final description =
-        _structured?['schoolDescription']?.toString() ?? '';
-    final website = _structured?['schoolWebsite']?.toString();
-    final schoolName =
-        _structured?['schoolName']?.toString() ?? 'trường này';
+  Widget _buildSchoolInfoBlock(Color accent, Map<String, dynamic>? structured) {
+    final description = structured?['schoolDescription']?.toString() ?? '';
+    final website = structured?['schoolWebsite']?.toString();
+    final schoolName = structured?['schoolName']?.toString() ?? 'trường này';
 
     return Container(
       margin: EdgeInsets.only(top: Responsive.s(context, 10)),
@@ -843,7 +931,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               Expanded(
                 child: Text(
                   'Giới thiệu về $schoolName',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 13),
                     fontWeight: FontWeight.bold,
                     color: accent,
@@ -856,7 +944,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             SizedBox(height: Responsive.s(context, 8)),
             Text(
               description,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: Responsive.font(context, 12),
                 color: const Color(0xFF374151),
                 height: 1.5,
@@ -880,8 +968,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius:
-                      BorderRadius.circular(Responsive.s(context, 8)),
+                  borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
                   border: Border.all(color: accent.withValues(alpha: 0.4)),
                 ),
                 child: Row(
@@ -893,16 +980,12 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       color: accent,
                     ),
                     SizedBox(width: Responsive.s(context, 4)),
-                    Flexible(
-                      child: Text(
-                        website.replaceFirst(RegExp(r'^https?://'), ''),
-                        style: GoogleFonts.inter(
-                          fontSize: Responsive.font(context, 11),
-                          color: accent,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      'Trang web trường',
+                      style: TextStyle(
+                        fontSize: Responsive.font(context, 11),
+                        color: accent,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -917,20 +1000,22 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
 
   // CASE 3: Card hiển thị thông tin điểm chuẩn của 1 ngành cụ thể tại 1 trường cụ thể.
   Widget _buildMajorInfoCard(Map<String, dynamic> m, Color accent) {
-    final majorName =
-        (m['majorName'] ?? _structured?['majorName'] ?? 'Ngành').toString();
-    final benchmarkVal = m['benchmark'] ??
+    final majorName = (m['majorName'] ?? _structuredSchool?['majorName'] ?? 'Ngành')
+        .toString();
+    final benchmarkVal =
+        m['benchmark'] ??
         m['benchmark2025'] ??
         m['benchmark2024'] ??
         m['benchmark2023'];
-    final year = m['benchmarkYear'] ??
+    final year =
+        m['benchmarkYear'] ??
         (m['benchmark2025'] != null
             ? 2025
             : m['benchmark2024'] != null
-                ? 2024
-                : m['benchmark2023'] != null
-                    ? 2023
-                    : null);
+            ? 2024
+            : m['benchmark2023'] != null
+            ? 2023
+            : null);
     final source = m['benchmarkSource']?.toString();
     final tier = m['benchmarkTier']?.toString();
     final estimated = m['benchmarkEstimated'] == true;
@@ -959,10 +1044,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            const Color(0xFFF0F9FF),
-          ],
+          colors: [Colors.white, const Color(0xFFF0F9FF)],
         ),
         borderRadius: BorderRadius.circular(Responsive.s(context, 14)),
         border: Border.all(color: const Color(0xFFBAE6FD)),
@@ -984,8 +1066,9 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 height: Responsive.s(context, 40),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0369A1),
-                  borderRadius:
-                      BorderRadius.circular(Responsive.s(context, 10)),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.s(context, 10),
+                  ),
                 ),
                 child: Icon(
                   Icons.analytics_rounded,
@@ -1000,7 +1083,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                   children: [
                     Text(
                       majorName,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 14),
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF111827),
@@ -1008,8 +1091,8 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                     ),
                     SizedBox(height: Responsive.s(context, 2)),
                     Text(
-                      _structured?['schoolName']?.toString() ?? '',
-                      style: GoogleFonts.inter(
+                      _structuredSchool?['schoolName']?.toString() ?? '',
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 11),
                         color: const Color(0xFF6B7280),
                       ),
@@ -1023,11 +1106,15 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           if (m['duration'] != null && m['duration'].toString().isNotEmpty) ...[
             Row(
               children: [
-                Icon(Icons.schedule_rounded, size: Responsive.s(context, 16), color: const Color(0xFF0369A1)),
+                Icon(
+                  Icons.schedule_rounded,
+                  size: Responsive.s(context, 16),
+                  color: const Color(0xFF0369A1),
+                ),
                 SizedBox(width: Responsive.s(context, 8)),
                 Text(
                   'Thời gian đào tạo: ',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 12),
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF374151),
@@ -1035,7 +1122,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 ),
                 Text(
                   m['duration'].toString(),
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 12),
                     color: const Color(0xFF4B5563),
                   ),
@@ -1044,15 +1131,21 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             ),
             SizedBox(height: Responsive.s(context, 8)),
           ],
-          if (m['combinations'] != null && m['combinations'] is List && (m['combinations'] as List).isNotEmpty) ...[
+          if (m['combinations'] != null &&
+              m['combinations'] is List &&
+              (m['combinations'] as List).isNotEmpty) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.menu_book_rounded, size: Responsive.s(context, 16), color: const Color(0xFF0369A1)),
+                Icon(
+                  Icons.menu_book_rounded,
+                  size: Responsive.s(context, 16),
+                  color: const Color(0xFF0369A1),
+                ),
                 SizedBox(width: Responsive.s(context, 8)),
                 Text(
                   'Tổ hợp xét tuyển: ',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 12),
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF374151),
@@ -1061,7 +1154,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 Expanded(
                   child: Text(
                     (m['combinations'] as List).join(', '),
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 12),
                       color: const Color(0xFF4B5563),
                     ),
@@ -1072,7 +1165,10 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             SizedBox(height: Responsive.s(context, 8)),
           ],
           if (m['officialLink'] != null) ...[
-            _buildSchoolOfficialLinkButton(m['officialLink'], const Color(0xFF0369A1)),
+            _buildSchoolOfficialLinkButton(
+              m['officialLink'],
+              const Color(0xFF0369A1),
+            ),
             SizedBox(height: Responsive.s(context, 10)),
           ],
           if (scoreStr != null)
@@ -1084,8 +1180,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(Responsive.s(context, 10)),
+                borderRadius: BorderRadius.circular(Responsive.s(context, 10)),
                 border: Border.all(
                   color: const Color(0xFF0369A1).withValues(alpha: 0.3),
                 ),
@@ -1100,14 +1195,14 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                   SizedBox(width: Responsive.s(context, 8)),
                   Text(
                     'Điểm chuẩn: ',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 12),
                       color: const Color(0xFF374151),
                     ),
                   ),
                   Text(
                     scoreStr,
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF0369A1),
@@ -1117,7 +1212,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                     SizedBox(width: Responsive.s(context, 4)),
                     Text(
                       '(Năm $year)',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 11),
                         color: const Color(0xFF6B7280),
                       ),
@@ -1132,12 +1227,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF3C7),
-                        borderRadius:
-                            BorderRadius.circular(Responsive.s(context, 4)),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 4),
+                        ),
                       ),
                       child: Text(
                         'Ước lượng',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 9),
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF92400E),
@@ -1152,12 +1248,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDCFCE7),
-                        borderRadius:
-                            BorderRadius.circular(Responsive.s(context, 4)),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.s(context, 4),
+                        ),
                       ),
                       child: Text(
                         'Đã xác minh',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 9),
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF166534),
@@ -1176,12 +1273,11 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               ),
               decoration: BoxDecoration(
                 color: const Color(0xFFF3F4F6),
-                borderRadius:
-                    BorderRadius.circular(Responsive.s(context, 10)),
+                borderRadius: BorderRadius.circular(Responsive.s(context, 10)),
               ),
               child: Text(
                 'Chưa có dữ liệu điểm chuẩn chính xác cho ngành này.',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 12),
                   color: const Color(0xFF6B7280),
                   fontStyle: FontStyle.italic,
@@ -1195,7 +1291,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             if (tier != null && tier.isNotEmpty)
               Text(
                 '• Mức: $tier',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 11),
                   color: const Color(0xFF4B5563),
                 ),
@@ -1203,7 +1299,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             if (source != null && source.isNotEmpty)
               Text(
                 '• Nguồn: $source',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 11),
                   color: const Color(0xFF4B5563),
                 ),
@@ -1211,7 +1307,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             if (reason != null && reason.isNotEmpty)
               Text(
                 '• $reason',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 11),
                   color: const Color(0xFF6B7280),
                   fontStyle: FontStyle.italic,
@@ -1223,34 +1319,85 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
     );
   }
 
+  Widget _buildLinkChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required String url,
+  }) {
+    return InkWell(
+      onTap: () async {
+        try {
+          final effectiveUrl = url.startsWith('http') ? url : 'https://$url';
+          await launchUrl(
+            Uri.parse(effectiveUrl),
+            mode: LaunchMode.externalApplication,
+          );
+        } catch (_) {}
+      },
+      borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: Responsive.s(context, 10),
+          vertical: Responsive.s(context, 6),
+        ),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: Responsive.s(context, 13), color: color),
+            SizedBox(width: Responsive.s(context, 4)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: Responsive.font(context, 11),
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSchoolCard(Map<String, dynamic> m, Color accent) {
     final name = (m['schoolName'] ?? m['name'] ?? 'Trường').toString();
     final majors = (m['majors'] ?? m['specializations'] ?? m['nganh']) is List
         ? List<String>.from(m['majors'] ?? m['specializations'] ?? m['nganh'])
         : <String>[];
     final reason = m['reason'] ?? m['lyDo'] ?? m['note'];
-    String? link;
+
+    String? officialLink;
+    String? admissionLink;
+
     final officialLinkRaw = m['officialLink'];
     if (officialLinkRaw != null) {
       if (officialLinkRaw is Map) {
-        link = officialLinkRaw['url']?.toString();
+        officialLink = officialLinkRaw['url']?.toString();
       } else if (officialLinkRaw is String) {
-        link = officialLinkRaw;
+        officialLink = officialLinkRaw;
       }
     }
-    if (link == null || link.isEmpty) {
-      final admissionLinkRaw = m['admissionLink'];
-      if (admissionLinkRaw != null) {
-        if (admissionLinkRaw is Map) {
-          link = admissionLinkRaw['url']?.toString();
-        } else if (admissionLinkRaw is String) {
-          link = admissionLinkRaw;
-        }
+
+    final admissionLinkRaw = m['admissionLink'];
+    if (admissionLinkRaw != null) {
+      if (admissionLinkRaw is Map) {
+        admissionLink = admissionLinkRaw['url']?.toString();
+      } else if (admissionLinkRaw is String) {
+        admissionLink = admissionLinkRaw;
       }
     }
-    if (link == null || link.isEmpty) {
-      link = (m['website'] ?? m['url'] ?? m['link'])?.toString();
+
+    if ((officialLink == null || officialLink.isEmpty) &&
+        (admissionLink == null || admissionLink.isEmpty)) {
+      officialLink = (m['website'] ?? m['url'] ?? m['link'])?.toString();
     }
+
     final location = m['location'] ?? m['diaDiem'];
 
     final benchmark = _extractBenchmarkScores(m);
@@ -1297,7 +1444,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 child: Center(
                   child: Text(
                     name.isNotEmpty ? name.characters.first.toUpperCase() : 'T',
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: Responsive.font(context, 18),
@@ -1312,14 +1459,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                   children: [
                     Text(
                       name,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 15),
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF111827),
                       ),
                     ),
-                    if (location != null &&
-                        location.toString().isNotEmpty) ...[
+                    if (location != null && location.toString().isNotEmpty) ...[
                       SizedBox(height: Responsive.s(context, 2)),
                       Row(
                         children: [
@@ -1332,7 +1478,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                           Expanded(
                             child: Text(
                               location.toString(),
-                              style: GoogleFonts.inter(
+                              style: TextStyle(
                                 fontSize: Responsive.font(context, 12),
                                 color: const Color(0xFF6B7280),
                               ),
@@ -1358,9 +1504,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
               ),
               decoration: BoxDecoration(
                 color: const Color(0xFFF0F9FF),
-                borderRadius: BorderRadius.circular(
-                  Responsive.s(context, 10),
-                ),
+                borderRadius: BorderRadius.circular(Responsive.s(context, 10)),
                 border: Border.all(color: const Color(0xFFBAE6FD)),
               ),
               child: Column(
@@ -1376,7 +1520,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       SizedBox(width: Responsive.s(context, 6)),
                       Text(
                         'Điểm chuẩn năm gần nhất',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 12),
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0369A1),
@@ -1422,7 +1566,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       ),
                       child: Text(
                         m,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 11),
                           fontWeight: FontWeight.w600,
                           color: accent,
@@ -1437,63 +1581,38 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             SizedBox(height: Responsive.s(context, 8)),
             Text(
               reason.toString(),
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: Responsive.font(context, 12),
                 color: const Color(0xFF4B5563),
                 height: 1.4,
               ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
-          if (link != null && link.isNotEmpty) ...[
+          if ((officialLink != null && officialLink.isNotEmpty) ||
+              (admissionLink != null && admissionLink.isNotEmpty)) ...[
             SizedBox(height: Responsive.s(context, 10)),
-            InkWell(
-              onTap: () async {
-                final uri = Uri.tryParse(link!);
-                if (uri != null && await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
-              borderRadius: BorderRadius.circular(
-                Responsive.s(context, 8),
-              ),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: Responsive.s(context, 10),
-                  vertical: Responsive.s(context, 6),
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(
-                    Responsive.s(context, 8),
+            Row(
+              children: [
+                if (officialLink != null && officialLink.isNotEmpty)
+                  _buildLinkChip(
+                    icon: Icons.language_rounded,
+                    label: 'Website',
+                    color: accent,
+                    url: officialLink,
                   ),
-                  border: Border.all(color: accent.withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.school_rounded,
-                      size: Responsive.s(context, 14),
-                      color: accent,
-                    ),
-                    SizedBox(width: Responsive.s(context, 4)),
-                    Flexible(
-                      child: Text(
-                        'Mở trang trường: ${link.replaceFirst(RegExp(r'^https?://'), '')}',
-                        style: GoogleFonts.inter(
-                          fontSize: Responsive.font(context, 11),
-                          color: accent,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                if (officialLink != null &&
+                    officialLink.isNotEmpty &&
+                    admissionLink != null &&
+                    admissionLink.isNotEmpty)
+                  SizedBox(width: Responsive.s(context, 12)),
+                if (admissionLink != null && admissionLink.isNotEmpty)
+                  _buildLinkChip(
+                    icon: Icons.campaign_outlined,
+                    label: 'Tuyển sinh',
+                    color: accent,
+                    url: admissionLink,
+                  ),
+              ],
             ),
           ],
         ],
@@ -1516,15 +1635,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
-        border: Border.all(
-          color: accent.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
       ),
       child: Column(
         children: [
           Text(
             'Năm $year',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 10),
               color: const Color(0xFF6B7280),
               fontWeight: FontWeight.w600,
@@ -1533,7 +1650,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           SizedBox(height: Responsive.s(context, 2)),
           Text(
             score,
-            style: GoogleFonts.outfit(
+            style: TextStyle(
               fontSize: Responsive.font(context, 16),
               fontWeight: FontWeight.bold,
               color: accent,
@@ -1543,7 +1660,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             SizedBox(height: Responsive.s(context, 2)),
             Text(
               major,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: Responsive.font(context, 9),
                 color: const Color(0xFF6B7280),
               ),
@@ -1559,7 +1676,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   List<_BenchmarkEntry> _extractBenchmarkScores(Map<String, dynamic> m) {
     // LỌC NULL: Không hiển thị gì nếu không có điểm hợp lệ
     // Chỉ chấp nhận số > 0 và <= 30
-    
+
     // Ưu tiên 1: server trả về field 'benchmark' (chuỗi kiểu "24.5" hoặc số)
     // kèm 'benchmarkYear' và 'benchmarkTier' riêng.
     final dynamic directBenchmark = m['benchmark'];
@@ -1576,10 +1693,12 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             for (int i = 0; i < keys.length && i < 3; i++) {
               final dynamic v = values[i];
               if (v is num && v > 0 && v <= 30) {
-                entries.add(_BenchmarkEntry(
-                  year: keys[i].toString(),
-                  score: _formatScore(v.toDouble()),
-                ));
+                entries.add(
+                  _BenchmarkEntry(
+                    year: keys[i].toString(),
+                    score: _formatScore(v.toDouble()),
+                  ),
+                );
               }
             }
             if (entries.isNotEmpty) return entries;
@@ -1647,10 +1766,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
       final matches = regExp.allMatches(raw);
       for (final match in matches.take(3)) {
         entries.add(
-          _BenchmarkEntry(
-            year: match.group(1)!,
-            score: match.group(2)!,
-          ),
+          _BenchmarkEntry(year: match.group(1)!, score: match.group(2)!),
         );
       }
       if (entries.isNotEmpty) return entries;
@@ -1670,9 +1786,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             ),
           );
         } else if (v is String) {
-          entries.add(
-            _BenchmarkEntry(year: keys[i].toString(), score: v),
-          );
+          entries.add(_BenchmarkEntry(year: keys[i].toString(), score: v));
         } else if (v is Map) {
           entries.add(
             _BenchmarkEntry(
@@ -1716,12 +1830,12 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
   /// Widget hiển thị nút link trang tuyển sinh
   Widget _buildAdmissionLinkButton(Map<String, dynamic> m, Color accent) {
     final link = _extractAdmissionLink(m);
-    
+
     if (link == null) {
       // Không có link -> hiển thị text gợi ý
       return Text(
         'Vui lòng truy cập trang tuyển sinh để xem điểm chuẩn',
-        style: GoogleFonts.inter(
+        style: TextStyle(
           fontSize: Responsive.font(context, 11),
           color: const Color(0xFF9CA3AF),
           fontStyle: FontStyle.italic,
@@ -1760,7 +1874,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             Flexible(
               child: Text(
                 link['title']!,
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 12),
                   fontWeight: FontWeight.w600,
                   color: accent,
@@ -1808,7 +1922,9 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
 
     // Fallback: benchmarkUrl (legacy)
     final benchmarkUrl = m['benchmarkUrl']?.toString();
-    if (benchmarkUrl != null && benchmarkUrl.isNotEmpty && benchmarkUrl.startsWith('http')) {
+    if (benchmarkUrl != null &&
+        benchmarkUrl.isNotEmpty &&
+        benchmarkUrl.startsWith('http')) {
       return {'url': benchmarkUrl, 'title': 'Xem điểm chuẩn'};
     }
 
@@ -1817,10 +1933,9 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
 
   Widget _buildCompanyCard(Map<String, dynamic> m, Color accent) {
     final name = (m['companyName'] ?? m['name'] ?? 'Công ty').toString();
-    final positions =
-        (m['positions'] ?? m['jobs'] ?? m['viTri']) is List
-            ? List<String>.from(m['positions'] ?? m['jobs'] ?? m['viTri'])
-            : <String>[];
+    final positions = (m['positions'] ?? m['jobs'] ?? m['viTri']) is List
+        ? List<String>.from(m['positions'] ?? m['jobs'] ?? m['viTri'])
+        : <String>[];
     final reason = m['reason'] ?? m['description'] ?? m['lyDo'] ?? m['note'];
     final link = m['website'] ?? m['url'] ?? m['link'] ?? m['careerLink'];
     final location = m['location'] ?? m['diaDiem'];
@@ -1867,7 +1982,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 child: Center(
                   child: Text(
                     name.isNotEmpty ? name.characters.first.toUpperCase() : 'C',
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: Responsive.font(context, 18),
@@ -1882,14 +1997,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                   children: [
                     Text(
                       name,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 15),
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF111827),
                       ),
                     ),
-                    if (location != null &&
-                        location.toString().isNotEmpty) ...[
+                    if (location != null && location.toString().isNotEmpty) ...[
                       SizedBox(height: Responsive.s(context, 2)),
                       Row(
                         children: [
@@ -1902,7 +2016,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                           Expanded(
                             child: Text(
                               location.toString(),
-                              style: GoogleFonts.inter(
+                              style: TextStyle(
                                 fontSize: Responsive.font(context, 12),
                                 color: const Color(0xFF6B7280),
                               ),
@@ -1939,7 +2053,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                       ),
                       child: Text(
                         p,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 11),
                           fontWeight: FontWeight.w600,
                           color: accent,
@@ -1962,7 +2076,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 SizedBox(width: Responsive.s(context, 4)),
                 Text(
                   salary.toString(),
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 12),
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF059669),
@@ -1975,13 +2089,11 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
             SizedBox(height: Responsive.s(context, 8)),
             Text(
               reason.toString(),
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: Responsive.font(context, 12),
                 color: const Color(0xFF4B5563),
                 height: 1.4,
               ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
           if (link != null && link.toString().isNotEmpty) ...[
@@ -1993,9 +2105,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }
               },
-              borderRadius: BorderRadius.circular(
-                Responsive.s(context, 8),
-              ),
+              borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: Responsive.s(context, 10),
@@ -2003,9 +2113,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(
-                    Responsive.s(context, 8),
-                  ),
+                  borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
                   border: Border.all(color: accent.withValues(alpha: 0.4)),
                 ),
                 child: Row(
@@ -2020,7 +2128,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                     Flexible(
                       child: Text(
                         link.toString().replaceFirst(RegExp(r'^https?://'), ''),
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 11),
                           color: accent,
                           fontWeight: FontWeight.w600,
@@ -2045,9 +2153,46 @@ class _BenchmarkEntry {
   final String score;
   final String? major;
 
-  const _BenchmarkEntry({
-    required this.year,
-    required this.score,
-    this.major,
-  });
+  const _BenchmarkEntry({required this.year, required this.score, this.major});
+}
+
+class _QuickExploreCache {
+  int tabIndex = 0;
+  String industryText = '';
+  String schoolText = '';
+  String jobIndustryText = '';
+  String jobPositionText = '';
+  String locationText = '';
+
+  bool isLoadingSchool = false;
+  String? responseSchool;
+  Map<String, dynamic>? structuredSchool;
+  bool hasErrorSchool = false;
+  String? errorMessageSchool;
+
+  bool isLoadingJob = false;
+  String? responseJob;
+  Map<String, dynamic>? structuredJob;
+  bool hasErrorJob = false;
+  String? errorMessageJob;
+}
+
+class KeepAliveWrapper extends StatefulWidget {
+  final Widget child;
+  const KeepAliveWrapper({super.key, required this.child});
+
+  @override
+  State<KeepAliveWrapper> createState() => _KeepAliveWrapperState();
+}
+
+class _KeepAliveWrapperState extends State<KeepAliveWrapper>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/pdf_export_service.dart';
@@ -183,7 +182,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     isDiscovery
                         ? 'Chi Tiết Phiên Khám Phá AI'
                         : 'Chi Tiết Kiểm Tra Mục Tiêu',
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -192,7 +191,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                   SizedBox(height: Responsive.s(context, 4)),
                   Text(
                     'Session ID: ${session['sessionId']}',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 12),
                       color: const Color(0xFF6B7280),
                     ),
@@ -206,11 +205,11 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     indicatorWeight: 3,
                     labelColor: color,
                     unselectedLabelColor: const Color(0xFF6B7280),
-                    labelStyle: GoogleFonts.outfit(
+                    labelStyle: TextStyle(
                       fontSize: Responsive.font(context, 14),
                       fontWeight: FontWeight.bold,
                     ),
-                    unselectedLabelStyle: GoogleFonts.outfit(
+                    unselectedLabelStyle: TextStyle(
                       fontSize: Responsive.font(context, 14),
                       fontWeight: FontWeight.w500,
                     ),
@@ -270,7 +269,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Không có dữ liệu câu hỏi',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             color: Colors.black54,
             fontSize: Responsive.font(context, 14),
           ),
@@ -298,7 +297,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
             children: [
               Text(
                 'Câu ${index + 1}: ${item['q']}',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 14),
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -326,7 +325,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     Expanded(
                       child: Text(
                         item['a'],
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 13),
                           color: color,
                           fontWeight: FontWeight.w600,
@@ -389,7 +388,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                   Expanded(
                     child: Text(
                       'ĐÁP ÁN HƯỚNG NGHIỆP PHÙ HỢP NHẤT',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 12),
                         fontWeight: FontWeight.bold,
                         color: color,
@@ -401,16 +400,18 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
               SizedBox(height: Responsive.s(context, 12)),
               Text(
                 recommendedCareer,
-                style: GoogleFonts.outfit(
-                  fontSize: Responsive.font(context, 20),
+                style: TextStyle(
+                  fontSize: Responsive.font(context, 18),
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               SizedBox(height: Responsive.s(context, 8)),
               Text(
                 reason,
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 13),
                   color: const Color(0xFF4B5563),
                   height: 1.4,
@@ -423,7 +424,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
           SizedBox(height: Responsive.s(context, 16)),
           Text(
             'TÓM TẮT ĐÁNH GIÁ',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 11),
               fontWeight: FontWeight.bold,
               color: const Color(0xFF6B7280),
@@ -432,7 +433,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
           SizedBox(height: Responsive.s(context, 8)),
           Text(
             summary.toString(),
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 13),
               color: Colors.black87,
               height: 1.4,
@@ -451,7 +452,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     children: [
                       Text(
                         'ĐIỂM MẠNH',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 11),
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF059669),
@@ -469,7 +470,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                 Expanded(
                                   child: Text(
                                     item.toString(),
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(
                                       fontSize: Responsive.font(context, 12),
                                       color: Colors.black87,
                                     ),
@@ -490,7 +491,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     children: [
                       Text(
                         'CẦN CẢI THIỆN',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 11),
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFFDC2626),
@@ -508,7 +509,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                 Expanded(
                                   child: Text(
                                     item.toString(),
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(
                                       fontSize: Responsive.font(context, 12),
                                       color: Colors.black87,
                                     ),
@@ -527,7 +528,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
           SizedBox(height: Responsive.s(context, 20)),
           Text(
             'LỜI KHUYÊN HƯỚNG NGHIỆP',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 11),
               fontWeight: FontWeight.bold,
               color: const Color(0xFFD97706),
@@ -536,7 +537,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
           SizedBox(height: Responsive.s(context, 8)),
           Text(
             advice.toString(),
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 13),
               color: Colors.black87,
               height: 1.4,
@@ -556,7 +557,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Chưa có thông tin lộ trình',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             color: Colors.black54,
             fontSize: Responsive.font(context, 14),
           ),
@@ -603,7 +604,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                   children: [
                     Text(
                       step['stage'] ?? '',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 14),
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -612,7 +613,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     SizedBox(height: Responsive.s(context, 6)),
                     Text(
                       step['desc'] ?? '',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 12),
                         color: const Color(0xFF4B5563),
                         height: 1.4,
@@ -649,7 +650,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                 SizedBox(width: Responsive.s(context, 4)),
                                 Text(
                                   cert.toString(),
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: Responsive.font(context, 10),
                                     fontWeight: FontWeight.w600,
                                     color: color,
@@ -671,6 +672,49 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
     );
   }
 
+  Widget _buildLinkChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required String url,
+  }) {
+    return InkWell(
+      onTap: () async {
+        try {
+          final effectiveUrl = url.startsWith('http') ? url : 'https://$url';
+          await launchUrl(Uri.parse(effectiveUrl), mode: LaunchMode.externalApplication);
+        } catch (_) {}
+      },
+      borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: Responsive.s(context, 10),
+          vertical: Responsive.s(context, 6),
+        ),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: Responsive.s(context, 13), color: color),
+            SizedBox(width: Responsive.s(context, 4)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: Responsive.font(context, 11),
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildStudentTab(
     List<dynamic> schools,
     Color color,
@@ -680,7 +724,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Chưa có thông tin trường học phù hợp từ hệ thống',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             color: Colors.black54,
             fontSize: Responsive.font(context, 14),
           ),
@@ -693,7 +737,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       children: [
         Text(
           'DANH SÁCH TRƯỜNG ĐÀO TẠO ĐỢT KHẢO SÁT',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: Responsive.font(context, 11),
             fontWeight: FontWeight.bold,
             color: const Color(0xFF6B7280),
@@ -723,7 +767,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         children: [
                           Text(
                             sch['name'] ?? 'Tên trường',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
                               fontSize: Responsive.font(context, 15),
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
@@ -732,7 +776,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                           SizedBox(height: Responsive.s(context, 4)),
                           Text(
                             'Ngành: ${sch['major'] ?? ''}',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: Responsive.font(context, 13),
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF4B5563),
@@ -741,7 +785,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                           SizedBox(height: Responsive.s(context, 2)),
                           Text(
                             '📍 ${sch['location'] ?? ''}',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: Responsive.font(context, 12),
                               color: const Color(0xFF6B7280),
                             ),
@@ -762,7 +806,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       ),
                       child: Text(
                         sch['score'] ?? '',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 13),
                           fontWeight: FontWeight.bold,
                           color: color,
@@ -788,38 +832,11 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     children: [
                       if (sch['officialLink'] != null &&
                           sch['officialLink'].toString().isNotEmpty)
-                        TextButton.icon(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size(
-                              Responsive.s(context, 50),
-                              Responsive.s(context, 30),
-                            ),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          icon: Icon(
-                            Icons.language_rounded,
-                            size: Responsive.s(context, 14),
-                            color: color,
-                          ),
-                          label: Text(
-                            'Website',
-                            style: GoogleFonts.inter(
-                              fontSize: Responsive.font(context, 11),
-                              fontWeight: FontWeight.bold,
-                              color: color,
-                            ),
-                          ),
-                          onPressed: () async {
-                            final urlString = sch['officialLink'].toString();
-                            final url = urlString.startsWith('http')
-                                ? urlString
-                                : 'https://$urlString';
-                            await launchUrl(
-                              Uri.parse(url),
-                              mode: LaunchMode.externalApplication,
-                            );
-                          },
+                        _buildLinkChip(
+                          icon: Icons.language_rounded,
+                          label: 'Website',
+                          color: color,
+                          url: sch['officialLink'].toString(),
                         ),
                       if (sch['officialLink'] != null &&
                           sch['officialLink'].toString().isNotEmpty &&
@@ -828,38 +845,11 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         SizedBox(width: Responsive.s(context, 16)),
                       if (sch['admissionLink'] != null &&
                           sch['admissionLink'].toString().isNotEmpty)
-                        TextButton.icon(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size(
-                              Responsive.s(context, 50),
-                              Responsive.s(context, 30),
-                            ),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          icon: Icon(
-                            Icons.campaign_outlined,
-                            size: Responsive.s(context, 14),
-                            color: color,
-                          ),
-                          label: Text(
-                            'Tuyển sinh',
-                            style: GoogleFonts.inter(
-                              fontSize: Responsive.font(context, 11),
-                              fontWeight: FontWeight.bold,
-                              color: color,
-                            ),
-                          ),
-                          onPressed: () async {
-                            final urlString = sch['admissionLink'].toString();
-                            final url = urlString.startsWith('http')
-                                ? urlString
-                                : 'https://$urlString';
-                            await launchUrl(
-                              Uri.parse(url),
-                              mode: LaunchMode.externalApplication,
-                            );
-                          },
+                        _buildLinkChip(
+                          icon: Icons.campaign_outlined,
+                          label: 'Tuyển sinh',
+                          color: color,
+                          url: sch['admissionLink'].toString(),
                         ),
                     ],
                   ),
@@ -882,7 +872,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
       return Center(
         child: Text(
           'Chưa có thông tin thị trường tuyển dụng lúc này',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             color: Colors.black54,
             fontSize: Responsive.font(context, 14),
           ),
@@ -896,7 +886,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         if (salaries.isNotEmpty) ...[
           Text(
             'MỨC LƯƠNG THEO CẤP ĐỘ (THÁNG 5/2025)',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 11),
               fontWeight: FontWeight.bold,
               color: const Color(0xFF6B7280),
@@ -928,7 +918,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         ),
                         child: Text(
                           sal['level'] ?? '',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: Responsive.font(context, 12),
                             color: Colors.black87,
                             fontWeight: FontWeight.w500,
@@ -951,7 +941,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       SizedBox(width: Responsive.s(context, 14)),
                       Text(
                         sal['range'] ?? '',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 12),
                           fontWeight: FontWeight.bold,
                           color: Colors.orange.shade700,
@@ -969,7 +959,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         if (companies.isNotEmpty) ...[
           Text(
             'CƠ HỘI VIỆC LÀM NỔI BẬT',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 11),
               fontWeight: FontWeight.bold,
               color: const Color(0xFF6B7280),
@@ -990,69 +980,73 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Role Name
+                  Text(
+                    comp['role'] ?? '',
+                    style: TextStyle(
+                      fontSize: Responsive.font(context, 14),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: Responsive.s(context, 4)),
+                  // Company & Location
+                  Text(
+                    '${comp['company'] ?? ''} • ${comp['loc'] ?? ''}',
+                    style: TextStyle(
+                      fontSize: Responsive.font(context, 12),
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
+                  SizedBox(height: Responsive.s(context, 10)),
+                  // Tags (Type & Salary)
+                  Wrap(
+                    spacing: Responsive.s(context, 8),
+                    runSpacing: Responsive.s(context, 6),
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              comp['role'] ?? '',
-                              style: GoogleFonts.outfit(
-                                fontSize: Responsive.font(context, 14),
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(height: Responsive.s(context, 4)),
-                            Text(
-                              '${comp['company'] ?? ''} • ${comp['loc'] ?? ''}',
-                              style: GoogleFonts.inter(
-                                fontSize: Responsive.font(context, 12),
-                                color: const Color(0xFF6B7280),
-                              ),
-                            ),
-                          ],
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Responsive.s(context, 10),
+                          vertical: Responsive.s(context, 4),
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(
+                            Responsive.s(context, 6),
+                          ),
+                        ),
+                        child: Text(
+                          comp['type'] ?? 'Toàn thời gian',
+                          style: TextStyle(
+                            fontSize: Responsive.font(context, 11),
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF4B5563),
+                          ),
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: Responsive.s(context, 10),
-                              vertical: Responsive.s(context, 4),
+                      if (comp['salary'] != null &&
+                          comp['salary'].toString().isNotEmpty)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Responsive.s(context, 10),
+                            vertical: Responsive.s(context, 4),
+                          ),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                              Responsive.s(context, 6),
                             ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE5E7EB),
-                              borderRadius: BorderRadius.circular(
-                                Responsive.s(context, 6),
-                              ),
-                            ),
-                            child: Text(
-                              comp['type'] ?? 'Toàn thời gian',
-                              style: GoogleFonts.inter(
-                                fontSize: Responsive.font(context, 11),
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF4B5563),
-                              ),
+                            border: Border.all(color: color.withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            comp['salary'].toString(),
+                            style: TextStyle(
+                              fontSize: Responsive.font(context, 11),
+                              fontWeight: FontWeight.bold,
+                              color: color,
                             ),
                           ),
-                          if (comp['salary'] != null &&
-                              comp['salary'].toString().isNotEmpty) ...[
-                            SizedBox(height: Responsive.s(context, 4)),
-                            Text(
-                              comp['salary'].toString(),
-                              style: GoogleFonts.outfit(
-                                fontSize: Responsive.font(context, 11),
-                                fontWeight: FontWeight.bold,
-                                color: color,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                        ),
                     ],
                   ),
                   if (comp['description'] != null &&
@@ -1060,7 +1054,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                     SizedBox(height: Responsive.s(context, 8)),
                     Text(
                       comp['description'].toString(),
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 12),
                         color: const Color(0xFF4B5563),
                         height: 1.4,
@@ -1078,38 +1072,11 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         color: Color(0xFFE5E7EB),
                       ),
                     ),
-                    TextButton.icon(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size(
-                          Responsive.s(context, 50),
-                          Responsive.s(context, 30),
-                        ),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      icon: Icon(
-                        Icons.link_rounded,
-                        size: Responsive.s(context, 14),
-                        color: color,
-                      ),
-                      label: Text(
-                        'Ứng tuyển / Xem việc làm',
-                        style: GoogleFonts.inter(
-                          fontSize: Responsive.font(context, 11),
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
-                      ),
-                      onPressed: () async {
-                        final urlString = comp['careerLink'].toString();
-                        final url = urlString.startsWith('http')
-                            ? urlString
-                            : 'https://$urlString';
-                        await launchUrl(
-                          Uri.parse(url),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      },
+                    _buildLinkChip(
+                      icon: Icons.link_rounded,
+                      label: 'Ứng tuyển / Xem việc làm',
+                      color: color,
+                      url: comp['careerLink'].toString(),
                     ),
                   ],
                 ],
@@ -1131,7 +1098,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           'Lịch Sử Phiên Hướng Nghiệp',
-          style: GoogleFonts.outfit(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: Responsive.font(context, 18),
             color: Colors.black87,
@@ -1177,7 +1144,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                         SizedBox(height: Responsive.s(context, 16)),
                         Text(
                           'Bạn chưa thực hiện bài đánh giá nào.',
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
                             fontSize: Responsive.font(context, 16),
                             fontWeight: FontWeight.bold,
                             color: Colors.black54,
@@ -1264,7 +1231,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                         children: [
                                           Text(
                                             title,
-                                            style: GoogleFonts.outfit(
+                                            style: TextStyle(
                                               fontSize: Responsive.font(
                                                 context,
                                                 15,
@@ -1281,7 +1248,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                           ),
                                           Text(
                                             subtitle,
-                                            style: GoogleFonts.inter(
+                                            style: TextStyle(
                                               fontSize: Responsive.font(
                                                 context,
                                                 13,
@@ -1296,7 +1263,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                     if (session['relevanceScore'] != null)
                                       Text(
                                         '${session['relevanceScore']}',
-                                        style: GoogleFonts.outfit(
+                                        style: TextStyle(
                                           fontSize: Responsive.font(
                                             context,
                                             16,
@@ -1313,7 +1280,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                   ),
                                   Text(
                                     details,
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(
                                       fontSize: Responsive.font(
                                         context,
                                         13,
@@ -1328,7 +1295,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                                 SizedBox(height: Responsive.s(context, 4)),
                                 Text(
                                   _formatDateTime(session['createdAt']),
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: Responsive.font(context, 11),
                                     color: const Color(0xFF9CA3AF),
                                   ),

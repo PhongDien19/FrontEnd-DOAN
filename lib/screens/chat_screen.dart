@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
+import '../utils/clickable_url_text.dart';
 import '../utils/responsive.dart';
 
 class ChatMessage {
@@ -233,14 +233,14 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Text(
                   'Cố Vấn Hướng Nghiệp AI',
-                  style: GoogleFonts.outfit(
-                    fontSize: Responsive.font(context, 16),
+                  style: TextStyle(
+                    fontSize: Responsive.font(context, 14),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   'Hỗ trợ 24/7',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: Responsive.font(context, 11),
                     color: const Color(0xFF00F5A0),
                   ),
@@ -308,7 +308,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       SizedBox(width: Responsive.s(context, 12)),
                       Text(
                         'AI đang phân tích câu hỏi...',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: Responsive.font(context, 12),
                           color: const Color(0xFF888B9B),
                           fontStyle: FontStyle.italic,
@@ -417,7 +417,7 @@ class _ChatScreenState extends State<ChatScreen> {
               vertical: Responsive.s(context, 14),
             ),
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
+              maxWidth: MediaQuery.sizeOf(context).width * 0.75,
             ),
             decoration: BoxDecoration(
               gradient: isUser
@@ -447,9 +447,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ],
             ),
-            child: Text(
-              msg.text,
-              style: GoogleFonts.inter(
+            child: ClickableUrlText(
+              text: msg.text,
+              style: TextStyle(
                 fontSize: Responsive.font(context, 14),
                 color: Colors.white,
                 height: 1.4,
@@ -486,7 +486,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     child: Text(
                       opt,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: Responsive.font(context, 12),
                         color: const Color(0xFFC3C5E0),
                       ),

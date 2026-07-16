@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/auth_provider.dart';
@@ -211,7 +210,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             Expanded(
               child: Text(
                 'Yêu cầu đăng nhập',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: Responsive.font(context, 18),
                   color: Colors.black87,
@@ -222,7 +221,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         ),
         content: Text(
           'Bạn đã hoàn thành bài test. Vui lòng đăng nhập để xem kết quả phân tích chi tiết.',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             color: Colors.grey.shade700,
             fontSize: Responsive.font(context, 13),
             height: 1.4,
@@ -233,7 +232,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Để sau',
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w600,
                 fontSize: Responsive.font(context, 14),
@@ -254,7 +253,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             ),
             child: Text(
               'Đăng nhập',
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: Responsive.font(context, 14),
               ),
@@ -298,7 +297,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         iconTheme: const IconThemeData(color: Colors.black87),
         title: Text(
           _testTitle,
-          style: GoogleFonts.outfit(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: Responsive.font(context, 18),
             color: Colors.black87,
@@ -361,7 +360,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   SizedBox(height: Responsive.s(context, 12)),
                   Text(
                     'Cá Nhân Hóa Đánh Giá',
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 18),
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -371,7 +370,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   Text(
                     'AI sẽ tự động điều chỉnh bộ câu hỏi dựa theo mục tiêu của bạn.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: Responsive.font(context, 12),
                       color: Colors.grey.shade600,
                     ),
@@ -409,7 +408,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               ),
               child: Text(
                 'Bắt đầu làm bài',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: Responsive.font(context, 16),
                   color: Colors.white,
@@ -473,7 +472,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           Text(
             loadingText,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: Responsive.font(context, 14),
               color: Colors.grey.shade700,
             ),
@@ -512,7 +511,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               child: Text(
                 qText,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: Responsive.font(context, 18),
                   color: Colors.black87,
                 ),
@@ -582,8 +581,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           SizedBox(height: Responsive.s(context, 20)),
           Text(
             'Đã Hoàn Thành!',
-            style: GoogleFonts.outfit(
-              fontSize: Responsive.font(context, 22),
+            style: TextStyle(
+              fontSize: Responsive.font(context, 20),
               fontWeight: FontWeight.bold,
             ),
           ),

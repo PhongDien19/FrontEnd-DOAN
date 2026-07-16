@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../utils/responsive.dart';
 import 'login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../utils/clickable_url_text.dart';
 import '../utils/pdf_export_service.dart';
 import 'chat_screen.dart';
 
@@ -313,7 +313,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
           backgroundColor: Colors.white,
           title: Text(
             'Báo Cáo AI',
-            style: GoogleFonts.outfit(color: Colors.black87),
+            style: TextStyle(color: Colors.black87),
           ),
           iconTheme: const IconThemeData(color: Colors.black87),
         ),
@@ -380,7 +380,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           'Báo Cáo Khảo Sát Động AI',
-          style: GoogleFonts.outfit(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: Responsive.font(context, 18),
             color: Colors.black87,
@@ -535,7 +535,7 @@ if (roadmap.isNotEmpty) ...[
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: Text(
                   roadmap[idx],
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     color: const Color(0xFF4B5563),
                     fontSize: 13,
                     height: 1.4,
@@ -584,7 +584,7 @@ if (displayMode.toLowerCase() == 'discovery' &&
                     Expanded(
                       child: Text(
                         cert,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           color: Colors.black87,
                           fontSize: 13,
                         ),
@@ -621,7 +621,7 @@ if (displayMode.toLowerCase() == 'discovery' &&
                     Expanded(
                       child: Text(
                         job,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           color: Colors.black87,
                           fontSize: 13,
                         ),
@@ -643,7 +643,7 @@ if (displayMode.toLowerCase() == 'discovery' &&
       iconColor: const Color(0xFF059669),
       child: Text(
         basicSalary,
-        style: GoogleFonts.inter(
+        style: TextStyle(
           color: const Color(0xFF4B5563),
           fontSize: 13,
           height: 1.4,
@@ -659,7 +659,7 @@ if (displayMode.toLowerCase() == 'discovery' &&
       iconColor: const Color(0xFFEA580C),
       child: Text(
         laborMarket,
-        style: GoogleFonts.inter(
+        style: TextStyle(
           color: const Color(0xFF4B5563),
           fontSize: 13,
           height: 1.4,
@@ -707,7 +707,7 @@ _buildCard(
   iconColor: const Color(0xFFD97706),
   child: Text(
     advice,
-    style: GoogleFonts.inter(
+    style: TextStyle(
       color: const Color(0xFF4B5563),
       fontSize: 13,
       height: 1.5,
@@ -792,7 +792,7 @@ const SizedBox(height: 20),
                       targetCareer.isNotEmpty
                           ? 'Độ Phù Hợp: $targetCareer'
                           : 'Điểm Phù Hợp Ngành Nghề',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1F2937),
@@ -801,7 +801,7 @@ const SizedBox(height: 20),
                     const SizedBox(height: 4),
                     Text(
                       'Kết quả đánh giá từ thuật toán AI',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 12,
                         color: const Color(0xFF6B7280),
                       ),
@@ -820,7 +820,7 @@ const SizedBox(height: 20),
             children: [
               Text(
                 score <= 5 ? score.toStringAsFixed(2) : score.toStringAsFixed(0),
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: 56,
                   fontWeight: FontWeight.bold,
                   color: scoreColor,
@@ -829,7 +829,7 @@ const SizedBox(height: 20),
               ),
               Text(
                 score <= 5 ? ' / 5' : '%',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: scoreColor.withValues(alpha: 0.7),
@@ -858,7 +858,7 @@ const SizedBox(height: 20),
             ),
             child: Text(
               scoreText,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: scoreColor,
@@ -900,7 +900,7 @@ const SizedBox(height: 20),
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: color,
@@ -909,7 +909,7 @@ const SizedBox(height: 20),
                 const SizedBox(height: 2),
                 Text(
                   desc,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     color: const Color(0xFF475569),
                   ),
@@ -976,7 +976,7 @@ const SizedBox(height: 20),
                   children: [
                     Text(
                       cardTitle,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1F2937),
@@ -984,7 +984,7 @@ const SizedBox(height: 20),
                     ),
                     Text(
                       subTitle,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         color: themeColor,
@@ -1000,7 +1000,7 @@ const SizedBox(height: 20),
           const SizedBox(height: 12),
           Text(
             summary,
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: 13,
               color: const Color(0xFF4B5563),
               height: 1.5,
@@ -1083,7 +1083,7 @@ const SizedBox(height: 20),
                           Expanded(
                             child: Text(
                               career,
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                                 color: Colors.black87,
@@ -1104,7 +1104,7 @@ const SizedBox(height: 20),
                       ),
                       child: Text(
                         'Phù hợp: $matchRate',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: themeColor,
@@ -1118,7 +1118,7 @@ const SizedBox(height: 20),
                 // Lý do tương thích
                 Text(
                   reason,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 12,
                     color: const Color(0xFF4B5563),
                     height: 1.4,
@@ -1135,7 +1135,7 @@ const SizedBox(height: 20),
                       (item['trainingInstitutions'] as List).isNotEmpty) ...[
                     Text(
                       '🏛️ Các trường đào tạo đề xuất:',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1E3A8A),
@@ -1148,7 +1148,7 @@ const SizedBox(height: 20),
                   ] else ...[
                     Text(
                       '🏛️ Top các trường đào tạo nổi bật:',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1E3A8A),
@@ -1171,7 +1171,7 @@ const SizedBox(height: 20),
                           ),
                           child: Text(
                             school,
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1D4ED8),
@@ -1186,7 +1186,7 @@ const SizedBox(height: 20),
                   if (item['careerRoadmap'] != null && item['careerRoadmap'] is List && (item['careerRoadmap'] as List).isNotEmpty) ...[
                     Text(
                       '📈 Lộ trình phát triển nghề nghiệp:',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF065F46),
@@ -1202,7 +1202,7 @@ const SizedBox(height: 20),
                           Expanded(
                             child: Text(
                               step.toString(),
-                              style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF374151)),
+                              style: TextStyle(fontSize: 12, color: const Color(0xFF374151)),
                             ),
                           ),
                         ],
@@ -1215,7 +1215,7 @@ const SizedBox(height: 20),
                   if (item['requiredCertificates'] != null && item['requiredCertificates'] is List && (item['requiredCertificates'] as List).isNotEmpty) ...[
                     Text(
                       '🎓 Chứng chỉ nghề nghiệp khuyên có:',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF065F46),
@@ -1235,7 +1235,7 @@ const SizedBox(height: 20),
                           ),
                           child: Text(
                             cert.toString(),
-                            style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF047857), fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 11, color: const Color(0xFF047857), fontWeight: FontWeight.w600),
                           ),
                         );
                       }).toList(),
@@ -1247,7 +1247,7 @@ const SizedBox(height: 20),
                   if (item['companyDetails'] != null && (item['companyDetails'] as List).isNotEmpty) ...[
                     Text(
                       '🏢 Cơ hội việc làm nổi bật:',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF065F46),
@@ -1260,7 +1260,7 @@ const SizedBox(height: 20),
                   ] else ...[
                     Text(
                       '🏢 Công ty & Tập đoàn tuyển dụng tiêu biểu:',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF065F46),
@@ -1280,7 +1280,7 @@ const SizedBox(height: 20),
                           ),
                           child: Text(
                             company,
-                            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF047857)),
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF047857)),
                           ),
                         );
                       }).toList(),
@@ -1291,7 +1291,7 @@ const SizedBox(height: 20),
                   const SizedBox(height: 10),
                   Text(
                     '🔥 Thị trường: $marketDemand',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 11,
                       fontStyle: FontStyle.italic,
                       color: const Color(0xFF4B5563),
@@ -1330,7 +1330,7 @@ const SizedBox(height: 20),
               children: [
                 Text(
                   'Khảo sát ẩn danh',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF9A3412),
@@ -1339,7 +1339,7 @@ const SizedBox(height: 20),
                 const SizedBox(height: 4),
                 Text(
                   'Đăng nhập để lưu kết quả này vào lịch sử hướng nghiệp cá nhân của bạn.',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     color: const Color(0xFF6B7280),
                     height: 1.3,
@@ -1376,7 +1376,7 @@ const SizedBox(height: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              textStyle: GoogleFonts.outfit(
+              textStyle: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -1409,7 +1409,7 @@ const SizedBox(height: 20),
                     const SizedBox(width: 8),
                     Text(
                       'Cảm ơn bạn đã gửi đánh giá hài lòng!',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         color: const Color(0xFF059669),
                         fontWeight: FontWeight.bold,
                       ),
@@ -1423,7 +1423,7 @@ const SizedBox(height: 20),
               children: [
                 Text(
                   'Đánh giá mức độ hài lòng về điểm số và phản biện của AI:',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 12,
                     color: const Color(0xFF6B7280),
                   ),
@@ -1490,7 +1490,7 @@ const SizedBox(height: 20),
                         )
                       : Text(
                           'Gửi Đánh Giá',
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                             color: Colors.white,
@@ -1532,7 +1532,7 @@ const SizedBox(height: 20),
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -1545,7 +1545,7 @@ const SizedBox(height: 20),
           if (items.isEmpty)
             Text(
               'Không có dữ liệu',
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 11,
                 color: const Color(0xFF9CA3AF),
               ),
@@ -1567,7 +1567,7 @@ const SizedBox(height: 20),
                     Expanded(
                       child: Text(
                         item,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: 12,
                           color: const Color(0xFF4B5563),
                           height: 1.4,
@@ -1620,7 +1620,7 @@ const SizedBox(height: 20),
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -1632,6 +1632,49 @@ const SizedBox(height: 20),
           const SizedBox(height: 16),
           child,
         ],
+      ),
+    );
+  }
+
+  Widget _buildLinkChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required String url,
+  }) {
+    return InkWell(
+      onTap: () async {
+        try {
+          final effectiveUrl = url.startsWith('http') ? url : 'https://$url';
+          await launchUrl(Uri.parse(effectiveUrl), mode: LaunchMode.externalApplication);
+        } catch (_) {}
+      },
+      borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: Responsive.s(context, 10),
+          vertical: Responsive.s(context, 6),
+        ),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(Responsive.s(context, 8)),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: Responsive.s(context, 13), color: color),
+            SizedBox(width: Responsive.s(context, 4)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: Responsive.font(context, 11),
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1705,7 +1748,7 @@ const SizedBox(height: 20),
         children: [
           Text(
             schoolName,
-            style: GoogleFonts.outfit(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
               color: const Color(0xFF1F2937),
@@ -1719,7 +1762,7 @@ const SizedBox(height: 20),
               children: [
                 Text(
                   'Điểm chuẩn: ',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF6B7280),
@@ -1728,7 +1771,7 @@ const SizedBox(height: 20),
                 Expanded(
                   child: Text(
                     '$benchmarkYear: $benchmarkText',
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       color: themeColor,
@@ -1742,7 +1785,7 @@ const SizedBox(height: 20),
             const SizedBox(height: 6),
             Text(
               benchmarkNote,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 10,
                 fontStyle: FontStyle.italic,
                 color: const Color(0xFF9CA3AF),
@@ -1756,48 +1799,20 @@ const SizedBox(height: 20),
             Row(
               children: [
                 if (officialLink.isNotEmpty)
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(50, 30),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    icon: Icon(Icons.language_rounded, size: 14, color: themeColor),
-                    label: Text(
-                      'Website',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: themeColor,
-                      ),
-                    ),
-                    onPressed: () async {
-                      final url = officialLink.startsWith('http') ? officialLink : 'https://$officialLink';
-                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                    },
+                  _buildLinkChip(
+                    icon: Icons.language_rounded,
+                    label: 'Trang web trường',
+                    color: themeColor,
+                    url: officialLink,
                   ),
                 if (officialLink.isNotEmpty && admissionLink.isNotEmpty)
                   const SizedBox(width: 16),
                 if (admissionLink.isNotEmpty)
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(50, 30),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    icon: Icon(Icons.campaign_outlined, size: 14, color: themeColor),
-                    label: Text(
-                      'Tuyển sinh',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: themeColor,
-                      ),
-                    ),
-                    onPressed: () async {
-                      final url = admissionLink.startsWith('http') ? admissionLink : 'https://$admissionLink';
-                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                    },
+                  _buildLinkChip(
+                    icon: Icons.campaign_outlined,
+                    label: 'Tuyển sinh',
+                    color: themeColor,
+                    url: admissionLink,
                   ),
               ],
             ),
@@ -1816,11 +1831,11 @@ const SizedBox(height: 20),
                   Icon(Icons.assessment_rounded, size: 14, color: const Color(0xFFD97706)),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Text(
-                      scoreEvaluation,
-                      style: GoogleFonts.inter(
+                    child: ClickableUrlText(
+                      text: scoreEvaluation,
+                      style: const TextStyle(
                         fontSize: 11,
-                        color: const Color(0xFF92400E),
+                        color: Color(0xFF92400E),
                       ),
                     ),
                   ),
@@ -1867,7 +1882,7 @@ const SizedBox(height: 20),
                 flex: 3,
                 child: Text(
                   companyName,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: const Color(0xFF1F2937),
@@ -1890,7 +1905,7 @@ const SizedBox(height: 20),
                       textAlign: TextAlign.end,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: themeColor,
@@ -1902,36 +1917,22 @@ const SizedBox(height: 20),
           ),
           if (companyDescription.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(
-              companyDescription,
-              style: GoogleFonts.inter(
+            ClickableUrlText(
+              text: companyDescription,
+              style: const TextStyle(
                 fontSize: 11,
-                color: const Color(0xFF4B5563),
+                color: Color(0xFF4B5563),
                 height: 1.4,
               ),
             ),
           ],
           if (careerLink.isNotEmpty) ...[
             const SizedBox(height: 8),
-            TextButton.icon(
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(50, 30),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              icon: Icon(Icons.link_rounded, size: 14, color: themeColor),
-              label: Text(
-                'Ứng tuyển / Xem việc làm',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: themeColor,
-                ),
-              ),
-              onPressed: () async {
-                final url = careerLink.startsWith('http') ? careerLink : 'https://$careerLink';
-                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-              },
+            _buildLinkChip(
+              icon: Icons.link_rounded,
+              label: 'Ứng tuyển / Xem việc làm',
+              color: themeColor,
+              url: careerLink,
             ),
           ],
         ],

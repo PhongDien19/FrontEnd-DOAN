@@ -42,7 +42,7 @@ class Responsive {
   ///   width = 900 → 1.25
   ///   width = 1600 → 1.5 (clamped)
   static double scaleFactor(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.sizeOf(context).width;
     final raw = width / _referenceWidth;
     return raw.clamp(_minScale, _maxScale);
   }
@@ -91,18 +91,18 @@ class Responsive {
   /// Phát hiện đang chạy trên màn hình "rộng" (Chrome desktop, tablet ngang...).
   /// Dùng để thay đổi layout: 1 cột vs 2 cột, padding rộng hơn...
   static bool isWideScreen(BuildContext context) {
-    return MediaQuery.of(context).size.width >= 900;
+    return MediaQuery.sizeOf(context).width >= 900;
   }
 
   /// Phát hiện đang chạy trên màn hình rất lớn (TV, màn hình 4K).
   static bool isExtraWide(BuildContext context) {
-    return MediaQuery.of(context).size.width >= 1400;
+    return MediaQuery.sizeOf(context).width >= 1400;
   }
 
   /// Trả về maxWidth phù hợp cho nội dung.
   /// Trên mobile: full width. Trên desktop: giới hạn 1200dp để dễ đọc.
   static double contentMaxWidth(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.sizeOf(context).width;
     if (width >= 1200) return 1200;
     return width;
   }
