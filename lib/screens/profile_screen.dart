@@ -18,6 +18,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _fullNameController = TextEditingController();
   final _targetJobController = TextEditingController();
   final _hobbyController = TextEditingController();
+  static const List<String> _educationLevels = [
+    'Cấp 2',
+    'Cấp 3',
+    'Cao đẳng',
+    'Đại học',
+    'Sau Đại học',
+  ];
   String _educationLevel = 'Đại học';
 
   bool _isEditing = false;
@@ -38,7 +45,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _fullNameController.text = p['fullName'] ?? '';
       _targetJobController.text = p['targetJob'] ?? '';
       _hobbyController.text = p['interests'] ?? p['hobby'] ?? '';
-      _educationLevel = p['educationLevel'] ?? 'Đại học';
+      final serverEdu = p['educationLevel']?.toString();
+      _educationLevel = (serverEdu != null && _educationLevels.contains(serverEdu))
+          ? serverEdu
+          : 'Đại học';
     }
   }
 
@@ -346,12 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ),
-                            items: [
-                              'Cấp 2',
-                              'Cấp 3',
-                              'Đại học',
-                              'Sau Đại học',
-                            ].map(
+                            items: _educationLevels.map(
                               (lvl) => DropdownMenuItem(
                                 value: lvl,
                                 child: Text(

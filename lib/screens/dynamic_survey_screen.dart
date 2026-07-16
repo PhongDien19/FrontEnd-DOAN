@@ -106,9 +106,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   }
 
   /// Khoảng tuổi hợp lệ đối với từng trình độ học vấn.
-  /// Trả về null nếu trình độ không có ràng buộc tuổi (Cao đẳng/Khác).
-  /// Trả về (min, max, levelName). Người dùng chỉ được nhập trong khoảng này
-  /// nếu đã chọn đúng trình độ.
+  /// Mọi trình độ đều có ràng buộc tuổi tối thiểu/tối đa hợp lý
+  /// (kể cả "Cao đẳng" và "Khác" — trước đây bị bỏ qua, gây ra lỗi
+  /// nhập tuổi 9 vẫn chọn được "Cao đẳng").
   ({int min, int max})? _ageRangeForEducation() {
     switch (_educationLevel) {
       case 'Học sinh THCS':
@@ -116,20 +116,12 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       case 'Học sinh THPT':
         return (min: 15, max: 18);
       case 'Đại học':
-        return (min: 18, max: 100);
+        return (min: 18, max: 25);
+      case 'Cao đẳng':
+        return (min: 18, max: 25);
       default:
-        // Cao đẳng / Khác: không có ràng buộc tuổi, hoặc dùng mức sàn 16
-        return null;
+        return (min: 16, max: 100);
     }
-  }
-
-  /// Trả về tên trình độ học vấn tương ứng với tuổi, dùng để gợi ý trong cảnh báo.
-  /// Trả về null nếu tuổi dưới ngưỡng tối thiểu.
-  String? _educationFromAge(int age) {
-    if (age >= 11 && age <= 14) return 'Học sinh THCS';
-    if (age >= 15 && age <= 18) return 'Học sinh THPT';
-    if (age >= 18) return 'Đại học';
-    return null;
   }
 
   final Map<String, TextEditingController> _subjectControllers = {};
@@ -820,20 +812,33 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       }
                       final age = int.tryParse(val);
                       if (age == null || age < 5 || age > 100) {
-                        return 'Từ 5-100';
+                        return 'độ tuổi từ 10 - 25';
                       }
 
                       // Cảnh báo khi tuổi không khớp với Trình độ học vấn đã chọn.
-                      // - THCS (11-14) nhập <11: quá trẻ; nhập 15-18: nên chọn THPT.
-                      // - THPT (15-18) nhập <15: nên chọn THCS; nhập >18: nên chọn ĐH.
-                      // - Đại học (>=18) nhập <18: quá trẻ để vào ĐH.
+                      // - THCS (11-14) và THPT (15-18) gắn chặt với tuổi nên vẫn
+                      //   gợi ý cụ thể khi sai.
+                      // - Từ 18 tuổi trở lên: Cao đẳng / Đại học / Khác đều hợp lệ,
+                      //   KHÔNG có 1 đáp án đúng duy nhất, nên không ép gợi ý
+                      //   "Đại học" nữa — chỉ cảnh báo nếu vẫn đang chọn THCS/THPT.
                       // Tuy nhiên KHÔNG tự ý đổi Trình độ — chỉ cảnh báo để user biết.
                       final range = _ageRangeForEducation();
                       if (range != null &&
                           (age < range.min || age > range.max)) {
-                        final suggested = _educationFromAge(age);
-                        if (suggested != null && suggested != _educationLevel) {
-                          return 'Tuổi $age thường là "$suggested", không phải "$_educationLevel"';
+                        final isSchoolLevel =
+                            _educationLevel == 'Học sinh THCS' ||
+                            _educationLevel == 'Học sinh THPT';
+
+                        if (age >= 11 && age <= 14 && _educationLevel != 'Học sinh THCS') {
+                          return 'Tuổi $age thường là "Học sinh THCS", không phải "$_educationLevel"';
+                        }
+                        if (age >= 15 && age <= 18 && _educationLevel != 'Học sinh THPT') {
+                          return 'Tuổi $age thường là "Học sinh THPT", không phải "$_educationLevel"';
+                        }
+                        if (age > 18 && isSchoolLevel) {
+                          // Tuổi đã lớn nhưng vẫn đang chọn THCS/THPT — không rõ
+                          // là Cao đẳng, Đại học hay Khác nên chỉ gợi ý chung.
+                          return 'Tuổi $age không còn phù hợp với "$_educationLevel" (thường là Cao đẳng/Đại học/Sau Đại học)';
                         }
                         return 'Tuổi $age ngoài khoảng ${range.min}-${range.max} của "$_educationLevel"';
                       }
@@ -1022,7 +1027,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                           'Học sinh THPT',
                           'Cao đẳng',
                           'Đại học',
-                          'Khác',
+                          'Sau Đại học',
                         ].map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -1035,6 +1040,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                           _educationLevel = newValue;
                           // Đồng bộ hướng đi theo trình độ học vấn mới
                           _selectedPath = _pathFromEducation;
+                        });
+                        // Kiểm tra lại ngay ô Độ tuổi với Trình độ học vấn vừa chọn,
+                        // để hiện lỗi kịp thời (không phải đợi tới lúc bấm Submit).
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _formKey.currentState?.validate();
                         });
                       }
                     },
