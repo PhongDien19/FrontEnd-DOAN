@@ -142,17 +142,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Center(
                       child: Container(
-                        padding: EdgeInsets.all(Responsive.s(context, 20)),
+                        width: Responsive.s(context, 88),
+                        height: Responsive.s(context, 88),
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFF59E0B).withValues(
-                            alpha: 0.1,
-                          ),
+                          borderRadius: BorderRadius.circular(Responsive.s(context, 22)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: Icon(
-                          Icons.explore_rounded,
-                          size: Responsive.s(context, 48),
-                          color: const Color(0xFFF59E0B),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(Responsive.s(context, 22)),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
