@@ -1591,7 +1591,9 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
           if ((officialLink != null && officialLink.isNotEmpty) ||
               (admissionLink != null && admissionLink.isNotEmpty)) ...[
             SizedBox(height: Responsive.s(context, 10)),
-            Row(
+            Wrap(
+              spacing: Responsive.s(context, 8),
+              runSpacing: Responsive.s(context, 8),
               children: [
                 if (officialLink != null && officialLink.isNotEmpty)
                   _buildLinkChip(
@@ -1600,11 +1602,6 @@ class _QuickExploreScreenState extends State<QuickExploreScreen>
                     color: accent,
                     url: officialLink,
                   ),
-                if (officialLink != null &&
-                    officialLink.isNotEmpty &&
-                    admissionLink != null &&
-                    admissionLink.isNotEmpty)
-                  SizedBox(width: Responsive.s(context, 12)),
                 if (admissionLink != null && admissionLink.isNotEmpty)
                   _buildLinkChip(
                     icon: Icons.campaign_outlined,

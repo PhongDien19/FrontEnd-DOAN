@@ -828,7 +828,9 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                       color: Color(0xFFE5E7EB),
                     ),
                   ),
-                  Row(
+                  Wrap(
+                    spacing: Responsive.s(context, 8),
+                    runSpacing: Responsive.s(context, 8),
                     children: [
                       if (sch['officialLink'] != null &&
                           sch['officialLink'].toString().isNotEmpty)
@@ -838,11 +840,6 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                           color: color,
                           url: sch['officialLink'].toString(),
                         ),
-                      if (sch['officialLink'] != null &&
-                          sch['officialLink'].toString().isNotEmpty &&
-                          sch['admissionLink'] != null &&
-                          sch['admissionLink'].toString().isNotEmpty)
-                        SizedBox(width: Responsive.s(context, 16)),
                       if (sch['admissionLink'] != null &&
                           sch['admissionLink'].toString().isNotEmpty)
                         _buildLinkChip(

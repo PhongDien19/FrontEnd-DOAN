@@ -1796,7 +1796,9 @@ const SizedBox(height: 20),
           // Hiển thị đường link nếu có
           if (officialLink.isNotEmpty || admissionLink.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 if (officialLink.isNotEmpty)
                   _buildLinkChip(
@@ -1805,8 +1807,6 @@ const SizedBox(height: 20),
                     color: themeColor,
                     url: officialLink,
                   ),
-                if (officialLink.isNotEmpty && admissionLink.isNotEmpty)
-                  const SizedBox(width: 16),
                 if (admissionLink.isNotEmpty)
                   _buildLinkChip(
                     icon: Icons.campaign_outlined,
