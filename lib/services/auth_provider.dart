@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
+import '../models/temp_user_model.dart';
 
 class AuthProvider with ChangeNotifier {
   bool _isAuthenticated = false;
-  Map<String, dynamic>? _currentUser; // Chứa id, email, role
-  Map<String, dynamic>? _userProfile; // Chứa fullName, targetJob, educationLevel, v.v.
+  Map<String, dynamic>? _currentUser;
+  Map<String, dynamic>? _userProfile;
   bool _isLoading = false;
 
-  // Temporary models for storing data before login
   TempProfile? _tempProfile;
   TempScores? _tempScores;
 
@@ -26,12 +26,10 @@ class AuthProvider with ChangeNotifier {
   String get educationLevel => _userProfile?['educationLevel'] ?? '';
   String get hobby => _userProfile?['hobby'] ?? '';
 
-  // Khởi tạo, tự động kiểm tra đăng nhập cũ
   AuthProvider() {
     tryAutoLogin();
   }
 
-  // Tự động đăng nhập bằng SharedPreferences
   Future<bool> tryAutoLogin() async {
     _isLoading = true;
     notifyListeners();
@@ -44,15 +42,14 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      final userData = jsonDecode(prefs.getString('userData')!) as Map<String, dynamic>;
+      final userData =
+          jsonDecode(prefs.getString('userData')!) as Map<String, dynamic>;
       _currentUser = userData['user'];
       _userProfile = userData['profile'];
       _isAuthenticated = true;
 
-      // Cập nhật userId cho ApiService
       ApiService.currentUserId = userId;
 
-      // Đồng bộ profile mới nhất từ server
       if (userId != null) {
         await refreshProfile();
       }
@@ -67,11 +64,8 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Làm mới thông tin Profile từ server
   Future<void> refreshProfile() async {
-    if (userId == null) {
-      return;
-    }
+    if (userId == null) return;
     final res = await ApiService.getProfile(userId!);
     if (res['success'] == true && res['profile'] != null) {
       _userProfile = res['profile'];
@@ -80,7 +74,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Đăng nhập
   Future<Map<String, dynamic>> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();
@@ -96,7 +89,6 @@ class AuthProvider with ChangeNotifier {
 
         await _saveToPrefs();
 
-        // Auto-sync temp profile and scores if exists
         if (_tempProfile != null || _tempScores != null) {
           await _syncTempDataToServer();
         }
@@ -117,7 +109,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Đăng ký
   Future<Map<String, dynamic>> register(
     String email,
     String password,
@@ -143,12 +134,10 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Auto-sync temp data lên server sau khi đăng nhập
   Future<void> _syncTempDataToServer() async {
     if (userId == null) return;
 
     try {
-      // Sync temp profile (chỉ gọi nếu có dữ liệu)
       if (_tempProfile != null) {
         final profileData = _tempProfile!.toJson();
         await updateProfile(
@@ -161,24 +150,20 @@ class AuthProvider with ChangeNotifier {
         );
       }
 
-      // Sync temp scores
       if (_tempScores != null) {
         await ApiService.saveScores(userId!, _tempScores!.toJson());
       }
 
-      // Clear temp data after sync
       _tempProfile = null;
       _tempScores = null;
       await _clearTempData();
 
-      // Refresh profile
       await refreshProfile();
     } catch (e) {
       debugPrint('Lỗi sync temp data: $e');
     }
   }
 
-  // Lưu temp data vào SharedPreferences
   Future<void> _saveTempToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     if (_tempProfile != null) {
@@ -189,28 +174,24 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Xóa temp data khỏi SharedPreferences
   Future<void> _clearTempData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('tempProfile');
     await prefs.remove('tempScores');
   }
 
-  // Lưu temp profile
   void setTempProfile(TempProfile profile) {
     _tempProfile = profile;
     _saveTempToPrefs();
     notifyListeners();
   }
 
-  // Lưu temp scores
   void setTempScores(TempScores scores) {
     _tempScores = scores;
     _saveTempToPrefs();
     notifyListeners();
   }
 
-  // Đăng xuất
   Future<void> logout() async {
     _currentUser = null;
     _userProfile = null;
@@ -219,11 +200,10 @@ class AuthProvider with ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('userData');
-    
+
     notifyListeners();
   }
 
-  // Cập nhật thông tin Profile (Học vấn, công việc mục tiêu, sở thích)
   Future<Map<String, dynamic>> updateProfile({
     required String fullName,
     required String targetJob,
@@ -254,7 +234,6 @@ class AuthProvider with ChangeNotifier {
 
     final res = await ApiService.updateProfile(userId!, updateData);
     if (res['success'] == true) {
-      // Cập nhật local state
       if (_userProfile == null) {
         _userProfile = updateData;
       } else {
@@ -273,7 +252,6 @@ class AuthProvider with ChangeNotifier {
     return res;
   }
 
-  // Nhận quyền kết quả bài trắc nghiệm làm trước khi login
   Future<Map<String, dynamic>> claimTestResult(String sessionId) async {
     if (userId == null) {
       return {'success': false, 'message': 'Chưa đăng nhập'};
@@ -281,12 +259,11 @@ class AuthProvider with ChangeNotifier {
 
     final res = await ApiService.claimAssessment(sessionId, userId!);
     if (res['success'] == true) {
-      await refreshProfile(); // Tải lại điểm mới vào profile
+      await refreshProfile();
     }
     return res;
   }
 
-  // Helper lưu dữ liệu phiên vào SharedPreferences
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = jsonEncode({
