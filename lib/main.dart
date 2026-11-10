@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 // Services & Auth Provider
 import 'services/auth_provider.dart';
 
-// Controllers & ViewModels
-import 'controllers/assessment_flow_controller.dart';
+// ViewModels
 import 'viewmodels/chat_viewmodel.dart';
 import 'viewmodels/comprehensive_report_viewmodel.dart';
 import 'viewmodels/dynamic_survey_report_viewmodel.dart';
@@ -34,7 +33,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
-        ChangeNotifierProvider(create: (_) => AssessmentFlowController()),
         ChangeNotifierProvider(create: (_) => ComprehensiveReportViewModel()),
         ChangeNotifierProvider(create: (_) => ChatViewModel()),
         ChangeNotifierProvider(create: (_) => DynamicSurveyViewModel()),
