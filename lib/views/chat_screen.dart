@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/chat_viewmodels.dart';
+import '../viewmodels/chat_viewmodel.dart';
 
 class ChatScreen extends StatefulWidget {
   final Map<String, dynamic>? initialContext;

@@ -4,20 +4,20 @@ import 'package:provider/provider.dart';
 // Services & Auth Provider
 import 'services/auth_provider.dart';
 
-// ViewModels
-import 'viewmodels/assessment_flow_viewmodels.dart';
-import 'viewmodels/chat_viewmodels.dart';
-import 'viewmodels/comprehensive_report_viewmodels.dart';
-import 'viewmodels/dynamic_survey_report_viewmodels.dart';
-import 'viewmodels/dynamic_survey_viewmodels.dart';
-import 'viewmodels/home_viewmodels.dart';
-import 'viewmodels/login_viewmodels.dart';
-import 'viewmodels/profile_viewmodels.dart';
-import 'viewmodels/quick_explore_viewmodels.dart';
-import 'viewmodels/test_history_viewmodels.dart';
+// Controllers & ViewModels
+import 'controllers/assessment_flow_controller.dart';
+import 'viewmodels/chat_viewmodel.dart';
+import 'viewmodels/comprehensive_report_viewmodel.dart';
+import 'viewmodels/dynamic_survey_report_viewmodel.dart';
+import 'viewmodels/dynamic_survey_viewmodel.dart';
+import 'viewmodels/home_viewmodel.dart';
+import 'viewmodels/login_viewmodel.dart';
+import 'viewmodels/profile_viewmodel.dart';
+import 'viewmodels/quick_explore_viewmodel.dart';
+import 'viewmodels/test_history_viewmodel.dart';
 
 // Screens / Views
-import 'view/home_screen.dart';
+import 'views/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
-        ChangeNotifierProvider(create: (_) => AssessmentFlowViewModel()),
+        ChangeNotifierProvider(create: (_) => AssessmentFlowController()),
         ChangeNotifierProvider(create: (_) => ComprehensiveReportViewModel()),
         ChangeNotifierProvider(create: (_) => ChatViewModel()),
         ChangeNotifierProvider(create: (_) => DynamicSurveyViewModel()),

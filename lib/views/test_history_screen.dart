@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/test_history_viewmodels.dart';
+import '../viewmodels/test_history_viewmodel.dart';
 
 class TestHistoryScreen extends StatefulWidget {
   const TestHistoryScreen({super.key});
@@ -29,7 +29,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
-          'Lịch Sử Kiểm Tra',
+          'Lịch Sử Đánh Giá',
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
@@ -77,8 +77,18 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                 SizedBox(height: Responsive.s(context, 10)),
             itemBuilder: (context, index) {
               final item = vm.historyList[index];
-              final title = item['testName'] ?? 'Bài Kiểm Tra';
+              final title = item['flow'] == 'flow_b'
+                  ? 'Đánh giá ngành mục tiêu'
+                  : 'Khám phá ngành phù hợp';
               final date = item['createdAt'] ?? '';
+              final audience = item['audience'] == 'freshman'
+                  ? 'Sinh viên năm nhất'
+                  : 'Học sinh THPT';
+              final status = item['status'] == 'completed'
+                  ? 'Đã hoàn thành'
+                  : 'Đang thực hiện';
+              final result = item['result'];
+              final fitScore = result is Map ? result['fitScore'] : null;
 
               return Container(
                 padding: EdgeInsets.all(Responsive.s(context, 16)),
@@ -91,9 +101,13 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.assignment_turned_in_rounded,
-                      color: Color(0xFF00F5A0),
+                    Icon(
+                      item['status'] == 'completed'
+                          ? Icons.assignment_turned_in_rounded
+                          : Icons.pending_actions_rounded,
+                      color: item['status'] == 'completed'
+                          ? const Color(0xFF00F5A0)
+                          : const Color(0xFFFFD166),
                     ),
                     SizedBox(width: Responsive.s(context, 12)),
                     Expanded(
@@ -108,11 +122,22 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (date.toString().isNotEmpty)
+                          Text(
+                            [
+                              audience,
+                              status,
+                              if (date.toString().isNotEmpty) date.toString(),
+                            ].join(' · '),
+                            style: TextStyle(
+                              color: const Color(0xFF888B9B),
+                              fontSize: Responsive.font(context, 11),
+                            ),
+                          ),
+                          if (fitScore != null)
                             Text(
-                              date.toString(),
+                              'Mức độ phù hợp: $fitScore%',
                               style: TextStyle(
-                                color: const Color(0xFF888B9B),
+                                color: const Color(0xFF00F5A0),
                                 fontSize: Responsive.font(context, 11),
                               ),
                             ),

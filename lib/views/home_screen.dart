@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/home_viewmodels.dart';
+import '../viewmodels/home_viewmodel.dart';
 import 'assessment_flow_screen.dart';
-import 'chat_screen.dart';
-import 'comprehensive_report_screen.dart';
-import 'dynamic_survey_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
-import 'quick_explore_screen.dart';
 import 'test_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -64,16 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.forum_rounded, color: Color(0xFF6C63FF)),
-            tooltip: 'Hỏi Cố Vấn AI',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ChatScreen()),
-              );
-            },
-          ),
-          IconButton(
             icon: Icon(
               auth.isAuthenticated ? Icons.person_rounded : Icons.login_rounded,
               color: auth.isAuthenticated
@@ -114,13 +100,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildWelcomeBanner(context, auth),
                   SizedBox(height: Responsive.s(context, 20)),
 
-                  // Nút chuyển tới Báo Cáo Hướng Nghiệp Toàn Diện
-                  _buildComprehensiveReportCard(context, auth),
+                  _buildAssessmentCard(context),
                   SizedBox(height: Responsive.s(context, 24)),
 
-                  // Danh mục 4 Bài Trắc Nghiệm Cốt Lõi
                   Text(
-                    'Đánh Giá 4 Trụ Cột Hướng Nghiệp',
+                    'Các phần trong bài đánh giá',
                     style: TextStyle(
                       fontSize: Responsive.font(context, 16),
                       fontWeight: FontWeight.bold,
@@ -129,19 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: Responsive.s(context, 12)),
                   _buildPillarGrid(context),
-                  SizedBox(height: Responsive.s(context, 24)),
-
-                  // Tính năng Khảo Sát Động & Khám Phá Nhanh
-                  Text(
-                    'Công Cụ Khám Phá Bổ Sung',
-                    style: TextStyle(
-                      fontSize: Responsive.font(context, 16),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.s(context, 12)),
-                  _buildAdditionalTools(context),
                   SizedBox(height: Responsive.s(context, 24)),
 
                   // Lịch sử đánh giá gần đây
@@ -228,10 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildComprehensiveReportCard(
-    BuildContext context,
-    AuthProvider auth,
-  ) {
+  Widget _buildAssessmentCard(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(Responsive.s(context, 16)),
       decoration: BoxDecoration(
@@ -261,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Báo Cáo Hướng Nghiệp Toàn Diện',
+                  'Đánh Giá Hướng Nghiệp Toàn Diện',
                   style: TextStyle(
                     fontSize: Responsive.font(context, 14),
                     fontWeight: FontWeight.bold,
@@ -270,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 SizedBox(height: Responsive.s(context, 4)),
                 Text(
-                  'Tổng hợp bức tranh năng lực & gợi ý nghề nghiệp từ AI',
+                  'Trả lời từng phần để nhận gợi ý ngành phù hợp từ hệ thống',
                   style: TextStyle(
                     fontSize: Responsive.font(context, 11),
                     color: const Color(0xFF888B9B),
@@ -284,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ComprehensiveReportScreen(),
+                  builder: (context) => const AssessmentFlowScreen(),
                 ),
               );
             },
@@ -300,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             child: const Text(
-              'Xem Báo Cáo',
+              'Bắt đầu',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -312,28 +280,29 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPillarGrid(BuildContext context) {
     final pillars = [
       {
-        'title': 'Sở Thích Holland',
-        'type': 'holland',
+        'title': 'Hồ sơ học tập',
+        'icon': Icons.school_rounded,
+        'color': const Color(0xFF4ECDC4),
+      },
+      {
+        'title': 'Tính cách',
+        'icon': Icons.psychology_alt_rounded,
+        'color': const Color(0xFF6C63FF),
+      },
+      {
+        'title': 'Sở thích nghề nghiệp',
         'icon': Icons.palette_rounded,
         'color': const Color(0xFFFF6B6B),
       },
       {
-        'title': 'Tính Cách MBTI',
-        'type': 'personality',
-        'icon': Icons.psychology_alt_rounded,
-        'color': const Color(0xFF4ECDC4),
-      },
-      {
-        'title': 'Năng Lực Nhận Thức',
-        'type': 'cognitive',
-        'icon': Icons.extension_rounded,
+        'title': 'Năng lực ngoại ngữ',
+        'icon': Icons.translate_rounded,
         'color': const Color(0xFFFFD166),
       },
       {
-        'title': 'Giá Trị Nghề Nghiệp',
-        'type': 'values',
-        'icon': Icons.star_rounded,
-        'color': const Color(0xFF1A535C),
+        'title': 'Cơ hội nghề nghiệp',
+        'icon': Icons.work_outline_rounded,
+        'color': const Color(0xFF00F5A0),
       },
     ];
 
@@ -349,139 +318,34 @@ class _HomeScreenState extends State<HomeScreen> {
       itemCount: pillars.length,
       itemBuilder: (context, index) {
         final p = pillars[index];
-        return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    AssessmentFlowScreen(testType: p['type'] as String),
+        return Container(
+          padding: EdgeInsets.all(Responsive.s(context, 14)),
+          decoration: BoxDecoration(
+            color: const Color(0xFF191922),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(
+                p['icon'] as IconData,
+                color: p['color'] as Color,
+                size: Responsive.s(context, 26),
               ),
-            );
-          },
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: EdgeInsets.all(Responsive.s(context, 14)),
-            decoration: BoxDecoration(
-              color: const Color(0xFF191922),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(
-                  p['icon'] as IconData,
-                  color: p['color'] as Color,
-                  size: Responsive.s(context, 26),
+              Text(
+                p['title'] as String,
+                style: TextStyle(
+                  fontSize: Responsive.font(context, 13),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                Text(
-                  p['title'] as String,
-                  style: TextStyle(
-                    fontSize: Responsive.font(context, 13),
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildAdditionalTools(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildToolCard(
-            context,
-            title: 'Khảo Sát Động',
-            desc: 'Hỏi đáp AI linh hoạt',
-            icon: Icons.quiz_rounded,
-            color: const Color(0xFF6C63FF),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DynamicSurveyScreen(),
-                ),
-              );
-            },
-          ),
-        ),
-        SizedBox(width: Responsive.s(context, 12)),
-        Expanded(
-          child: _buildToolCard(
-            context,
-            title: 'Tra Cứu Nhanh',
-            desc: 'Tìm thông tin ngành',
-            icon: Icons.explore_rounded,
-            color: const Color(0xFFF1A416),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const QuickExploreScreen(),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildToolCard(
-    BuildContext context, {
-    required String title,
-    required String desc,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: EdgeInsets.all(Responsive.s(context, 14)),
-        decoration: BoxDecoration(
-          color: const Color(0xFF191922),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: Responsive.s(context, 24)),
-            SizedBox(width: Responsive.s(context, 10)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: Responsive.font(context, 13),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.s(context, 2)),
-                  Text(
-                    desc,
-                    style: TextStyle(
-                      fontSize: Responsive.font(context, 10),
-                      color: const Color(0xFF888B9B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -518,7 +382,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return Column(
           children: vm.recentHistory.map((item) {
-            final testName = item['testName'] ?? 'Bài Trắc Nghiệm';
+            final flow = item['flow'] == 'flow_b'
+                ? 'Đánh giá ngành mục tiêu'
+                : 'Khám phá ngành phù hợp';
+            final audience = item['audience'] == 'freshman'
+                ? 'Sinh viên năm nhất'
+                : 'Học sinh THPT';
             final date = item['createdAt'] ?? '';
             return Container(
               margin: EdgeInsets.only(bottom: Responsive.s(context, 8)),
@@ -530,9 +399,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: Color(0xFF00F5A0),
+                  Icon(
+                    item['status'] == 'completed'
+                        ? Icons.check_circle_rounded
+                        : Icons.pending_outlined,
+                    color: item['status'] == 'completed'
+                        ? const Color(0xFF00F5A0)
+                        : const Color(0xFFFFD166),
                   ),
                   SizedBox(width: Responsive.s(context, 10)),
                   Expanded(
@@ -540,11 +413,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          testName,
+                          flow,
                           style: TextStyle(
                             fontSize: Responsive.font(context, 13),
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '$audience · ${item['status'] == 'completed' ? 'Đã hoàn thành' : 'Đang thực hiện'}',
+                          style: TextStyle(
+                            fontSize: Responsive.font(context, 10),
+                            color: const Color(0xFF888B9B),
                           ),
                         ),
                         if (date.isNotEmpty)

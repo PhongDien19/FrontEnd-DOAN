@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/profile_viewmodels.dart';
+import '../viewmodels/profile_viewmodel.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,9 +13,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _fullNameController = TextEditingController();
-  final _targetJobController = TextEditingController();
   final _hobbyController = TextEditingController();
   final _ageController = TextEditingController();
+  final _locationController = TextEditingController();
   String _educationLevel = 'Đại học';
 
   final List<String> _educationOptions = [
@@ -23,32 +23,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     'Học sinh THPT',
     'Cao đẳng',
     'Đại học',
+    'Sinh viên năm nhất',
     'Đã đi làm',
   ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      _fullNameController.text = auth.fullName;
-      _targetJobController.text = auth.targetJob;
-      _hobbyController.text = auth.hobby;
-      if (auth.educationLevel.isNotEmpty) {
-        setState(() => _educationLevel = auth.educationLevel);
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    _fullNameController.text = auth.fullName;
+    _hobbyController.text = auth.hobby;
+    _locationController.text = auth.userProfile?['location']?.toString() ?? '';
+    if (auth.educationLevel.isNotEmpty) {
+      _educationLevel = auth.educationLevel;
+      if (!_educationOptions.contains(_educationLevel)) {
+        _educationOptions.add(_educationLevel);
       }
-      if (auth.userProfile?['age'] != null) {
-        _ageController.text = auth.userProfile!['age'].toString();
-      }
-    });
+    }
+    if (auth.userProfile?['age'] != null) {
+      _ageController.text = auth.userProfile!['age'].toString();
+    }
   }
 
   @override
   void dispose() {
     _fullNameController.dispose();
-    _targetJobController.dispose();
     _hobbyController.dispose();
     _ageController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -56,10 +58,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final success = await vm.updateProfile(
       auth,
       fullName: _fullNameController.text.trim(),
-      targetJob: _targetJobController.text.trim(),
       educationLevel: _educationLevel,
       hobby: _hobbyController.text.trim(),
       age: int.tryParse(_ageController.text.trim()),
+      location: _locationController.text.trim(),
       onError: (msg) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,10 +135,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SizedBox(height: Responsive.s(context, 16)),
                 TextFormField(
-                  controller: _targetJobController,
+                  controller: _ageController,
+                  keyboardType: TextInputType.number,
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
-                    labelText: 'Ngành nghề mục tiêu',
+                    labelText: 'Tuổi',
                     labelStyle: TextStyle(color: Color(0xFF888B9B)),
                     filled: true,
                     fillColor: Color(0xFF191922),
@@ -144,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SizedBox(height: Responsive.s(context, 16)),
                 DropdownButtonFormField<String>(
-                  value: _educationLevel,
+                  initialValue: _educationLevel,
                   dropdownColor: const Color(0xFF191922),
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
@@ -159,6 +162,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onChanged: (val) {
                     if (val != null) setState(() => _educationLevel = val);
                   },
+                ),
+                SizedBox(height: Responsive.s(context, 16)),
+                TextFormField(
+                  controller: _locationController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Khu vực sinh sống',
+                    labelStyle: TextStyle(color: Color(0xFF888B9B)),
+                    filled: true,
+                    fillColor: Color(0xFF191922),
+                  ),
                 ),
                 SizedBox(height: Responsive.s(context, 16)),
                 TextFormField(

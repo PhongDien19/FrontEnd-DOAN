@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/quick_explore_viewmodels.dart';
+import '../viewmodels/quick_explore_viewmodel.dart';
 
 class QuickExploreScreen extends StatefulWidget {
   const QuickExploreScreen({super.key});

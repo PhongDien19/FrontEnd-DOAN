@@ -8,7 +8,6 @@ class ProfileViewModel extends ChangeNotifier {
   Future<bool> updateProfile(
     AuthProvider auth, {
     required String fullName,
-    required String targetJob,
     required String educationLevel,
     required String hobby,
     int? age,
@@ -20,7 +19,6 @@ class ProfileViewModel extends ChangeNotifier {
 
     final res = await auth.updateProfile(
       fullName: fullName,
-      targetJob: targetJob,
       educationLevel: educationLevel,
       hobby: hobby,
       age: age,

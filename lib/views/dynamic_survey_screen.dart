@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/dynamic_survey_viewmodels.dart';
+import '../viewmodels/dynamic_survey_viewmodel.dart';
 import 'dynamic_survey_report_screen.dart';
 
 class DynamicSurveyScreen extends StatefulWidget {
@@ -33,10 +33,12 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = Provider.of<AuthProvider>(context, listen: false);
-      if (auth.targetJob.isNotEmpty)
+      if (auth.targetJob.isNotEmpty) {
         _targetCareerController.text = auth.targetJob;
-      if (auth.educationLevel.isNotEmpty)
+      }
+      if (auth.educationLevel.isNotEmpty) {
         setState(() => _educationLevel = auth.educationLevel);
+      }
     });
   }
 

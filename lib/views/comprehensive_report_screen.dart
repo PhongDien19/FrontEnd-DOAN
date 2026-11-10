@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../services/auth_provider.dart';
 import '../utils/pdf_export_service.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/comprehensive_report_viewmodels.dart';
+import '../viewmodels/comprehensive_report_viewmodel.dart';
 import 'chat_screen.dart';
 
 class ComprehensiveReportScreen extends StatefulWidget {

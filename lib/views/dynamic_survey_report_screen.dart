@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/responsive.dart';
-import '../viewmodels/dynamic_survey_report_viewmodels.dart';
+import '../viewmodels/dynamic_survey_report_viewmodel.dart';
 import 'chat_screen.dart';
 
 class DynamicSurveyReportScreen extends StatefulWidget {

@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  /// Base URL của backend triển khai trên Railway.
+  /// Android emulator maps 10.0.2.2 to the development host's localhost.
   static const String baseUrl =
-      'https://hopeful-amazement-production-3e51.up.railway.app/api';
+      'http://localhost:5000/api';
 
   // Lưu trữ userId của người dùng hiện tại để tự động đính kèm vào header
   static String? currentUserId;
@@ -144,11 +144,132 @@ class ApiService {
   static Future<Map<String, dynamic>> getHistory(String userId) async {
     try {
       final response = await http
-          .get(Uri.parse('$baseUrl/history/$userId'), headers: _headers)
+          .get(
+            Uri.parse('$baseUrl/assessment/history/$userId'),
+            headers: _headers,
+          )
           .timeout(_defaultTimeout);
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi lấy lịch sử: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> startAssessment({
+    required String flow,
+    required String audience,
+    String? userId,
+    String? targetMajorId,
+    int? certaintyLevel,
+    String? targetReason,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/assessment/start'),
+            headers: _headers,
+            body: jsonEncode({
+              'flow': flow,
+              'audience': audience,
+              'userId': ?userId,
+              'targetMajorId': ?targetMajorId,
+              'certaintyLevel': ?certaintyLevel,
+              if (targetReason != null && targetReason.isNotEmpty)
+                'targetReason': targetReason,
+            }),
+          )
+          .timeout(_defaultTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Không thể tạo phiên đánh giá: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getAssessmentQuestions(
+    String assessmentId,
+    String section,
+  ) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/assessment/$assessmentId/section/$section'),
+            headers: _headers,
+          )
+          .timeout(_defaultTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Không thể tải câu hỏi: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> submitAssessmentSection({
+    required String assessmentId,
+    required String sectionType,
+    required List<Map<String, dynamic>> answers,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/assessment/$assessmentId/submit-section'),
+            headers: _headers,
+            body: jsonEncode({'sectionType': sectionType, 'answers': answers}),
+          )
+          .timeout(_defaultTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Không thể gửi câu trả lời: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getAssessmentResult(
+    String assessmentId,
+  ) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/assessment/$assessmentId/result'),
+            headers: _headers,
+          )
+          .timeout(_aiTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Không thể tải kết quả: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> submitAssessmentTrustCheck({
+    required String assessmentId,
+    required int trustScore,
+    required String feedbackText,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/assessment/$assessmentId/trust-check'),
+            headers: _headers,
+            body: jsonEncode({
+              'trustScore': trustScore,
+              'isTrusted': trustScore >= 3,
+              'section': 'overall',
+              'disagreeReasons': <String>[],
+              'feedbackText': feedbackText,
+            }),
+          )
+          .timeout(_defaultTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Không thể gửi phản hồi: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getMajors() async {
+    try {
+      final response = await http
+          .get(Uri.parse('$baseUrl/majors'), headers: _headers)
+          .timeout(_defaultTimeout);
+      return _safeParseResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Không thể tải danh sách ngành: $e'};
     }
   }
 
@@ -176,23 +297,6 @@ class ApiService {
     return askChatbot(message);
   }
 
-  static Future<Map<String, dynamic>> consultCareer(
-    Map<String, dynamic> info,
-  ) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/consult'),
-            headers: _headers,
-            body: jsonEncode(info),
-          )
-          .timeout(_aiTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi kết nối tư vấn: $e'};
-    }
-  }
-
   static Future<Map<String, dynamic>> searchCareer(
     Map<String, dynamic> info,
   ) async {
@@ -207,104 +311,6 @@ class ApiService {
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi kết nối tìm kiếm: $e'};
-    }
-  }
-
-  // --- 4. TRẮC NGHIỆM CHI TIẾT ---
-
-  static Future<Map<String, dynamic>> generateTest(
-    String testType,
-    Map<String, dynamic> context,
-  ) async {
-    try {
-      final body = Map<String, dynamic>.from(context);
-      body['testType'] = testType;
-
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/test/generate'),
-            headers: _headers,
-            body: jsonEncode(body),
-          )
-          .timeout(_aiTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi tạo bài test: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> evaluateTest(String sessionId) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/test/evaluate/$sessionId'),
-            headers: _headers,
-          )
-          .timeout(_aiTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi đánh giá bài test: $e'};
-    }
-  }
-
-  // --- 5. TEST DATA MANAGEMENT ---
-
-  static Future<Map<String, dynamic>> saveQuestions({
-    required String sessionId,
-    String? userId,
-    required String testName,
-    required List<Map<String, dynamic>> questions,
-    required Map<String, dynamic> userContext,
-  }) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/test/questions'),
-            headers: _headers,
-            body: jsonEncode({
-              'sessionId': sessionId,
-              'userId': userId,
-              'testName': testName,
-              'questions': questions,
-              'userContext': userContext,
-            }),
-          )
-          .timeout(_defaultTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi lưu câu hỏi: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getQuestions(String sessionId) async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/test/questions/$sessionId'),
-            headers: _headers,
-          )
-          .timeout(_defaultTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi tải danh sách câu hỏi: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> claimAssessment(
-    String sessionId,
-    String userId,
-  ) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/assessment/claim'),
-            headers: _headers,
-            body: jsonEncode({'sessionId': sessionId, 'userId': userId}),
-          )
-          .timeout(_defaultTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi đồng bộ kết quả test: $e'};
     }
   }
 
@@ -401,37 +407,6 @@ class ApiService {
       return _safeParseResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Lỗi gửi phản hồi: $e'};
-    }
-  }
-
-  // --- 8. SCORES & BENCHMARKS ---
-
-  static Future<Map<String, dynamic>> getScores(String userId) async {
-    try {
-      final response = await http
-          .get(Uri.parse('$baseUrl/profile/$userId/scores'), headers: _headers)
-          .timeout(_defaultTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi lấy điểm số: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> saveScores(
-    String userId,
-    Map<String, dynamic> scoreData,
-  ) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/profile/$userId/scores'),
-            headers: _headers,
-            body: jsonEncode(scoreData),
-          )
-          .timeout(_defaultTimeout);
-      return _safeParseResponse(response);
-    } catch (e) {
-      return {'success': false, 'message': 'Lỗi lưu điểm số: $e'};
     }
   }
 }
