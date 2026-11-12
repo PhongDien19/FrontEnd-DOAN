@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/chat_viewmodel.dart';
 
@@ -53,14 +54,13 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922).withValues(alpha: 0.8),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -70,11 +70,11 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: EdgeInsets.all(Responsive.s(context, 8)),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.15),
+                color: Colors.white,
               ),
               child: Icon(
                 Icons.support_agent_rounded,
-                color: const Color(0xFF6C63FF),
+                color: AppColors.primaryDark,
                 size: Responsive.s(context, 20),
               ),
             ),
@@ -87,14 +87,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   style: TextStyle(
                     fontSize: Responsive.font(context, 14),
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   'Hỗ trợ 24/7',
                   style: TextStyle(
                     fontSize: Responsive.font(context, 11),
-                    color: const Color(0xFF00F5A0),
+                    color: AppColors.textPrimary.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -132,7 +132,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF6C63FF),
+                            AppColors.primary,
                           ),
                         ),
                       ),
@@ -141,7 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         'AI đang phân tích câu hỏi...',
                         style: TextStyle(
                           fontSize: Responsive.font(context, 12),
-                          color: const Color(0xFF888B9B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -150,16 +150,16 @@ class _ChatScreenState extends State<ChatScreen> {
               SafeArea(
                 child: Container(
                   padding: EdgeInsets.all(Responsive.s(context, 16)),
-                  decoration: const BoxDecoration(color: Color(0xFF191922)),
+                  decoration: const BoxDecoration(color: AppColors.surface),
                   child: Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _textController,
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: AppColors.textPrimary),
                           decoration: const InputDecoration(
                             hintText: 'Nhập câu hỏi của bạn...',
-                            hintStyle: TextStyle(color: Color(0xFF5E6072)),
+                            hintStyle: TextStyle(color: AppColors.textHint),
                             border: InputBorder.none,
                           ),
                           onSubmitted: (txt) => _onSendMessage(vm, txt),
@@ -168,7 +168,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       IconButton(
                         icon: const Icon(
                           Icons.send_rounded,
-                          color: Color(0xFF6C63FF),
+                          color: AppColors.primaryDark,
                         ),
                         onPressed: () =>
                             _onSendMessage(vm, _textController.text),
@@ -204,16 +204,14 @@ class _ChatScreenState extends State<ChatScreen> {
               vertical: Responsive.s(context, 12),
             ),
             decoration: BoxDecoration(
-              color: isUser ? const Color(0xFF6C63FF) : const Color(0xFF191922),
+              color: isUser ? AppColors.primary : AppColors.surface,
               borderRadius: BorderRadius.circular(16),
-              border: isUser
-                  ? null
-                  : Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: isUser ? null : Border.all(color: AppColors.border),
             ),
             child: Text(
               msg.text,
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: Responsive.font(context, 13),
                 height: 1.4,
               ),
@@ -235,11 +233,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     opt,
                     style: TextStyle(
                       fontSize: Responsive.font(context, 12),
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  backgroundColor: const Color(0xFF191922),
-                  side: const BorderSide(color: Color(0xFF6C63FF)),
+                  backgroundColor: AppColors.surface,
+                  side: const BorderSide(color: AppColors.primary),
                   onPressed: () => _onSendMessage(vm, opt),
                 );
               }).toList(),

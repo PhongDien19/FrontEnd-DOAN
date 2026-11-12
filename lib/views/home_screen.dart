@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/home_viewmodel.dart';
 import 'assessment_flow_screen.dart';
@@ -30,9 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Row(
           children: [
@@ -40,11 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.all(Responsive.s(context, 6)),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
               ),
               child: const Icon(
                 Icons.psychology_rounded,
-                color: Color(0xFF6C63FF),
+                color: AppColors.primaryDark,
               ),
             ),
             SizedBox(width: Responsive.s(context, 10)),
@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: Responsive.font(context, 16),
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -63,8 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(
               auth.isAuthenticated ? Icons.person_rounded : Icons.login_rounded,
               color: auth.isAuthenticated
-                  ? const Color(0xFF00F5A0)
-                  : Colors.white,
+                  ? AppColors.success
+                  : AppColors.textPrimary,
             ),
             tooltip: auth.isAuthenticated ? 'Hồ Sơ' : 'Đăng Nhập',
             onPressed: () {
@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: Responsive.font(context, 16),
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   SizedBox(height: Responsive.s(context, 12)),
@@ -125,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontSize: Responsive.font(context, 16),
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         TextButton(
@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                           child: const Text(
                             'Xem tất cả',
-                            style: TextStyle(color: Color(0xFF6C63FF)),
+                            style: TextStyle(color: AppColors.primary),
                           ),
                         ),
                       ],
@@ -165,10 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.all(Responsive.s(context, 20)),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xFF6C63FF),
-            const Color(0xFF6C63FF).withValues(alpha: 0.7),
-          ],
+          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -182,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: Responsive.font(context, 20),
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: Responsive.s(context, 6)),
@@ -190,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Khám phá tiềm năng cá nhân và định hình lộ trình sự nghiệp tối ưu cùng AI.',
             style: TextStyle(
               fontSize: Responsive.font(context, 13),
-              color: Colors.white.withValues(alpha: 0.9),
+              color: AppColors.textPrimary.withValues(alpha: 0.9),
               height: 1.4,
             ),
           ),
@@ -203,11 +200,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: EdgeInsets.all(Responsive.s(context, 16)),
       decoration: BoxDecoration(
-        color: const Color(0xFF191922),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF00F5A0).withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
@@ -215,11 +210,11 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.all(Responsive.s(context, 12)),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF00F5A0).withValues(alpha: 0.15),
+              color: AppColors.success.withValues(alpha: 0.15),
             ),
             child: Icon(
               Icons.analytics_rounded,
-              color: const Color(0xFF00F5A0),
+              color: AppColors.success,
               size: Responsive.s(context, 28),
             ),
           ),
@@ -233,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: Responsive.font(context, 14),
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 SizedBox(height: Responsive.s(context, 4)),
@@ -241,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Trả lời từng phần để nhận gợi ý ngành phù hợp từ hệ thống',
                   style: TextStyle(
                     fontSize: Responsive.font(context, 11),
-                    color: const Color(0xFF888B9B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -257,8 +252,8 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00F5A0),
-              foregroundColor: Colors.black,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -287,22 +282,22 @@ class _HomeScreenState extends State<HomeScreen> {
       {
         'title': 'Tính cách',
         'icon': Icons.psychology_alt_rounded,
-        'color': const Color(0xFF6C63FF),
+        'color': AppColors.primary,
       },
       {
         'title': 'Sở thích nghề nghiệp',
         'icon': Icons.palette_rounded,
-        'color': const Color(0xFFFF6B6B),
+        'color': AppColors.error,
       },
       {
         'title': 'Năng lực ngoại ngữ',
         'icon': Icons.translate_rounded,
-        'color': const Color(0xFFFFD166),
+        'color': AppColors.warning,
       },
       {
         'title': 'Cơ hội nghề nghiệp',
         'icon': Icons.work_outline_rounded,
-        'color': const Color(0xFF00F5A0),
+        'color': AppColors.success,
       },
     ];
 
@@ -321,9 +316,9 @@ class _HomeScreenState extends State<HomeScreen> {
         return Container(
           padding: EdgeInsets.all(Responsive.s(context, 14)),
           decoration: BoxDecoration(
-            color: const Color(0xFF191922),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            border: Border.all(color: AppColors.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: Responsive.font(context, 13),
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -366,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             padding: EdgeInsets.all(Responsive.s(context, 16)),
             decoration: BoxDecoration(
-              color: const Color(0xFF191922),
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -374,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: Responsive.font(context, 12),
-                color: const Color(0xFF888B9B),
+                color: AppColors.textSecondary,
               ),
             ),
           );
@@ -393,9 +388,9 @@ class _HomeScreenState extends State<HomeScreen> {
               margin: EdgeInsets.only(bottom: Responsive.s(context, 8)),
               padding: EdgeInsets.all(Responsive.s(context, 12)),
               decoration: BoxDecoration(
-                color: const Color(0xFF191922),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Row(
                 children: [
@@ -404,8 +399,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? Icons.check_circle_rounded
                         : Icons.pending_outlined,
                     color: item['status'] == 'completed'
-                        ? const Color(0xFF00F5A0)
-                        : const Color(0xFFFFD166),
+                        ? AppColors.success
+                        : AppColors.warning,
                   ),
                   SizedBox(width: Responsive.s(context, 10)),
                   Expanded(
@@ -417,14 +412,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontSize: Responsive.font(context, 13),
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         Text(
                           '$audience · ${item['status'] == 'completed' ? 'Đã hoàn thành' : 'Đang thực hiện'}',
                           style: TextStyle(
                             fontSize: Responsive.font(context, 10),
-                            color: const Color(0xFF888B9B),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         if (date.isNotEmpty)
@@ -432,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             date.toString(),
                             style: TextStyle(
                               fontSize: Responsive.font(context, 10),
-                              color: const Color(0xFF888B9B),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                       ],

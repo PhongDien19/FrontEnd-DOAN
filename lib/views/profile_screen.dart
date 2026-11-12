@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/profile_viewmodel.dart';
 
@@ -65,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onError: (msg) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       },
     );
@@ -76,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Cập nhật hồ sơ thành công!'),
-          backgroundColor: Color(0xFF00F5A0),
+          backgroundColor: AppColors.success,
         ),
       );
     }
@@ -87,28 +88,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
           'Hồ Sơ Cá Nhân',
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
             onPressed: () async {
               await auth.logout();
               if (context.mounted) Navigator.pop(context);
@@ -125,36 +125,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 TextFormField(
                   controller: _fullNameController,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: AppColors.textPrimary),
                   decoration: const InputDecoration(
                     labelText: 'Họ và tên',
-                    labelStyle: TextStyle(color: Color(0xFF888B9B)),
+                    labelStyle: TextStyle(color: AppColors.textSecondary),
                     filled: true,
-                    fillColor: Color(0xFF191922),
+                    fillColor: AppColors.surface,
                   ),
                 ),
                 SizedBox(height: Responsive.s(context, 16)),
                 TextFormField(
                   controller: _ageController,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: AppColors.textPrimary),
                   decoration: const InputDecoration(
                     labelText: 'Tuổi',
-                    labelStyle: TextStyle(color: Color(0xFF888B9B)),
+                    labelStyle: TextStyle(color: AppColors.textSecondary),
                     filled: true,
-                    fillColor: Color(0xFF191922),
+                    fillColor: AppColors.surface,
                   ),
                 ),
                 SizedBox(height: Responsive.s(context, 16)),
                 DropdownButtonFormField<String>(
                   initialValue: _educationLevel,
-                  dropdownColor: const Color(0xFF191922),
-                  style: const TextStyle(color: Colors.white),
+                  dropdownColor: AppColors.surface,
+                  style: const TextStyle(color: AppColors.textPrimary),
                   decoration: const InputDecoration(
                     labelText: 'Trình độ',
-                    labelStyle: TextStyle(color: Color(0xFF888B9B)),
+                    labelStyle: TextStyle(color: AppColors.textSecondary),
                     filled: true,
-                    fillColor: Color(0xFF191922),
+                    fillColor: AppColors.surface,
                   ),
                   items: _educationOptions
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -166,23 +166,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 SizedBox(height: Responsive.s(context, 16)),
                 TextFormField(
                   controller: _locationController,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: AppColors.textPrimary),
                   decoration: const InputDecoration(
                     labelText: 'Khu vực sinh sống',
-                    labelStyle: TextStyle(color: Color(0xFF888B9B)),
+                    labelStyle: TextStyle(color: AppColors.textSecondary),
                     filled: true,
-                    fillColor: Color(0xFF191922),
+                    fillColor: AppColors.surface,
                   ),
                 ),
                 SizedBox(height: Responsive.s(context, 16)),
                 TextFormField(
                   controller: _hobbyController,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: AppColors.textPrimary),
                   decoration: const InputDecoration(
                     labelText: 'Sở thích cá nhân',
-                    labelStyle: TextStyle(color: Color(0xFF888B9B)),
+                    labelStyle: TextStyle(color: AppColors.textSecondary),
                     filled: true,
-                    fillColor: Color(0xFF191922),
+                    fillColor: AppColors.surface,
                   ),
                 ),
                 SizedBox(height: Responsive.s(context, 28)),
@@ -191,10 +191,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: ElevatedButton(
                     onPressed: vm.isSaving ? null : () => _save(vm, auth),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C63FF),
+                      backgroundColor: AppColors.primary,
                     ),
                     child: vm.isSaving
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const CircularProgressIndicator(
+                            color: AppColors.textPrimary,
+                          )
                         : const Text(
                             'LƯU THÔNG TIN',
                             style: TextStyle(fontWeight: FontWeight.bold),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/test_history_viewmodel.dart';
 
@@ -24,22 +25,21 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
           'Lịch Sử Đánh Giá',
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -48,7 +48,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
         builder: (context, vm, child) {
           if (vm.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
+              child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
 
@@ -56,7 +56,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
             return Center(
               child: Text(
                 vm.errorMessage!,
-                style: const TextStyle(color: Colors.redAccent),
+                style: const TextStyle(color: AppColors.error),
               ),
             );
           }
@@ -65,7 +65,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
             return const Center(
               child: Text(
                 'Bạn chưa thực hiện bài kiểm tra nào.',
-                style: TextStyle(color: Color(0xFF888B9B)),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             );
           }
@@ -93,11 +93,9 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
               return Container(
                 padding: EdgeInsets.all(Responsive.s(context, 16)),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF191922),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                  ),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Row(
                   children: [
@@ -106,8 +104,8 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                           ? Icons.assignment_turned_in_rounded
                           : Icons.pending_actions_rounded,
                       color: item['status'] == 'completed'
-                          ? const Color(0xFF00F5A0)
-                          : const Color(0xFFFFD166),
+                          ? AppColors.success
+                          : AppColors.warning,
                     ),
                     SizedBox(width: Responsive.s(context, 12)),
                     Expanded(
@@ -117,7 +115,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                           Text(
                             title,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: Responsive.font(context, 14),
                               fontWeight: FontWeight.bold,
                             ),
@@ -129,7 +127,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                               if (date.toString().isNotEmpty) date.toString(),
                             ].join(' · '),
                             style: TextStyle(
-                              color: const Color(0xFF888B9B),
+                              color: AppColors.textSecondary,
                               fontSize: Responsive.font(context, 11),
                             ),
                           ),
@@ -137,7 +135,7 @@ class _TestHistoryScreenState extends State<TestHistoryScreen> {
                             Text(
                               'Mức độ phù hợp: $fitScore%',
                               style: TextStyle(
-                                color: const Color(0xFF00F5A0),
+                                color: AppColors.success,
                                 fontSize: Responsive.font(context, 11),
                               ),
                             ),

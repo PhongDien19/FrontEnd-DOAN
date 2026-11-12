@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/dynamic_survey_viewmodel.dart';
 import 'dynamic_survey_report_screen.dart';
@@ -63,7 +64,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       onError: (msg) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       },
     );
@@ -73,7 +74,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     final success = await vm.submitSurvey((msg) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+        SnackBar(content: Text(msg), backgroundColor: AppColors.error),
       );
     });
 
@@ -95,22 +96,21 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
     return Consumer<DynamicSurveyViewModel>(
       builder: (context, vm, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFF0F0F13),
+          backgroundColor: AppColors.background,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF191922),
             elevation: 0,
             title: Text(
               'Khảo Sát Động Hướng Nghiệp',
               style: TextStyle(
                 fontSize: Responsive.font(context, 16),
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             leading: IconButton(
               icon: const Icon(
                 Icons.arrow_back_ios_new_rounded,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
               onPressed: () => Navigator.pop(context),
             ),
@@ -158,17 +158,17 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
             Container(
               padding: EdgeInsets.all(Responsive.s(context, 16)),
               decoration: BoxDecoration(
-                color: const Color(0xFF191922),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.quiz_rounded,
-                    color: Color(0xFF6C63FF),
+                    color: AppColors.primaryDark,
                     size: 32,
                   ),
                   SizedBox(width: Responsive.s(context, 12)),
@@ -181,7 +181,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                           style: TextStyle(
                             fontSize: Responsive.font(context, 15),
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         SizedBox(height: Responsive.s(context, 4)),
@@ -189,7 +189,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                           'AI sẽ tự động sinh câu hỏi thông minh theo định hướng riêng của bạn.',
                           style: TextStyle(
                             fontSize: Responsive.font(context, 12),
-                            color: const Color(0xFF888B9B),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -206,7 +206,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
               style: TextStyle(
                 fontSize: Responsive.font(context, 14),
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             SizedBox(height: Responsive.s(context, 10)),
@@ -233,14 +233,14 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
 
             TextFormField(
               controller: _targetCareerController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Ngành nghề quan tâm / mục tiêu',
-                labelStyle: const TextStyle(color: Color(0xFF888B9B)),
+                labelStyle: const TextStyle(color: AppColors.textSecondary),
                 hintText: 'VD: Thiết kế Đồ họa, AI Engineer',
-                hintStyle: const TextStyle(color: Color(0xFF5E6072)),
+                hintStyle: const TextStyle(color: AppColors.textHint),
                 filled: true,
-                fillColor: const Color(0xFF191922),
+                fillColor: AppColors.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -255,12 +255,14 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   child: TextFormField(
                     controller: _ageController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Tuổi',
-                      labelStyle: const TextStyle(color: Color(0xFF888B9B)),
+                      labelStyle: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
                       filled: true,
-                      fillColor: const Color(0xFF191922),
+                      fillColor: AppColors.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -273,13 +275,15 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   flex: 2,
                   child: DropdownButtonFormField<String>(
                     initialValue: _educationLevel,
-                    dropdownColor: const Color(0xFF191922),
-                    style: const TextStyle(color: Colors.white),
+                    dropdownColor: AppColors.surface,
+                    style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Trình độ',
-                      labelStyle: const TextStyle(color: Color(0xFF888B9B)),
+                      labelStyle: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
                       filled: true,
-                      fillColor: const Color(0xFF191922),
+                      fillColor: AppColors.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -307,8 +311,8 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6C63FF),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -330,13 +334,11 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         padding: EdgeInsets.all(Responsive.s(context, 12)),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF6C63FF).withValues(alpha: 0.15)
-              : const Color(0xFF191922),
+              ? AppColors.primary.withValues(alpha: 0.15)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF6C63FF)
-                : Colors.white.withValues(alpha: 0.08),
+            color: isSelected ? AppColors.primary : AppColors.border,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -344,9 +346,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected
-                  ? const Color(0xFF6C63FF)
-                  : const Color(0xFF888B9B),
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
             ),
             SizedBox(height: Responsive.s(context, 6)),
             Text(
@@ -355,7 +355,9 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
               style: TextStyle(
                 fontSize: Responsive.font(context, 12),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Colors.white : const Color(0xFF888B9B),
+                color: isSelected
+                    ? AppColors.textPrimary
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -367,7 +369,10 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
   Widget _buildQuestionsFlow(DynamicSurveyViewModel vm) {
     if (vm.questions.isEmpty) {
       return const Center(
-        child: Text('Không có câu hỏi.', style: TextStyle(color: Colors.white)),
+        child: Text(
+          'Không có câu hỏi.',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
       );
     }
 
@@ -381,8 +386,8 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
       children: [
         LinearProgressIndicator(
           value: (vm.currentIndex + 1) / vm.questions.length,
-          backgroundColor: const Color(0xFF191922),
-          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+          backgroundColor: AppColors.surface,
+          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
         Expanded(
           child: SingleChildScrollView(
@@ -393,7 +398,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 Text(
                   'Câu ${vm.currentIndex + 1} / ${vm.questions.length}',
                   style: TextStyle(
-                    color: const Color(0xFF6C63FF),
+                    color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: Responsive.font(context, 13),
                   ),
@@ -402,7 +407,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 Container(
                   padding: EdgeInsets.all(Responsive.s(context, 18)),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF191922),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
@@ -410,7 +415,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                     style: TextStyle(
                       fontSize: Responsive.font(context, 15),
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       height: 1.4,
                     ),
                   ),
@@ -428,21 +433,19 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                         padding: EdgeInsets.all(Responsive.s(context, 14)),
                         decoration: BoxDecoration(
                           color: isSel
-                              ? const Color(0xFF6C63FF).withValues(alpha: 0.15)
-                              : const Color(0xFF191922),
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : AppColors.surface,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSel
-                                ? const Color(0xFF6C63FF)
-                                : Colors.white.withValues(alpha: 0.08),
+                            color: isSel ? AppColors.primary : AppColors.border,
                           ),
                         ),
                         child: Text(
                           optText,
                           style: TextStyle(
                             color: isSel
-                                ? Colors.white
-                                : const Color(0xFFD1D5DB),
+                                ? AppColors.textPrimary
+                                : AppColors.textBody,
                             fontWeight: isSel
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -458,7 +461,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         ),
         Container(
           padding: EdgeInsets.all(Responsive.s(context, 16)),
-          color: const Color(0xFF191922),
+          color: AppColors.surface,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -467,7 +470,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                   onPressed: () => vm.previousQuestion(),
                   child: const Text(
                     'Trước',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: AppColors.textPrimary),
                   ),
                 )
               else
@@ -476,7 +479,7 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                 ElevatedButton(
                   onPressed: () => vm.nextQuestion(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C63FF),
+                    backgroundColor: AppColors.primary,
                   ),
                   child: const Text('Tiếp Theo'),
                 )
@@ -486,12 +489,12 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
                       ? () => _submitSurvey(vm)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00F5A0),
+                    backgroundColor: AppColors.primary,
                   ),
                   child: const Text(
                     'HOÀN THÀNH',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: AppColors.onPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -509,13 +512,13 @@ class _DynamicSurveyScreenState extends State<DynamicSurveyScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
           SizedBox(height: Responsive.s(context, 16)),
           Text(
             msg,
             style: TextStyle(
-              color: const Color(0xFF888B9B),
+              color: AppColors.textSecondary,
               fontSize: Responsive.font(context, 13),
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/login_viewmodel.dart';
 
@@ -42,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Thao tác thành công!'),
-          backgroundColor: const Color(0xFF00F5A0),
+          backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -57,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Đã có lỗi xảy ra!'),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Consumer<LoginViewModel>(
       builder: (context, vm, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFF0F0F13),
+          backgroundColor: AppColors.background,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -77,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ? IconButton(
                     icon: const Icon(
                       Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                     onPressed: () => Navigator.pop(context),
                   )
@@ -114,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Icon(
                           Icons.psychology_rounded,
                           size: Responsive.s(context, 48),
-                          color: const Color(0xFF6C63FF),
+                          color: AppColors.primaryDark,
                         ),
                       ),
                       SizedBox(height: Responsive.s(context, 16)),
@@ -123,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: Responsive.font(context, 26),
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -135,21 +136,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: Responsive.font(context, 13),
-                          color: const Color(0xFF888B9B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       SizedBox(height: Responsive.s(context, 32)),
                       Container(
                         padding: EdgeInsets.all(Responsive.s(context, 24)),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF191922),
+                          color: AppColors.surface,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
+                          border: Border.all(color: AppColors.border),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -165,25 +164,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: TextStyle(
                                   fontSize: Responsive.font(context, 18),
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
                               SizedBox(height: Responsive.s(context, 20)),
                               if (!vm.isLoginMode) ...[
                                 TextFormField(
                                   controller: _fullNameController,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                  ),
                                   decoration: InputDecoration(
                                     labelText: 'Họ và tên',
                                     labelStyle: const TextStyle(
-                                      color: Color(0xFF888B9B),
+                                      color: AppColors.textSecondary,
                                     ),
                                     prefixIcon: const Icon(
                                       Icons.person_outline_rounded,
-                                      color: Color(0xFF6C63FF),
+                                      color: AppColors.primaryDark,
                                     ),
                                     filled: true,
-                                    fillColor: const Color(0xFF0F0F13),
+                                    fillColor: AppColors.background,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide.none,
@@ -191,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                        color: Color(0xFF6C63FF),
+                                        color: AppColors.primary,
                                         width: 1.5,
                                       ),
                                     ),
@@ -210,18 +211,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                ),
                                 decoration: InputDecoration(
                                   labelText: 'Email',
                                   labelStyle: const TextStyle(
-                                    color: Color(0xFF888B9B),
+                                    color: AppColors.textSecondary,
                                   ),
                                   prefixIcon: const Icon(
                                     Icons.email_outlined,
-                                    color: Color(0xFF6C63FF),
+                                    color: AppColors.primaryDark,
                                   ),
                                   filled: true,
-                                  fillColor: const Color(0xFF0F0F13),
+                                  fillColor: AppColors.background,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide.none,
@@ -229,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFF6C63FF),
+                                      color: AppColors.primary,
                                       width: 1.5,
                                     ),
                                   ),
@@ -251,28 +254,30 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: vm.obscurePassword,
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                ),
                                 decoration: InputDecoration(
                                   labelText: 'Mật khẩu',
                                   labelStyle: const TextStyle(
-                                    color: Color(0xFF888B9B),
+                                    color: AppColors.textSecondary,
                                   ),
                                   prefixIcon: const Icon(
                                     Icons.lock_outline_rounded,
-                                    color: Color(0xFF6C63FF),
+                                    color: AppColors.primaryDark,
                                   ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       vm.obscurePassword
                                           ? Icons.visibility_off_outlined
                                           : Icons.visibility_outlined,
-                                      color: const Color(0xFF888B9B),
+                                      color: AppColors.textSecondary,
                                     ),
                                     onPressed: () =>
                                         vm.togglePasswordVisibility(),
                                   ),
                                   filled: true,
-                                  fillColor: const Color(0xFF0F0F13),
+                                  fillColor: AppColors.background,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide.none,
@@ -280,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFF6C63FF),
+                                      color: AppColors.primary,
                                       width: 1.5,
                                     ),
                                   ),
@@ -303,8 +308,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ? null
                                       : () => _submit(vm),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF6C63FF),
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: AppColors.textPrimary,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -320,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
                                                       Color
-                                                    >(Colors.white),
+                                                    >(AppColors.textPrimary),
                                               ),
                                         )
                                       : Text(
@@ -352,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : 'Đã có tài khoản? ',
                             style: TextStyle(
                               fontSize: Responsive.font(context, 13),
-                              color: const Color(0xFF888B9B),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                           GestureDetector(
@@ -365,7 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 fontSize: Responsive.font(context, 13),
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF6C63FF),
+                                color: AppColors.primary,
                               ),
                             ),
                           ),

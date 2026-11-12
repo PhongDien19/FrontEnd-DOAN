@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../controllers/assessment_flow_controller.dart';
 
@@ -70,7 +71,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -92,15 +93,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     return Consumer<AssessmentFlowController>(
       builder: (context, vm, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFF0F0F13),
+          backgroundColor: AppColors.background,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF191922),
             title: Text(
               vm.step == 4 ? 'Kết quả hướng nghiệp' : 'Đánh giá hướng nghiệp',
               style: TextStyle(
                 fontSize: Responsive.font(context, 16),
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             leading: IconButton(
@@ -135,7 +135,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         return _buildSetupForm(vm);
       case 1:
         return const Center(
-          child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
+          child: CircularProgressIndicator(color: AppColors.primary),
         );
       case 2:
         return _buildQuestion(vm);
@@ -144,11 +144,11 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: Color(0xFF6C63FF)),
+              CircularProgressIndicator(color: AppColors.primary),
               SizedBox(height: 16),
               Text(
                 'Đang lưu câu trả lời và tính điểm...',
-                style: TextStyle(color: Color(0xFFB7B8C5)),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -171,14 +171,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           children: [
             const Icon(
               Icons.cloud_off_rounded,
-              color: Colors.orangeAccent,
+              color: AppColors.warning,
               size: 44,
             ),
             const SizedBox(height: 12),
             Text(
               vm.errorMessage ?? 'Không thể tải dữ liệu đánh giá.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.textPrimary),
             ),
             const SizedBox(height: 18),
             if (vm.canRetry)
@@ -187,7 +187,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('Thử lại'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF6C63FF),
+                  backgroundColor: AppColors.primary,
                 ),
               )
             else
@@ -218,8 +218,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             _fieldLabel('Đối tượng'),
             DropdownButtonFormField<String>(
               initialValue: _audience,
-              dropdownColor: const Color(0xFF191922),
-              style: const TextStyle(color: Colors.white),
+              dropdownColor: AppColors.surface,
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: _inputDecoration('Chọn đối tượng'),
               items: const [
                 DropdownMenuItem(
@@ -257,7 +257,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 const Padding(
                   padding: EdgeInsets.all(12),
                   child: Center(
-                    child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
                 )
               else if (vm.majors.isEmpty)
@@ -266,7 +266,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   children: [
                     Text(
                       vm.majorsError ?? 'Chưa có dữ liệu ngành.',
-                      style: const TextStyle(color: Colors.redAccent),
+                      style: const TextStyle(color: AppColors.error),
                     ),
                     TextButton(
                       onPressed: vm.loadMajors,
@@ -282,8 +282,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                       )
                       ? _targetMajorId
                       : null,
-                  dropdownColor: const Color(0xFF191922),
-                  style: const TextStyle(color: Colors.white),
+                  dropdownColor: AppColors.surface,
+                  style: const TextStyle(color: AppColors.textPrimary),
                   decoration: _inputDecoration('Chọn ngành'),
                   items: vm.majors
                       .map<DropdownMenuItem<String>>(
@@ -304,8 +304,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               _fieldLabel('Mức độ chắc chắn (1–10)'),
               DropdownButtonFormField<int>(
                 initialValue: _certaintyLevel,
-                dropdownColor: const Color(0xFF191922),
-                style: const TextStyle(color: Colors.white),
+                dropdownColor: AppColors.surface,
+                style: const TextStyle(color: AppColors.textPrimary),
                 decoration: _inputDecoration('Mức độ chắc chắn'),
                 items: List.generate(
                   10,
@@ -323,7 +323,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               TextFormField(
                 controller: _targetReasonController,
                 maxLines: 3,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.textPrimary),
                 decoration: _inputDecoration(
                   'Điều gì khiến bạn quan tâm ngành này?',
                 ),
@@ -337,8 +337,8 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Bắt đầu đánh giá'),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF6C63FF),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 15),
               ),
             ),
@@ -361,22 +361,20 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF191922),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF6C63FF)
-                : Colors.white.withValues(alpha: 0.1),
+            color: selected ? AppColors.primary : AppColors.border,
           ),
         ),
         child: Row(
           children: [
             Icon(
               selected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: selected ? const Color(0xFF6C63FF) : Colors.white54,
+              color: selected ? AppColors.primaryDark : AppColors.textHint,
             ),
             const SizedBox(width: 12),
-            Icon(icon, color: const Color(0xFF00F5A0)),
+            Icon(icon, color: AppColors.success),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -385,7 +383,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   Text(
                     title,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -393,7 +391,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   Text(
                     description,
                     style: const TextStyle(
-                      color: Color(0xFF888B9B),
+                      color: AppColors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -420,7 +418,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           Text(
             _sectionTitle(vm.section),
             style: const TextStyle(
-              color: Color(0xFF00F5A0),
+              color: AppColors.success,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
@@ -428,23 +426,23 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: const Color(0xFF292936),
-            color: const Color(0xFF6C63FF),
+            backgroundColor: AppColors.chip,
+            color: AppColors.primary,
             minHeight: 7,
             borderRadius: BorderRadius.circular(8),
           ),
           const SizedBox(height: 8),
           Text(
             'Câu ${vm.currentQuestionIndex + 1} / ${vm.questions.length}',
-            style: const TextStyle(color: Color(0xFF888B9B)),
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF191922),
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: AppColors.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -454,7 +452,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                       question['questionText']?.toString() ??
                       'Câu hỏi',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 18,
                     height: 1.45,
                     fontWeight: FontWeight.w600,
@@ -484,7 +482,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   icon: const Icon(Icons.arrow_forward_rounded),
                   label: const Text('Tiếp tục'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C63FF),
+                    backgroundColor: AppColors.primary,
                   ),
                 )
               else
@@ -495,7 +493,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   icon: const Icon(Icons.check_rounded),
                   label: const Text('Hoàn thành phần'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C63FF),
+                    backgroundColor: AppColors.primary,
                   ),
                 ),
             ],
@@ -518,7 +516,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             value,
           );
         },
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: AppColors.textPrimary),
         decoration: _inputDecoration('Nhập câu trả lời'),
       );
     }
@@ -551,7 +549,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     if (options.isEmpty) {
       return const Text(
         'Câu hỏi này chưa có lựa chọn khả dụng.',
-        style: TextStyle(color: Colors.redAccent),
+        style: TextStyle(color: AppColors.error),
       );
     }
 
@@ -621,13 +619,11 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         ),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFF6C63FF).withValues(alpha: 0.18)
-              : const Color(0xFF22222D),
+              ? AppColors.primary.withValues(alpha: 0.18)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF6C63FF)
-                : Colors.white.withValues(alpha: 0.08),
+            color: selected ? AppColors.primary : AppColors.border,
           ),
         ),
         child: Row(
@@ -638,7 +634,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             if (!compact)
               Icon(
                 selected ? Icons.radio_button_checked : Icons.radio_button_off,
-                color: selected ? const Color(0xFF00F5A0) : Colors.white54,
+                color: selected ? AppColors.success : AppColors.textHint,
                 size: 20,
               ),
             if (!compact) const SizedBox(width: 10),
@@ -647,7 +643,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 label,
                 textAlign: compact ? TextAlign.center : TextAlign.start,
                 style: TextStyle(
-                  color: selected ? Colors.white : const Color(0xFFCBCBD4),
+                  color: selected ? AppColors.textPrimary : AppColors.textBody,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
@@ -690,7 +686,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF191922),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -698,14 +694,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                   Text(
                     '$score%',
                     style: const TextStyle(
-                      color: Color(0xFF00F5A0),
+                      color: AppColors.success,
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Text(
                     'Mức độ phù hợp tổng thể',
-                    style: TextStyle(color: Color(0xFFB7B8C5)),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -724,11 +720,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF191922),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                  ),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -741,7 +735,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                                 major['name']?.toString() ??
                                 'Ngành học',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -750,7 +744,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                           Text(
                             '${major['fitScore']}%',
                             style: const TextStyle(
-                              color: Color(0xFF00F5A0),
+                              color: AppColors.success,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -761,7 +755,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                       Text(
                         'Trường gợi ý: ${schools.take(2).map((school) => school is Map ? school['universityName'] : null).whereType<String>().join(', ')}',
                         style: const TextStyle(
-                          color: Color(0xFF888B9B),
+                          color: AppColors.textSecondary,
                           fontSize: 12,
                         ),
                       ),
@@ -787,7 +781,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             _fieldLabel('Định hướng tiếp theo'),
             Text(
               result['actionRecommendation'].toString(),
-              style: const TextStyle(color: Color(0xFFCBCBD4), height: 1.5),
+              style: const TextStyle(color: AppColors.textBody, height: 1.5),
             ),
           ],
           const SizedBox(height: 18),
@@ -801,7 +795,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                     : () => setState(() => _trustScore = index + 1),
                 icon: Icon(
                   index < _trustScore ? Icons.star_rounded : Icons.star_border,
-                  color: const Color(0xFFFFD166),
+                  color: AppColors.warning,
                   size: 30,
                 ),
               ),
@@ -811,14 +805,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             controller: _trustFeedbackController,
             enabled: !vm.trustSubmitted && !vm.isSubmittingTrust,
             maxLines: 2,
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: AppColors.textPrimary),
             decoration: _inputDecoration('Góp ý thêm (không bắt buộc)'),
           ),
           const SizedBox(height: 10),
           if (vm.trustSubmitted)
             Text(
               vm.trustAction ?? 'Cảm ơn bạn đã gửi phản hồi.',
-              style: const TextStyle(color: Color(0xFF00F5A0), height: 1.4),
+              style: const TextStyle(color: AppColors.success, height: 1.4),
             )
           else
             OutlinedButton.icon(
@@ -845,7 +839,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
             icon: const Icon(Icons.home_rounded),
             label: const Text('Về trang chủ'),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF6C63FF),
+              backgroundColor: AppColors.primary,
               padding: const EdgeInsets.symmetric(vertical: 15),
             ),
           ),
@@ -889,9 +883,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF191922),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -919,7 +913,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               const Text(
                 'Điểm sở thích Holland',
                 style: TextStyle(
-                  color: Color(0xFFB7B8C5),
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -935,14 +929,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                         width: 28,
                         child: Text(
                           entry.key,
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: AppColors.textPrimary),
                         ),
                       ),
                       Expanded(
                         child: LinearProgressIndicator(
                           value: (value / 100).clamp(0, 1),
-                          color: const Color(0xFF6C63FF),
-                          backgroundColor: const Color(0xFF292936),
+                          color: AppColors.primary,
+                          backgroundColor: AppColors.chip,
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
@@ -951,7 +945,9 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                         child: Text(
                           '${value.round()}%',
                           textAlign: TextAlign.end,
-                          style: const TextStyle(color: Color(0xFFB7B8C5)),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ],
@@ -969,12 +965,12 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xFF22222D),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         '$label: $value',
-        style: const TextStyle(color: Colors.white, fontSize: 12),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 12),
       ),
     );
   }
@@ -1004,7 +1000,10 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
           if (major['category'] != null)
             Text(
               'Lĩnh vực: ${major['category']}',
-              style: const TextStyle(color: Color(0xFF888B9B), fontSize: 12),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
             ),
           if (components.isNotEmpty)
             Wrap(
@@ -1020,7 +1019,10 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               padding: const EdgeInsets.only(top: 6),
               child: Text(
                 'Vị trí nghề nghiệp: ${careerPaths.join(', ')}',
-                style: const TextStyle(color: Color(0xFFB7B8C5), fontSize: 12),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
               ),
             ),
           if (relatedMajors.isNotEmpty)
@@ -1028,7 +1030,10 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
               padding: const EdgeInsets.only(top: 6),
               child: Text(
                 'Ngành liên quan: ${relatedMajors.join(', ')}',
-                style: const TextStyle(color: Color(0xFFB7B8C5), fontSize: 12),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
               ),
             ),
         ],
@@ -1044,12 +1049,15 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
         children: [
           const Icon(
             Icons.check_circle_rounded,
-            color: Color(0xFF00F5A0),
+            color: AppColors.success,
             size: 17,
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: const TextStyle(color: Color(0xFFCBCBD4))),
+            child: Text(
+              text,
+              style: const TextStyle(color: AppColors.textBody),
+            ),
           ),
         ],
       ),
@@ -1060,16 +1068,14 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF191922),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF6C63FF).withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: const Color(0xFF6C63FF), size: 28),
+          Icon(icon, color: AppColors.primaryDark, size: 28),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1078,7 +1084,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1086,7 +1092,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
                 Text(
                   description,
                   style: const TextStyle(
-                    color: Color(0xFF888B9B),
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -1105,7 +1111,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
       child: Text(
         text,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.textPrimary,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -1115,16 +1121,16 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Color(0xFF888B9B)),
+      hintStyle: const TextStyle(color: AppColors.textSecondary),
       filled: true,
-      fillColor: const Color(0xFF191922),
+      fillColor: AppColors.surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF6C63FF)),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
     );
   }

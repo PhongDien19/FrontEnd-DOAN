@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../services/auth_provider.dart';
 import '../utils/pdf_export_service.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/comprehensive_report_viewmodel.dart';
 import 'chat_screen.dart';
@@ -53,7 +54,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Đang tạo và xuất file PDF...'),
-        backgroundColor: Color(0xFF6C63FF),
+        backgroundColor: AppColors.primary,
         duration: Duration(seconds: 2),
       ),
     );
@@ -72,7 +73,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Không thể xuất file PDF: $e'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -84,16 +85,15 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
           'Báo Cáo Hướng Nghiệp AI',
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         actions: [
@@ -105,7 +105,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               return IconButton(
                 icon: const Icon(
                   Icons.picture_as_pdf_rounded,
-                  color: Color(0xFF00F5A0),
+                  color: AppColors.success,
                 ),
                 tooltip: 'Xuất PDF',
                 onPressed: () => _exportPdf(context, auth, vm.report!),
@@ -113,7 +113,10 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppColors.textPrimary,
+            ),
             tooltip: 'Tải lại',
             onPressed: () {
               context.read<ComprehensiveReportViewModel>().fetchReport(auth);
@@ -178,13 +181,13 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
           SizedBox(height: Responsive.s(context, 16)),
           Text(
             'AI đang tổng hợp dữ liệu 4 trụ cột...',
             style: TextStyle(
-              color: const Color(0xFF888B9B),
+              color: AppColors.textSecondary,
               fontSize: Responsive.font(context, 14),
             ),
           ),
@@ -207,7 +210,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             Icon(
               Icons.warning_amber_rounded,
               size: Responsive.s(context, 64),
-              color: const Color(0xFFFFB74D),
+              color: AppColors.warning,
             ),
             SizedBox(height: Responsive.s(context, 16)),
             Text(
@@ -215,7 +218,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               style: TextStyle(
                 fontSize: Responsive.font(context, 18),
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             SizedBox(height: Responsive.s(context, 8)),
@@ -224,7 +227,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: Responsive.font(context, 13),
-                color: const Color(0xFF888B9B),
+                color: AppColors.textSecondary,
               ),
             ),
             SizedBox(height: Responsive.s(context, 24)),
@@ -233,8 +236,8 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Thử Lại'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C63FF),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textPrimary,
                 padding: EdgeInsets.symmetric(
                   horizontal: Responsive.s(context, 24),
                   vertical: Responsive.s(context, 12),
@@ -259,7 +262,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
       child: Text(
         'Không tìm thấy dữ liệu báo cáo.',
         style: TextStyle(
-          color: Colors.white,
+          color: AppColors.textPrimary,
           fontSize: Responsive.font(context, 14),
         ),
       ),
@@ -279,18 +282,18 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
     return Container(
       padding: EdgeInsets.all(Responsive.s(context, 16)),
       decoration: BoxDecoration(
-        color: const Color(0xFF191922),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: Responsive.s(context, 24),
-            backgroundColor: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+            backgroundColor: AppColors.primary.withValues(alpha: 0.2),
             child: Icon(
               Icons.person_rounded,
-              color: const Color(0xFF6C63FF),
+              color: AppColors.primaryDark,
               size: Responsive.s(context, 26),
             ),
           ),
@@ -306,7 +309,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                   style: TextStyle(
                     fontSize: Responsive.font(context, 16),
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 SizedBox(height: Responsive.s(context, 4)),
@@ -314,7 +317,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                   'Mục tiêu: $targetJobText • Trình độ: $eduLevelText',
                   style: TextStyle(
                     fontSize: Responsive.font(context, 12),
-                    color: const Color(0xFF888B9B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -338,31 +341,26 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
       padding: EdgeInsets.all(Responsive.s(context, 20)),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xFF6C63FF).withValues(alpha: 0.2),
-            const Color(0xFF191922),
-          ],
+          colors: [AppColors.primary.withValues(alpha: 0.2), AppColors.surface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome_rounded, color: Color(0xFF00F5A0)),
+              const Icon(Icons.auto_awesome_rounded, color: AppColors.success),
               SizedBox(width: Responsive.s(context, 8)),
               Text(
                 'Phân Tích Tổng Quan Từ AI',
                 style: TextStyle(
                   fontSize: Responsive.font(context, 16),
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -372,7 +370,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             analysis,
             style: TextStyle(
               fontSize: Responsive.font(context, 13),
-              color: const Color(0xFFD1D5DB),
+              color: AppColors.textBody,
               height: 1.5,
             ),
           ),
@@ -399,7 +397,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         SizedBox(height: Responsive.s(context, 12)),
@@ -419,9 +417,9 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             return Container(
               padding: EdgeInsets.all(Responsive.s(context, 16)),
               decoration: BoxDecoration(
-                color: const Color(0xFF191922),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +433,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                           style: TextStyle(
                             fontSize: Responsive.font(context, 14),
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFFF1A416),
+                            color: AppColors.warning,
                           ),
                         ),
                       ),
@@ -445,7 +443,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                           vertical: Responsive.s(context, 4),
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -453,7 +451,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                           style: TextStyle(
                             fontSize: Responsive.font(context, 12),
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF6C63FF),
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -464,7 +462,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                     interpretation,
                     style: TextStyle(
                       fontSize: Responsive.font(context, 12),
-                      color: const Color(0xFF9CA3AF),
+                      color: AppColors.textSecondary,
                       height: 1.4,
                     ),
                   ),
@@ -497,7 +495,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         SizedBox(height: Responsive.s(context, 12)),
@@ -511,10 +509,10 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                 vertical: Responsive.s(context, 10),
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF191922),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: const Color(0xFF00F5A0).withValues(alpha: 0.4),
+                  color: AppColors.success.withValues(alpha: 0.4),
                 ),
               ),
               child: Row(
@@ -522,7 +520,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                 children: [
                   const Icon(
                     Icons.work_outline_rounded,
-                    color: Color(0xFF00F5A0),
+                    color: AppColors.success,
                     size: 16,
                   ),
                   SizedBox(width: Responsive.s(context, 6)),
@@ -531,7 +529,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                     style: TextStyle(
                       fontSize: Responsive.font(context, 13),
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -555,9 +553,9 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
     return Container(
       padding: EdgeInsets.all(Responsive.s(context, 16)),
       decoration: BoxDecoration(
-        color: const Color(0xFF191922),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -566,7 +564,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             children: [
               const Icon(
                 Icons.lightbulb_outline_rounded,
-                color: Color(0xFFF1A416),
+                color: AppColors.warning,
               ),
               SizedBox(width: Responsive.s(context, 8)),
               Text(
@@ -574,7 +572,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
                 style: TextStyle(
                   fontSize: Responsive.font(context, 14),
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -584,7 +582,7 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             advice,
             style: TextStyle(
               fontSize: Responsive.font(context, 13),
-              color: const Color(0xFF9CA3AF),
+              color: AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -629,8 +627,8 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
             icon: const Icon(Icons.forum_rounded),
             label: const Text('Hỏi Thêm Cố Vấn AI Về Báo Cáo Này'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C63FF),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -644,13 +642,13 @@ class _ComprehensiveReportScreenState extends State<ComprehensiveReportScreen> {
           height: Responsive.s(context, 48),
           child: OutlinedButton.icon(
             onPressed: () => _exportPdf(context, auth, report),
-            icon: const Icon(Icons.download_rounded, color: Color(0xFF00F5A0)),
+            icon: const Icon(Icons.download_rounded, color: AppColors.success),
             label: const Text(
               'Tải Xuất File Báo Cáo PDF',
-              style: TextStyle(color: Color(0xFF00F5A0)),
+              style: TextStyle(color: AppColors.success),
             ),
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFF00F5A0), width: 1.5),
+              side: const BorderSide(color: AppColors.success, width: 1.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

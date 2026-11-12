@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/dynamic_survey_report_viewmodel.dart';
 import 'chat_screen.dart';
@@ -33,7 +34,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
       onError: (msg) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       },
     );
@@ -44,7 +45,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Cảm ơn phản hồi của bạn!'),
-          backgroundColor: Color(0xFF00F5A0),
+          backgroundColor: AppColors.success,
         ),
       );
     }
@@ -58,16 +59,15 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
     final careers = rawCareers.map((e) => e.toString()).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
           'Kết Quả Khảo Sát Động',
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
       ),
@@ -82,10 +82,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                 Container(
                   padding: EdgeInsets.all(Responsive.s(context, 18)),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF191922),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -95,13 +95,13 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                         children: [
                           Icon(
                             Icons.auto_awesome_rounded,
-                            color: Color(0xFF00F5A0),
+                            color: AppColors.success,
                           ),
                           SizedBox(width: 8),
                           Text(
                             'Đánh Giá Từ AI',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -112,7 +112,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                         summary,
                         style: TextStyle(
                           fontSize: Responsive.font(context, 13),
-                          color: const Color(0xFFD1D5DB),
+                          color: AppColors.textBody,
                           height: 1.5,
                         ),
                       ),
@@ -126,7 +126,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                   Text(
                     'Ngành Nghề Phù Hợp',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: Responsive.font(context, 16),
                       fontWeight: FontWeight.bold,
                     ),
@@ -139,10 +139,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       return Chip(
                         label: Text(
                           c,
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: AppColors.textPrimary),
                         ),
-                        backgroundColor: const Color(0xFF191922),
-                        side: const BorderSide(color: Color(0xFF00F5A0)),
+                        backgroundColor: AppColors.surface,
+                        side: const BorderSide(color: AppColors.success),
                       );
                     }).toList(),
                   ),
@@ -167,8 +167,8 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                     icon: const Icon(Icons.forum_rounded),
                     label: const Text('Trao Đổi Thêm Với Cố Vấn AI'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C63FF),
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -178,7 +178,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                 Container(
                   padding: EdgeInsets.all(Responsive.s(context, 16)),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF191922),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -187,7 +187,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       Text(
                         'Đánh Giá Độ Hài Lòng',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: Responsive.font(context, 14),
                           fontWeight: FontWeight.bold,
                         ),
@@ -201,7 +201,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                               idx < _rating
                                   ? Icons.star_rounded
                                   : Icons.star_outline_rounded,
-                              color: const Color(0xFFFFD166),
+                              color: AppColors.warning,
                               size: 28,
                             ),
                             onPressed: () => setState(() => _rating = idx + 1),
@@ -210,10 +210,10 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                       ),
                       TextField(
                         controller: _commentController,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppColors.textPrimary),
                         decoration: const InputDecoration(
                           hintText: 'Nhập ý kiến đóng góp của bạn...',
-                          hintStyle: TextStyle(color: Color(0xFF5E6072)),
+                          hintStyle: TextStyle(color: AppColors.textHint),
                           border: InputBorder.none,
                         ),
                       ),
@@ -226,7 +226,7 @@ class _DynamicSurveyReportScreenState extends State<DynamicSurveyReportScreen> {
                               : () => _submitFeedback(vm),
                           child: const Text(
                             'Gửi Phản Hồi',
-                            style: TextStyle(color: Color(0xFF00F5A0)),
+                            style: TextStyle(color: AppColors.success),
                           ),
                         ),
                       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../viewmodels/quick_explore_viewmodel.dart';
 
@@ -26,22 +27,21 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF191922),
         elevation: 0,
         title: Text(
           'Khám Phá Nhanh Ngành Nghề',
           style: TextStyle(
             fontSize: Responsive.font(context, 16),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -59,27 +59,27 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
                       horizontal: Responsive.s(context, 16),
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF191922),
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
-                      ),
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Row(
                       children: [
                         const Icon(
                           Icons.search_rounded,
-                          color: Color(0xFF6C63FF),
+                          color: AppColors.primaryDark,
                         ),
                         SizedBox(width: Responsive.s(context, 10)),
                         Expanded(
                           child: TextField(
                             controller: _searchController,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                            ),
                             decoration: const InputDecoration(
                               hintText:
                                   'Nhập tên ngành nghề (VD: Lập trình Flutter)...',
-                              hintStyle: TextStyle(color: Color(0xFF5E6072)),
+                              hintStyle: TextStyle(color: AppColors.textHint),
                               border: InputBorder.none,
                             ),
                             onSubmitted: (_) => _onSearch(vm),
@@ -88,7 +88,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
                         IconButton(
                           icon: const Icon(
                             Icons.arrow_forward_rounded,
-                            color: Color(0xFF6C63FF),
+                            color: AppColors.primaryDark,
                           ),
                           onPressed: () => _onSearch(vm),
                         ),
@@ -112,7 +112,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
     if (vm.isLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
       );
     }
@@ -121,7 +121,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
       return Center(
         child: Text(
           vm.errorMessage!,
-          style: const TextStyle(color: Colors.redAccent),
+          style: const TextStyle(color: AppColors.error),
         ),
       );
     }
@@ -134,14 +134,14 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
             const Icon(
               Icons.travel_explore_rounded,
               size: 64,
-              color: Color(0xFF5E6072),
+              color: AppColors.textHint,
             ),
             SizedBox(height: Responsive.s(context, 12)),
             Text(
               'Nhập từ khóa ngành nghề để tra cứu ngay thông tin chi tiết.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: const Color(0xFF888B9B),
+                color: AppColors.textSecondary,
                 fontSize: Responsive.font(context, 13),
               ),
             ),
@@ -161,13 +161,13 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
           Container(
             padding: EdgeInsets.all(Responsive.s(context, 16)),
             decoration: BoxDecoration(
-              color: const Color(0xFF191922),
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
               overview,
               style: TextStyle(
-                color: const Color(0xFFD1D5DB),
+                color: AppColors.textBody,
                 height: 1.5,
                 fontSize: Responsive.font(context, 13),
               ),
@@ -178,7 +178,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
             Text(
               'Kỹ Năng Cần Có',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: Responsive.font(context, 15),
                 fontWeight: FontWeight.bold,
               ),
@@ -191,7 +191,7 @@ class _QuickExploreScreenState extends State<QuickExploreScreen> {
                   .map(
                     (s) => Chip(
                       label: Text(s.toString()),
-                      backgroundColor: const Color(0xFF191922),
+                      backgroundColor: AppColors.surface,
                     ),
                   )
                   .toList(),
