@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  /// Android emulator maps 10.0.2.2 to the development host's localhost.
-  static const String baseUrl =
-      'http://localhost:5000/api';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://192.168.2.21:5000/api',
+  );
 
   // Lưu trữ userId của người dùng hiện tại để tự động đính kèm vào header
   static String? currentUserId;
