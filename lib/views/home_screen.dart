@@ -17,13 +17,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Đã tải dữ liệu cho tài khoản nào (để tải lại khi đăng nhập/đăng xuất/đổi tài khoản).
+  String? _loadedForUserId;
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      context.read<HomeViewModel>().fetchDashboardData(auth);
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final auth = Provider.of<AuthProvider>(context);
+    if (auth.isAuthenticated && auth.userId != _loadedForUserId) {
+      _loadedForUserId = auth.userId;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _refreshDashboard());
+    } else if (!auth.isAuthenticated && _loadedForUserId != null) {
+      _loadedForUserId = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.read<HomeViewModel>().clear();
+      });
+    }
+  }
+
+  void _refreshDashboard() {
+    if (!mounted) return;
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    context.read<HomeViewModel>().fetchDashboardData(auth);
   }
 
   @override
@@ -135,11 +150,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               MaterialPageRoute(
                                 builder: (context) => const TestHistoryScreen(),
                               ),
-                            );
+                            ).then((_) => _refreshDashboard());
                           },
                           child: const Text(
                             'Xem tất cả',
-                            style: TextStyle(color: AppColors.primary),
+                            style: TextStyle(color: AppColors.primaryDark),
                           ),
                         ),
                       ],
@@ -249,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (context) => const AssessmentFlowScreen(),
                 ),
-              );
+              ).then((_) => _refreshDashboard());
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

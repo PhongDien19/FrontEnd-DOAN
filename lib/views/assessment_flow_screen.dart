@@ -4,6 +4,7 @@ import '../services/auth_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/responsive.dart';
 import '../controllers/assessment_flow_controller.dart';
+import 'login_screen.dart';
 
 class AssessmentFlowScreen extends StatefulWidget {
   const AssessmentFlowScreen({super.key});
@@ -16,6 +17,7 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
   final _formKey = GlobalKey<FormState>();
   final _targetReasonController = TextEditingController();
   final _trustFeedbackController = TextEditingController();
+  bool _guestReminderShown = false;
   String _flow = 'main';
   String _audience = 'student';
   String? _targetMajorId;
@@ -41,12 +43,63 @@ class _AssessmentFlowScreenState extends State<AssessmentFlowScreen> {
     super.dispose();
   }
 
+  /// Nhắc nhẹ khi chưa đăng nhập. Trả về true nếu được phép bắt đầu làm bài.
+  Future<bool> _confirmGuestStart() async {
+    if (context.read<AuthProvider>().isAuthenticated || _guestReminderShown) {
+      return true;
+    }
+
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Đăng nhập để lưu kết quả?'),
+        content: const Text(
+          'Nếu chưa đăng nhập, kết quả bài đánh giá sẽ không được lưu vào '
+          'lịch sử và bạn không thể so sánh với các lần làm bài khác.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'guest'),
+            child: const Text(
+              'Tiếp tục không lưu',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, 'login'),
+            child: const Text('Đăng nhập'),
+          ),
+        ],
+      ),
+    );
+
+    // Bấm ra ngoài hộp thoại = hủy, chưa bắt đầu làm bài.
+    if (!mounted || choice == null) return false;
+
+    if (choice == 'login') {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      if (!mounted) return false;
+      // Đăng nhập xong thì tiếp tục luôn; nếu chưa thì để người dùng tự quyết.
+      return context.read<AuthProvider>().isAuthenticated;
+    }
+
+    _guestReminderShown = true; // chỉ nhắc một lần trong màn hình này
+    return true;
+  }
+
   Future<void> _startAssessment(AssessmentFlowController vm) async {
     if (!_formKey.currentState!.validate()) return;
     if (_flow == 'flow_b' && _targetMajorId == null) {
       _showMessage('Vui lòng chọn ngành muốn đánh giá.');
       return;
     }
+
+    if (!await _confirmGuestStart()) return;
 
     final auth = context.read<AuthProvider>();
     await vm.startAssessment(

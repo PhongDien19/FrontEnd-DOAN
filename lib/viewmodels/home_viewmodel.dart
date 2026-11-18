@@ -9,6 +9,12 @@ class HomeViewModel extends ChangeNotifier {
   List<dynamic> _recentHistory = [];
   List<dynamic> get recentHistory => _recentHistory;
 
+  /// Xóa dữ liệu khi đăng xuất để không lộ lịch sử của tài khoản trước.
+  void clear() {
+    _recentHistory = [];
+    notifyListeners();
+  }
+
   Future<void> fetchDashboardData(AuthProvider auth) async {
     if (!auth.isAuthenticated || auth.userId == null) return;
 

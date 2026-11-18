@@ -8,6 +8,7 @@ import 'utils/app_colors.dart';
 
 // ViewModels
 import 'viewmodels/chat_viewmodel.dart';
+import 'viewmodels/compare_viewmodel.dart';
 import 'viewmodels/comprehensive_report_viewmodel.dart';
 import 'viewmodels/dynamic_survey_report_viewmodel.dart';
 import 'viewmodels/dynamic_survey_viewmodel.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => QuickExploreViewModel()),
         ChangeNotifierProvider(create: (_) => ProfileViewModel()),
         ChangeNotifierProvider(create: (_) => TestHistoryViewModel()),
+        ChangeNotifierProvider(create: (_) => CompareViewModel()),
         ChangeNotifierProvider(create: (_) => AssessmentFlowController()),
       ],
       child: MaterialApp(
